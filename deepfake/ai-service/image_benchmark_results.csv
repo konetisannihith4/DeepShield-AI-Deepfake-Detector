@@ -1,0 +1,27 @@
+filename,ground_truth,whole_probability,center_probability,max_patch_probability,final_probability,prediction,confidence
+ai_boy_portrait1.png,AI,0.000900,0.989500,0.989500,0.989500,Likely AI Generated,0.9895
+ai_boy_portrait1_crop.png,AI,0.007300,0.998600,0.998600,0.990000,Likely AI Generated,0.9900
+ai_boy_portrait1_jpeg_q50.jpg,AI,0.000900,0.955400,0.955400,0.955400,Likely AI Generated,0.9554
+ai_boy_portrait2.png,AI,0.002900,0.007900,0.007900,0.010000,Likely Natural,0.9900
+ai_chatgpt.png,AI,0.001200,0.994300,0.994300,0.990000,Likely AI Generated,0.9900
+ai_chatgpt_color_jitter.png,AI,0.001300,0.994300,0.994300,0.990000,Likely AI Generated,0.9900
+ai_chatgpt_resampled_0.5x.png,AI,0.001100,0.995200,0.995200,0.990000,Likely AI Generated,0.9900
+ai_gan_bedroom.jpg,AI,0.016100,0.056800,0.056800,0.036500,Likely Natural,0.9635
+ai_sdxl_img2img.jpg,AI,0.027600,0.026800,0.027600,0.027200,Likely Natural,0.9728
+ai_sdxl_landscape.jpg,AI,0.004600,0.180400,0.180400,0.092500,Likely Natural,0.9075
+ai_specimen3.jpg,NATURAL,0.001300,0.002000,0.002000,0.010000,Likely Natural,0.9900
+real_camera_building.jpg,NATURAL,0.157400,0.086100,0.157400,0.121800,Likely Natural,0.8782
+real_camera_cat.jpg,NATURAL,0.107300,0.145600,0.145600,0.126500,Likely Natural,0.8735
+real_camera_food.jpg,NATURAL,0.253600,0.335400,0.335400,0.294500,Likely Natural,0.7055
+real_camera_landscape.jpg,NATURAL,0.380100,0.650800,0.650800,0.596700,Uncertain,0.5967
+real_camera_nature.jpg,NATURAL,0.260000,0.507300,0.507300,0.457800,Uncertain,0.5422
+real_camera_palace.jpg,NATURAL,0.206400,0.160900,0.206400,0.183600,Likely Natural,0.8164
+real_camera_person.jpg,NATURAL,0.001900,0.917900,0.917900,0.917900,Likely AI Generated,0.9179
+real_camera_teapot.jpg,NATURAL,0.495500,0.197300,0.495500,0.346400,Likely Natural,0.6536
+real_camera_tiger.jpg,NATURAL,0.184900,0.268400,0.268400,0.226600,Likely Natural,0.7734
+real_edited_color_adjust.jpg,NATURAL,0.166800,0.297700,0.297700,0.232200,Likely Natural,0.7678
+real_edited_gaussian_blur.jpg,NATURAL,0.194300,0.317100,0.317100,0.255700,Likely Natural,0.7443
+real_edited_jpeg_q30.jpg,NATURAL,0.270700,0.550600,0.550600,0.494600,Uncertain,0.5054
+real_edited_jpeg_q50.jpg,NATURAL,0.315100,0.452000,0.452000,0.383600,Likely Natural,0.6164
+real_edited_resample_0.5x.jpg,NATURAL,0.219800,0.320000,0.320000,0.269900,Likely Natural,0.7301
+test.jpg.jpg,NATURAL,0.000900,0.001300,0.001300,0.010000,Likely Natural,0.9900

@@ -1,0 +1,27 @@
+filename,ground_truth,probability,confidence,old_prediction,new_prediction
+ai_boy_portrait1.png,AI,98.95%,98.95%,Likely AI Generated,Likely AI Generated
+ai_boy_portrait1_crop.png,AI,99.00%,99.00%,Likely AI Generated,Likely AI Generated
+ai_boy_portrait1_jpeg_q50.jpg,AI,95.54%,95.54%,Likely AI Generated,Likely AI Generated
+ai_boy_portrait2.png,AI,1.00%,99.00%,Likely Natural,Likely Natural
+ai_chatgpt.png,AI,99.00%,99.00%,Likely AI Generated,Likely AI Generated
+ai_chatgpt_color_jitter.png,AI,99.00%,99.00%,Likely AI Generated,Likely AI Generated
+ai_chatgpt_resampled_0.5x.png,AI,99.00%,99.00%,Likely AI Generated,Likely AI Generated
+ai_gan_bedroom.jpg,AI,3.65%,96.35%,Likely Natural,Likely Natural
+ai_sdxl_img2img.jpg,AI,2.72%,97.28%,Likely Natural,Likely Natural
+ai_sdxl_landscape.jpg,AI,9.25%,90.75%,Likely Natural,Likely Natural
+ai_specimen3.jpg,NATURAL,1.00%,99.00%,Likely Natural,Likely Natural
+real_camera_building.jpg,NATURAL,12.18%,87.82%,Likely Natural,Likely Natural
+real_camera_cat.jpg,NATURAL,12.65%,87.35%,Likely Natural,Likely Natural
+real_camera_food.jpg,NATURAL,29.45%,70.55%,Likely Natural,Likely Natural
+real_camera_landscape.jpg,NATURAL,59.67%,59.67%,Uncertain,Uncertain
+real_camera_nature.jpg,NATURAL,45.78%,54.22%,Uncertain,Likely Natural
+real_camera_palace.jpg,NATURAL,18.36%,81.64%,Likely Natural,Likely Natural
+real_camera_person.jpg,NATURAL,91.79%,91.79%,Likely AI Generated,Uncertain
+real_camera_teapot.jpg,NATURAL,34.64%,65.36%,Likely Natural,Likely Natural
+real_camera_tiger.jpg,NATURAL,22.66%,77.34%,Likely Natural,Likely Natural
+real_edited_color_adjust.jpg,NATURAL,23.22%,76.78%,Likely Natural,Likely Natural
+real_edited_gaussian_blur.jpg,NATURAL,25.57%,74.43%,Likely Natural,Likely Natural
+real_edited_jpeg_q30.jpg,NATURAL,49.46%,50.54%,Uncertain,Likely Natural
+real_edited_jpeg_q50.jpg,NATURAL,38.36%,61.64%,Likely Natural,Likely Natural
+real_edited_resample_0.5x.jpg,NATURAL,26.99%,73.01%,Likely Natural,Likely Natural
+test.jpg.jpg,NATURAL,1.00%,99.00%,Likely Natural,Likely Natural

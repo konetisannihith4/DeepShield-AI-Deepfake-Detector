@@ -1,0 +1,101 @@
+filename,ground_truth,category,AI_probability,real_probability,prediction,confidence,result_type
+ai_01_portrait_man.jpg,AI,Human/portrait,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_02_portrait_woman.jpg,AI,Human/portrait,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_03_portrait_boy.jpg,AI,Human/portrait,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_04_portrait_girl.jpg,AI,Human/portrait,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_05_portrait_elderly.jpg,AI,Human/portrait,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_06_portrait_studio.jpg,AI,Human/portrait,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_07_portrait_fashion.jpg,AI,Human/portrait,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_08_portrait_cyberpunk.jpg,AI,Human/portrait,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_09_portrait_realism.jpg,AI,Human/portrait,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_10_portrait_smile.jpg,AI,Human/portrait,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_11_animal_tiger.jpg,AI,Animal,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_12_animal_cat.jpg,AI,Animal,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_13_animal_dog.jpg,AI,Animal,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_14_animal_dragon.jpg,AI,Animal,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_15_animal_bird.jpg,AI,Animal,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_16_landscape_mountains.jpg,AI,Landscape/nature,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_17_landscape_sunset.jpg,AI,Landscape/nature,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_18_landscape_forest.jpg,AI,Landscape/nature,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_19_landscape_ocean.jpg,AI,Landscape/nature,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_20_landscape_waterfall.jpg,AI,Landscape/nature,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_21_city_futuristic.jpg,AI,City/street,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_22_city_tokyo_night.jpg,AI,City/street,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_23_city_street_rain.jpg,AI,City/street,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_24_city_cyberpunk_alley.jpg,AI,City/street,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_25_city_skyline.jpg,AI,City/street,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_26_building_interior_modern.jpg,AI,Building/interior,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_27_building_castle.jpg,AI,Building/interior,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_28_building_luxury_room.jpg,AI,Building/interior,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_29_building_palace.jpg,AI,Building/interior,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_30_building_futuristic_hall.jpg,AI,Building/interior,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_31_food_burger.jpg,AI,Food,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_32_food_pizza.jpg,AI,Food,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_33_food_cake.jpg,AI,Food,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_34_food_sushi.jpg,AI,Food,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_35_food_gourmet.jpg,AI,Food,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_36_vehicle_sports_car.jpg,AI,Vehicle,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_37_vehicle_spaceship.jpg,AI,Vehicle,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_38_vehicle_concept_bike.jpg,AI,Vehicle,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_39_vehicle_flying_car.jpg,AI,Vehicle,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_40_vehicle_luxury_yacht.jpg,AI,Vehicle,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_41_artwork_oil_painting.jpg,AI,Artwork/illustration,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_42_artwork_anime_girl.jpg,AI,Artwork/illustration,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_43_artwork_abstract.jpg,AI,Artwork/illustration,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_44_artwork_digital_sketch.jpg,AI,Artwork/illustration,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_45_artwork_surrealism.jpg,AI,Artwork/illustration,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_46_fantasy_robot_warrior.jpg,AI,Fantasy/technology,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_47_fantasy_alien_world.jpg,AI,Fantasy/technology,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_48_fantasy_magic_portal.jpg,AI,Fantasy/technology,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_49_fantasy_cyber_android.jpg,AI,Fantasy/technology,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+ai_50_fantasy_space_station.jpg,AI,Fantasy/technology,92.2400%,7.7600%,Uncertain,92.2400%,UNCERTAIN
+real_01_portrait_man.jpg,NATURAL,Human/portrait,3.6800%,96.3200%,Likely Natural,96.3200%,TN
+real_02_portrait_woman.jpg,NATURAL,Human/portrait,9.6600%,90.3400%,Likely Natural,90.3400%,TN
+real_03_portrait_child.jpg,NATURAL,Human/portrait,48.9600%,51.0400%,Likely Natural,51.0400%,TN
+real_04_portrait_elder.jpg,NATURAL,Human/portrait,16.1700%,83.8300%,Likely Natural,83.8300%,TN
+real_05_portrait_group.jpg,NATURAL,Human/portrait,4.1400%,95.8600%,Likely Natural,95.8600%,TN
+real_06_portrait_smile.jpg,NATURAL,Human/portrait,5.7900%,94.2100%,Likely Natural,94.2100%,TN
+real_07_portrait_street.jpg,NATURAL,Human/portrait,6.9100%,93.0900%,Likely Natural,93.0900%,TN
+real_08_portrait_studio.jpg,NATURAL,Human/portrait,83.9500%,16.0500%,Uncertain,83.9500%,UNCERTAIN
+real_09_portrait_phone.jpg,NATURAL,Human/portrait,6.9800%,93.0200%,Likely Natural,93.0200%,TN
+real_10_portrait_lowlight.jpg,NATURAL,Human/portrait,6.0100%,93.9900%,Likely Natural,93.9900%,TN
+real_11_landscape_foliage_dense.jpg,NATURAL,Landscape/nature,15.0500%,84.9500%,Likely Natural,84.9500%,TN
+real_12_landscape_trees_forest.jpg,NATURAL,Landscape/nature,95.3800%,4.6200%,Likely AI Generated,95.3800%,FP
+real_13_landscape_mountains.jpg,NATURAL,Landscape/nature,80.2400%,19.7600%,Uncertain,80.2400%,UNCERTAIN
+real_14_landscape_sunset.jpg,NATURAL,Landscape/nature,53.8800%,46.1200%,Uncertain,53.8800%,UNCERTAIN
+real_15_landscape_grass_field.jpg,NATURAL,Landscape/nature,5.9500%,94.0500%,Likely Natural,94.0500%,TN
+real_16_landscape_foliage_jpeg_q50.jpg,NATURAL,Landscape/nature,93.2500%,6.7500%,Uncertain,93.2500%,UNCERTAIN
+real_17_landscape_foliage_resized.jpg,NATURAL,Landscape/nature,6.2000%,93.8000%,Likely Natural,93.8000%,TN
+real_18_landscape_phone_camera.jpg,NATURAL,Landscape/nature,79.2100%,20.7900%,Uncertain,79.2100%,UNCERTAIN
+real_19_landscape_lowlight_night.jpg,NATURAL,Landscape/nature,92.6400%,7.3600%,Uncertain,92.6400%,UNCERTAIN
+real_20_landscape_high_contrast.jpg,NATURAL,Landscape/nature,71.5600%,28.4400%,Uncertain,71.5600%,UNCERTAIN
+real_21_animal_dog.jpg,NATURAL,Animal,81.9000%,18.1000%,Uncertain,81.9000%,UNCERTAIN
+real_22_animal_cat.jpg,NATURAL,Animal,86.0500%,13.9500%,Uncertain,86.0500%,UNCERTAIN
+real_23_animal_bird.jpg,NATURAL,Animal,78.9300%,21.0700%,Uncertain,78.9300%,UNCERTAIN
+real_24_animal_horse.jpg,NATURAL,Animal,87.0400%,12.9600%,Uncertain,87.0400%,UNCERTAIN
+real_25_animal_wild.jpg,NATURAL,Animal,76.4300%,23.5700%,Uncertain,76.4300%,UNCERTAIN
+real_26_building_historic.jpg,NATURAL,Building/interior,72.1700%,27.8300%,Uncertain,72.1700%,UNCERTAIN
+real_27_building_modern_glass.jpg,NATURAL,Building/interior,72.1700%,27.8300%,Uncertain,72.1700%,UNCERTAIN
+real_28_building_house.jpg,NATURAL,Building/interior,72.1700%,27.8300%,Uncertain,72.1700%,UNCERTAIN
+real_29_building_church.jpg,NATURAL,Building/interior,72.1700%,27.8300%,Uncertain,72.1700%,UNCERTAIN
+real_30_building_interior.jpg,NATURAL,Building/interior,72.1700%,27.8300%,Uncertain,72.1700%,UNCERTAIN
+real_31_food_pasta.jpg,NATURAL,Food,13.1800%,86.8200%,Likely Natural,86.8200%,TN
+real_32_food_fruit.jpg,NATURAL,Food,5.8000%,94.2000%,Likely Natural,94.2000%,TN
+real_33_food_coffee.jpg,NATURAL,Food,5.7900%,94.2100%,Likely Natural,94.2100%,TN
+real_34_food_restaurant.jpg,NATURAL,Food,5.5400%,94.4600%,Likely Natural,94.4600%,TN
+real_35_food_jpeg_q30.jpg,NATURAL,Food,3.0500%,96.9500%,Likely Natural,96.9500%,TN
+real_36_vehicle_car_street.jpg,NATURAL,Vehicle,8.4500%,91.5500%,Likely Natural,91.5500%,TN
+real_37_vehicle_bicycle.jpg,NATURAL,Vehicle,93.6100%,6.3900%,Uncertain,93.6100%,UNCERTAIN
+real_38_vehicle_bus.jpg,NATURAL,Vehicle,47.8100%,52.1900%,Likely Natural,52.1900%,TN
+real_39_vehicle_airplane.jpg,NATURAL,Vehicle,5.3600%,94.6400%,Likely Natural,94.6400%,TN
+real_40_vehicle_train.jpg,NATURAL,Vehicle,6.5700%,93.4300%,Likely Natural,93.4300%,TN
+real_41_object_teapot.jpg,NATURAL,Other,52.8100%,47.1900%,Uncertain,52.8100%,UNCERTAIN
+real_42_object_desk_laptop.jpg,NATURAL,Other,86.9300%,13.0700%,Uncertain,86.9300%,UNCERTAIN
+real_43_object_chair_room.jpg,NATURAL,Other,89.0200%,10.9800%,Uncertain,89.0200%,UNCERTAIN
+real_44_object_clock.jpg,NATURAL,Other,89.6300%,10.3700%,Uncertain,89.6300%,UNCERTAIN
+real_45_object_bookshelf.jpg,NATURAL,Other,87.9600%,12.0400%,Uncertain,87.9600%,UNCERTAIN
+real_46_misc_street_sign.jpg,NATURAL,City/street,87.8300%,12.1700%,Uncertain,87.8300%,UNCERTAIN
+real_47_misc_storefront.jpg,NATURAL,City/street,87.0900%,12.9100%,Uncertain,87.0900%,UNCERTAIN
+real_48_misc_park_bench.jpg,NATURAL,Landscape/nature,89.4900%,10.5100%,Uncertain,89.4900%,UNCERTAIN
+real_49_misc_old_photo_scan.jpg,NATURAL,Other,87.6900%,12.3100%,Uncertain,87.6900%,UNCERTAIN
+real_50_misc_social_media_compressed.jpg,NATURAL,Other,88.0700%,11.9300%,Uncertain,88.0700%,UNCERTAIN

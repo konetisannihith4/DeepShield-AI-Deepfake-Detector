@@ -1,0 +1,996 @@
+filename,ground_truth,ai_probability,real_probability,prediction_at_0.50,prediction_at_0.95
+animals\animals_0.jpg,NATURAL,10.02%,89.98%,Likely Natural,Likely Natural
+animals\animals_1.jpg,NATURAL,2.59%,97.41%,Likely Natural,Likely Natural
+animals\animals_10.jpg,NATURAL,2.52%,97.48%,Likely Natural,Likely Natural
+animals\animals_100.jpg,NATURAL,95.04%,4.96%,Likely AI Generated,Likely AI Generated
+animals\animals_101.jpg,NATURAL,10.47%,89.53%,Likely Natural,Likely Natural
+animals\animals_102.jpg,NATURAL,2.63%,97.37%,Likely Natural,Likely Natural
+animals\animals_103.jpg,NATURAL,3.0%,97.0%,Likely Natural,Likely Natural
+animals\animals_104.jpg,NATURAL,94.77%,5.23%,Likely AI Generated,Uncertain
+animals\animals_105.jpg,NATURAL,85.01%,14.99%,Likely AI Generated,Uncertain
+animals\animals_106.jpg,NATURAL,45.31%,54.69%,Likely Natural,Likely Natural
+animals\animals_107.jpg,NATURAL,77.25%,22.75%,Likely AI Generated,Uncertain
+animals\animals_108.jpg,NATURAL,2.47%,97.53%,Likely Natural,Likely Natural
+animals\animals_109.jpg,NATURAL,2.43%,97.57%,Likely Natural,Likely Natural
+animals\animals_11.jpg,NATURAL,7.51%,92.49%,Likely Natural,Likely Natural
+animals\animals_110.jpg,NATURAL,3.72%,96.28%,Likely Natural,Likely Natural
+animals\animals_111.jpg,NATURAL,4.45%,95.55%,Likely Natural,Likely Natural
+animals\animals_112.jpg,NATURAL,96.82%,3.18%,Likely AI Generated,Likely AI Generated
+animals\animals_113.jpg,NATURAL,7.76%,92.24%,Likely Natural,Likely Natural
+animals\animals_114.jpg,NATURAL,95.42%,4.58%,Likely AI Generated,Likely AI Generated
+animals\animals_115.jpg,NATURAL,3.24%,96.76%,Likely Natural,Likely Natural
+animals\animals_116.jpg,NATURAL,96.63%,3.37%,Likely AI Generated,Likely AI Generated
+animals\animals_117.jpg,NATURAL,96.36%,3.64%,Likely AI Generated,Likely AI Generated
+animals\animals_118.jpg,NATURAL,19.7%,80.3%,Likely Natural,Likely Natural
+animals\animals_119.jpg,NATURAL,2.92%,97.08%,Likely Natural,Likely Natural
+animals\animals_12.jpg,NATURAL,97.38%,2.62%,Likely AI Generated,Likely AI Generated
+animals\animals_120.jpg,NATURAL,2.73%,97.27%,Likely Natural,Likely Natural
+animals\animals_121.jpg,NATURAL,2.71%,97.29%,Likely Natural,Likely Natural
+animals\animals_122.jpg,NATURAL,3.77%,96.23%,Likely Natural,Likely Natural
+animals\animals_123.jpg,NATURAL,29.0%,71.0%,Likely Natural,Likely Natural
+animals\animals_124.jpg,NATURAL,2.61%,97.39%,Likely Natural,Likely Natural
+animals\animals_125.jpg,NATURAL,2.54%,97.46%,Likely Natural,Likely Natural
+animals\animals_126.jpg,NATURAL,4.73%,95.27%,Likely Natural,Likely Natural
+animals\animals_127.jpg,NATURAL,94.32%,5.68%,Likely AI Generated,Uncertain
+animals\animals_128.jpg,NATURAL,3.4%,96.6%,Likely Natural,Likely Natural
+animals\animals_129.jpg,NATURAL,86.09%,13.91%,Likely AI Generated,Uncertain
+animals\animals_13.jpg,NATURAL,97.09%,2.91%,Likely AI Generated,Likely AI Generated
+animals\animals_130.jpg,NATURAL,2.51%,97.49%,Likely Natural,Likely Natural
+animals\animals_131.jpg,NATURAL,2.51%,97.49%,Likely Natural,Likely Natural
+animals\animals_132.jpg,NATURAL,3.51%,96.49%,Likely Natural,Likely Natural
+animals\animals_133.jpg,NATURAL,4.63%,95.37%,Likely Natural,Likely Natural
+animals\animals_134.jpg,NATURAL,73.75%,26.25%,Likely AI Generated,Uncertain
+animals\animals_135.jpg,NATURAL,2.58%,97.42%,Likely Natural,Likely Natural
+animals\animals_136.jpg,NATURAL,94.17%,5.83%,Likely AI Generated,Uncertain
+animals\animals_137.jpg,NATURAL,2.48%,97.52%,Likely Natural,Likely Natural
+animals\animals_138.jpg,NATURAL,5.5%,94.5%,Likely Natural,Likely Natural
+animals\animals_139.jpg,NATURAL,2.54%,97.46%,Likely Natural,Likely Natural
+animals\animals_14.jpg,NATURAL,96.48%,3.52%,Likely AI Generated,Likely AI Generated
+animals\animals_140.jpg,NATURAL,2.51%,97.49%,Likely Natural,Likely Natural
+animals\animals_141.jpg,NATURAL,2.63%,97.37%,Likely Natural,Likely Natural
+animals\animals_142.jpg,NATURAL,3.01%,96.99%,Likely Natural,Likely Natural
+animals\animals_143.jpg,NATURAL,22.49%,77.51%,Likely Natural,Likely Natural
+animals\animals_144.jpg,NATURAL,5.04%,94.96%,Likely Natural,Likely Natural
+animals\animals_145.jpg,NATURAL,9.81%,90.19%,Likely Natural,Likely Natural
+animals\animals_146.jpg,NATURAL,2.77%,97.23%,Likely Natural,Likely Natural
+animals\animals_147.jpg,NATURAL,2.76%,97.24%,Likely Natural,Likely Natural
+animals\animals_15.jpg,NATURAL,2.42%,97.58%,Likely Natural,Likely Natural
+animals\animals_16.jpg,NATURAL,42.72%,57.28%,Likely Natural,Likely Natural
+animals\animals_17.jpg,NATURAL,97.18%,2.82%,Likely AI Generated,Likely AI Generated
+animals\animals_18.jpg,NATURAL,97.09%,2.91%,Likely AI Generated,Likely AI Generated
+animals\animals_19.jpg,NATURAL,94.04%,5.96%,Likely AI Generated,Uncertain
+animals\animals_2.jpg,NATURAL,93.96%,6.04%,Likely AI Generated,Uncertain
+animals\animals_20.jpg,NATURAL,2.52%,97.48%,Likely Natural,Likely Natural
+animals\animals_21.jpg,NATURAL,95.55%,4.45%,Likely AI Generated,Likely AI Generated
+animals\animals_22.jpg,NATURAL,97.02%,2.98%,Likely AI Generated,Likely AI Generated
+animals\animals_23.jpg,NATURAL,97.44%,2.56%,Likely AI Generated,Likely AI Generated
+animals\animals_24.jpg,NATURAL,6.5%,93.5%,Likely Natural,Likely Natural
+animals\animals_25.jpg,NATURAL,2.91%,97.09%,Likely Natural,Likely Natural
+animals\animals_26.jpg,NATURAL,18.31%,81.69%,Likely Natural,Likely Natural
+animals\animals_27.jpg,NATURAL,2.68%,97.32%,Likely Natural,Likely Natural
+animals\animals_28.jpg,NATURAL,2.86%,97.14%,Likely Natural,Likely Natural
+animals\animals_29.jpg,NATURAL,86.53%,13.47%,Likely AI Generated,Uncertain
+animals\animals_3.jpg,NATURAL,95.13%,4.87%,Likely AI Generated,Likely AI Generated
+animals\animals_30.jpg,NATURAL,2.95%,97.05%,Likely Natural,Likely Natural
+animals\animals_31.jpg,NATURAL,2.5%,97.5%,Likely Natural,Likely Natural
+animals\animals_32.jpg,NATURAL,81.44%,18.56%,Likely AI Generated,Uncertain
+animals\animals_33.jpg,NATURAL,6.98%,93.02%,Likely Natural,Likely Natural
+animals\animals_34.jpg,NATURAL,2.37%,97.63%,Likely Natural,Likely Natural
+animals\animals_35.jpg,NATURAL,2.64%,97.36%,Likely Natural,Likely Natural
+animals\animals_36.jpg,NATURAL,2.63%,97.37%,Likely Natural,Likely Natural
+animals\animals_37.jpg,NATURAL,3.26%,96.74%,Likely Natural,Likely Natural
+animals\animals_38.jpg,NATURAL,96.13%,3.87%,Likely AI Generated,Likely AI Generated
+animals\animals_39.jpg,NATURAL,2.54%,97.46%,Likely Natural,Likely Natural
+animals\animals_4.jpg,NATURAL,96.49%,3.51%,Likely AI Generated,Likely AI Generated
+animals\animals_40.jpg,NATURAL,3.28%,96.72%,Likely Natural,Likely Natural
+animals\animals_41.jpg,NATURAL,96.34%,3.66%,Likely AI Generated,Likely AI Generated
+animals\animals_42.jpg,NATURAL,97.26%,2.74%,Likely AI Generated,Likely AI Generated
+animals\animals_43.jpg,NATURAL,96.3%,3.7%,Likely AI Generated,Likely AI Generated
+animals\animals_44.jpg,NATURAL,2.55%,97.45%,Likely Natural,Likely Natural
+animals\animals_45.jpg,NATURAL,2.41%,97.59%,Likely Natural,Likely Natural
+animals\animals_46.jpg,NATURAL,8.64%,91.36%,Likely Natural,Likely Natural
+animals\animals_47.jpg,NATURAL,77.15%,22.85%,Likely AI Generated,Uncertain
+animals\animals_48.jpg,NATURAL,6.56%,93.44%,Likely Natural,Likely Natural
+animals\animals_49.jpg,NATURAL,52.1%,47.9%,Likely AI Generated,Uncertain
+animals\animals_5.jpg,NATURAL,96.99%,3.01%,Likely AI Generated,Likely AI Generated
+animals\animals_50.jpg,NATURAL,4.89%,95.11%,Likely Natural,Likely Natural
+animals\animals_51.jpg,NATURAL,2.93%,97.07%,Likely Natural,Likely Natural
+animals\animals_52.jpg,NATURAL,92.66%,7.34%,Likely AI Generated,Uncertain
+animals\animals_53.jpg,NATURAL,95.47%,4.53%,Likely AI Generated,Likely AI Generated
+animals\animals_54.jpg,NATURAL,2.61%,97.39%,Likely Natural,Likely Natural
+animals\animals_55.jpg,NATURAL,2.41%,97.59%,Likely Natural,Likely Natural
+animals\animals_56.jpg,NATURAL,96.68%,3.32%,Likely AI Generated,Likely AI Generated
+animals\animals_57.jpg,NATURAL,2.95%,97.05%,Likely Natural,Likely Natural
+animals\animals_58.jpg,NATURAL,96.79%,3.21%,Likely AI Generated,Likely AI Generated
+animals\animals_59.jpg,NATURAL,2.44%,97.56%,Likely Natural,Likely Natural
+animals\animals_6.jpg,NATURAL,96.16%,3.84%,Likely AI Generated,Likely AI Generated
+animals\animals_60.jpg,NATURAL,89.53%,10.47%,Likely AI Generated,Uncertain
+animals\animals_61.jpg,NATURAL,2.35%,97.65%,Likely Natural,Likely Natural
+animals\animals_62.jpg,NATURAL,91.28%,8.72%,Likely AI Generated,Uncertain
+animals\animals_63.jpg,NATURAL,2.55%,97.45%,Likely Natural,Likely Natural
+animals\animals_64.jpg,NATURAL,2.52%,97.48%,Likely Natural,Likely Natural
+animals\animals_65.jpg,NATURAL,2.8%,97.2%,Likely Natural,Likely Natural
+animals\animals_66.jpg,NATURAL,2.51%,97.49%,Likely Natural,Likely Natural
+animals\animals_67.jpg,NATURAL,4.42%,95.58%,Likely Natural,Likely Natural
+animals\animals_68.jpg,NATURAL,92.2%,7.8%,Likely AI Generated,Uncertain
+animals\animals_69.jpg,NATURAL,2.74%,97.26%,Likely Natural,Likely Natural
+animals\animals_7.jpg,NATURAL,2.55%,97.45%,Likely Natural,Likely Natural
+animals\animals_70.jpg,NATURAL,97.07%,2.93%,Likely AI Generated,Likely AI Generated
+animals\animals_71.jpg,NATURAL,3.05%,96.95%,Likely Natural,Likely Natural
+animals\animals_72.jpg,NATURAL,4.08%,95.92%,Likely Natural,Likely Natural
+animals\animals_73.jpg,NATURAL,12.6%,87.4%,Likely Natural,Likely Natural
+animals\animals_74.jpg,NATURAL,4.33%,95.67%,Likely Natural,Likely Natural
+animals\animals_75.jpg,NATURAL,83.37%,16.63%,Likely AI Generated,Uncertain
+animals\animals_76.jpg,NATURAL,3.53%,96.47%,Likely Natural,Likely Natural
+animals\animals_77.jpg,NATURAL,3.25%,96.75%,Likely Natural,Likely Natural
+animals\animals_78.jpg,NATURAL,2.57%,97.43%,Likely Natural,Likely Natural
+animals\animals_79.jpg,NATURAL,2.46%,97.54%,Likely Natural,Likely Natural
+animals\animals_8.jpg,NATURAL,95.24%,4.76%,Likely AI Generated,Likely AI Generated
+animals\animals_80.jpg,NATURAL,6.19%,93.81%,Likely Natural,Likely Natural
+animals\animals_81.jpg,NATURAL,3.11%,96.89%,Likely Natural,Likely Natural
+animals\animals_82.jpg,NATURAL,3.25%,96.75%,Likely Natural,Likely Natural
+animals\animals_83.jpg,NATURAL,6.29%,93.71%,Likely Natural,Likely Natural
+animals\animals_84.jpg,NATURAL,4.55%,95.45%,Likely Natural,Likely Natural
+animals\animals_85.jpg,NATURAL,2.42%,97.58%,Likely Natural,Likely Natural
+animals\animals_86.jpg,NATURAL,17.4%,82.6%,Likely Natural,Likely Natural
+animals\animals_87.jpg,NATURAL,82.1%,17.9%,Likely AI Generated,Uncertain
+animals\animals_88.jpg,NATURAL,94.87%,5.13%,Likely AI Generated,Uncertain
+animals\animals_89.jpg,NATURAL,97.55%,2.45%,Likely AI Generated,Likely AI Generated
+animals\animals_9.jpg,NATURAL,2.54%,97.46%,Likely Natural,Likely Natural
+animals\animals_90.jpg,NATURAL,46.84%,53.16%,Likely Natural,Likely Natural
+animals\animals_91.jpg,NATURAL,3.86%,96.14%,Likely Natural,Likely Natural
+animals\animals_92.jpg,NATURAL,2.7%,97.3%,Likely Natural,Likely Natural
+animals\animals_93.jpg,NATURAL,96.39%,3.61%,Likely AI Generated,Likely AI Generated
+animals\animals_94.jpg,NATURAL,2.59%,97.41%,Likely Natural,Likely Natural
+animals\animals_95.jpg,NATURAL,2.72%,97.28%,Likely Natural,Likely Natural
+animals\animals_96.jpg,NATURAL,4.96%,95.04%,Likely Natural,Likely Natural
+animals\animals_97.jpg,NATURAL,3.93%,96.07%,Likely Natural,Likely Natural
+animals\animals_98.jpg,NATURAL,96.85%,3.15%,Likely AI Generated,Likely AI Generated
+animals\animals_99.jpg,NATURAL,2.71%,97.29%,Likely Natural,Likely Natural
+city\city_0.jpg,NATURAL,96.04%,3.96%,Likely AI Generated,Likely AI Generated
+city\city_1.jpg,NATURAL,86.94%,13.06%,Likely AI Generated,Uncertain
+city\city_10.jpg,NATURAL,94.63%,5.37%,Likely AI Generated,Uncertain
+city\city_100.jpg,NATURAL,97.54%,2.46%,Likely AI Generated,Likely AI Generated
+city\city_101.jpg,NATURAL,9.71%,90.29%,Likely Natural,Likely Natural
+city\city_102.jpg,NATURAL,2.55%,97.45%,Likely Natural,Likely Natural
+city\city_103.jpg,NATURAL,9.76%,90.24%,Likely Natural,Likely Natural
+city\city_104.jpg,NATURAL,95.75%,4.25%,Likely AI Generated,Likely AI Generated
+city\city_105.jpg,NATURAL,96.02%,3.98%,Likely AI Generated,Likely AI Generated
+city\city_106.jpg,NATURAL,96.0%,4.0%,Likely AI Generated,Likely AI Generated
+city\city_107.jpg,NATURAL,3.13%,96.87%,Likely Natural,Likely Natural
+city\city_108.jpg,NATURAL,41.91%,58.09%,Likely Natural,Likely Natural
+city\city_109.jpg,NATURAL,3.37%,96.63%,Likely Natural,Likely Natural
+city\city_11.jpg,NATURAL,3.49%,96.51%,Likely Natural,Likely Natural
+city\city_110.jpg,NATURAL,5.48%,94.52%,Likely Natural,Likely Natural
+city\city_111.jpg,NATURAL,3.73%,96.27%,Likely Natural,Likely Natural
+city\city_112.jpg,NATURAL,96.56%,3.44%,Likely AI Generated,Likely AI Generated
+city\city_113.jpg,NATURAL,96.02%,3.98%,Likely AI Generated,Likely AI Generated
+city\city_114.jpg,NATURAL,3.75%,96.25%,Likely Natural,Likely Natural
+city\city_115.jpg,NATURAL,4.04%,95.96%,Likely Natural,Likely Natural
+city\city_116.jpg,NATURAL,94.98%,5.02%,Likely AI Generated,Uncertain
+city\city_117.jpg,NATURAL,95.29%,4.71%,Likely AI Generated,Likely AI Generated
+city\city_118.jpg,NATURAL,96.94%,3.06%,Likely AI Generated,Likely AI Generated
+city\city_119.jpg,NATURAL,96.49%,3.51%,Likely AI Generated,Likely AI Generated
+city\city_12.jpg,NATURAL,3.08%,96.92%,Likely Natural,Likely Natural
+city\city_120.jpg,NATURAL,4.91%,95.09%,Likely Natural,Likely Natural
+city\city_121.jpg,NATURAL,97.3%,2.7%,Likely AI Generated,Likely AI Generated
+city\city_122.jpg,NATURAL,54.75%,45.25%,Likely AI Generated,Uncertain
+city\city_123.jpg,NATURAL,97.66%,2.34%,Likely AI Generated,Likely AI Generated
+city\city_124.jpg,NATURAL,10.2%,89.8%,Likely Natural,Likely Natural
+city\city_125.jpg,NATURAL,3.2%,96.8%,Likely Natural,Likely Natural
+city\city_126.jpg,NATURAL,95.11%,4.89%,Likely AI Generated,Likely AI Generated
+city\city_127.jpg,NATURAL,2.95%,97.05%,Likely Natural,Likely Natural
+city\city_128.jpg,NATURAL,2.9%,97.1%,Likely Natural,Likely Natural
+city\city_129.jpg,NATURAL,3.15%,96.85%,Likely Natural,Likely Natural
+city\city_13.jpg,NATURAL,10.49%,89.51%,Likely Natural,Likely Natural
+city\city_130.jpg,NATURAL,96.97%,3.03%,Likely AI Generated,Likely AI Generated
+city\city_131.jpg,NATURAL,97.46%,2.54%,Likely AI Generated,Likely AI Generated
+city\city_132.jpg,NATURAL,95.17%,4.83%,Likely AI Generated,Likely AI Generated
+city\city_133.jpg,NATURAL,97.01%,2.99%,Likely AI Generated,Likely AI Generated
+city\city_134.jpg,NATURAL,3.32%,96.68%,Likely Natural,Likely Natural
+city\city_135.jpg,NATURAL,43.72%,56.28%,Likely Natural,Likely Natural
+city\city_136.jpg,NATURAL,16.09%,83.91%,Likely Natural,Likely Natural
+city\city_137.jpg,NATURAL,3.54%,96.46%,Likely Natural,Likely Natural
+city\city_138.jpg,NATURAL,94.45%,5.55%,Likely AI Generated,Uncertain
+city\city_139.jpg,NATURAL,2.65%,97.35%,Likely Natural,Likely Natural
+city\city_14.jpg,NATURAL,76.41%,23.59%,Likely AI Generated,Uncertain
+city\city_140.jpg,NATURAL,2.74%,97.26%,Likely Natural,Likely Natural
+city\city_141.jpg,NATURAL,95.22%,4.78%,Likely AI Generated,Likely AI Generated
+city\city_142.jpg,NATURAL,43.73%,56.27%,Likely Natural,Likely Natural
+city\city_143.jpg,NATURAL,96.61%,3.39%,Likely AI Generated,Likely AI Generated
+city\city_144.jpg,NATURAL,97.43%,2.57%,Likely AI Generated,Likely AI Generated
+city\city_145.jpg,NATURAL,97.61%,2.39%,Likely AI Generated,Likely AI Generated
+city\city_146.jpg,NATURAL,97.18%,2.82%,Likely AI Generated,Likely AI Generated
+city\city_147.jpg,NATURAL,96.1%,3.9%,Likely AI Generated,Likely AI Generated
+city\city_148.jpg,NATURAL,97.59%,2.41%,Likely AI Generated,Likely AI Generated
+city\city_149.jpg,NATURAL,78.75%,21.25%,Likely AI Generated,Uncertain
+city\city_15.jpg,NATURAL,13.71%,86.29%,Likely Natural,Likely Natural
+city\city_16.jpg,NATURAL,96.6%,3.4%,Likely AI Generated,Likely AI Generated
+city\city_17.jpg,NATURAL,93.63%,6.37%,Likely AI Generated,Uncertain
+city\city_18.jpg,NATURAL,5.98%,94.02%,Likely Natural,Likely Natural
+city\city_19.jpg,NATURAL,93.0%,7.0%,Likely AI Generated,Uncertain
+city\city_2.jpg,NATURAL,97.36%,2.64%,Likely AI Generated,Likely AI Generated
+city\city_20.jpg,NATURAL,97.61%,2.39%,Likely AI Generated,Likely AI Generated
+city\city_21.jpg,NATURAL,54.43%,45.57%,Likely AI Generated,Uncertain
+city\city_22.jpg,NATURAL,97.35%,2.65%,Likely AI Generated,Likely AI Generated
+city\city_23.jpg,NATURAL,97.51%,2.49%,Likely AI Generated,Likely AI Generated
+city\city_24.jpg,NATURAL,97.15%,2.85%,Likely AI Generated,Likely AI Generated
+city\city_25.jpg,NATURAL,96.93%,3.07%,Likely AI Generated,Likely AI Generated
+city\city_26.jpg,NATURAL,47.13%,52.87%,Likely Natural,Likely Natural
+city\city_27.jpg,NATURAL,90.28%,9.72%,Likely AI Generated,Uncertain
+city\city_28.jpg,NATURAL,20.21%,79.79%,Likely Natural,Likely Natural
+city\city_29.jpg,NATURAL,5.26%,94.74%,Likely Natural,Likely Natural
+city\city_3.jpg,NATURAL,97.7%,2.3%,Likely AI Generated,Likely AI Generated
+city\city_30.jpg,NATURAL,96.28%,3.72%,Likely AI Generated,Likely AI Generated
+city\city_31.jpg,NATURAL,9.2%,90.8%,Likely Natural,Likely Natural
+city\city_32.jpg,NATURAL,96.61%,3.39%,Likely AI Generated,Likely AI Generated
+city\city_33.jpg,NATURAL,3.62%,96.38%,Likely Natural,Likely Natural
+city\city_34.jpg,NATURAL,3.94%,96.06%,Likely Natural,Likely Natural
+city\city_35.jpg,NATURAL,95.54%,4.46%,Likely AI Generated,Likely AI Generated
+city\city_36.jpg,NATURAL,97.45%,2.55%,Likely AI Generated,Likely AI Generated
+city\city_37.jpg,NATURAL,97.19%,2.81%,Likely AI Generated,Likely AI Generated
+city\city_38.jpg,NATURAL,97.18%,2.82%,Likely AI Generated,Likely AI Generated
+city\city_39.jpg,NATURAL,96.86%,3.14%,Likely AI Generated,Likely AI Generated
+city\city_4.jpg,NATURAL,3.33%,96.67%,Likely Natural,Likely Natural
+city\city_40.jpg,NATURAL,2.52%,97.48%,Likely Natural,Likely Natural
+city\city_41.jpg,NATURAL,3.62%,96.38%,Likely Natural,Likely Natural
+city\city_42.jpg,NATURAL,97.56%,2.44%,Likely AI Generated,Likely AI Generated
+city\city_43.jpg,NATURAL,96.9%,3.1%,Likely AI Generated,Likely AI Generated
+city\city_44.jpg,NATURAL,10.81%,89.19%,Likely Natural,Likely Natural
+city\city_45.jpg,NATURAL,96.55%,3.45%,Likely AI Generated,Likely AI Generated
+city\city_46.jpg,NATURAL,10.72%,89.28%,Likely Natural,Likely Natural
+city\city_47.jpg,NATURAL,96.51%,3.49%,Likely AI Generated,Likely AI Generated
+city\city_48.jpg,NATURAL,8.36%,91.64%,Likely Natural,Likely Natural
+city\city_49.jpg,NATURAL,95.11%,4.89%,Likely AI Generated,Likely AI Generated
+city\city_5.jpg,NATURAL,4.13%,95.87%,Likely Natural,Likely Natural
+city\city_50.jpg,NATURAL,96.36%,3.64%,Likely AI Generated,Likely AI Generated
+city\city_51.jpg,NATURAL,96.75%,3.25%,Likely AI Generated,Likely AI Generated
+city\city_52.jpg,NATURAL,4.04%,95.96%,Likely Natural,Likely Natural
+city\city_53.jpg,NATURAL,94.18%,5.82%,Likely AI Generated,Uncertain
+city\city_54.jpg,NATURAL,75.37%,24.63%,Likely AI Generated,Uncertain
+city\city_55.jpg,NATURAL,92.96%,7.04%,Likely AI Generated,Uncertain
+city\city_56.jpg,NATURAL,94.02%,5.98%,Likely AI Generated,Uncertain
+city\city_57.jpg,NATURAL,97.22%,2.78%,Likely AI Generated,Likely AI Generated
+city\city_58.jpg,NATURAL,17.79%,82.21%,Likely Natural,Likely Natural
+city\city_59.jpg,NATURAL,95.42%,4.58%,Likely AI Generated,Likely AI Generated
+city\city_6.jpg,NATURAL,97.31%,2.69%,Likely AI Generated,Likely AI Generated
+city\city_60.jpg,NATURAL,96.33%,3.67%,Likely AI Generated,Likely AI Generated
+city\city_61.jpg,NATURAL,2.43%,97.57%,Likely Natural,Likely Natural
+city\city_62.jpg,NATURAL,3.16%,96.84%,Likely Natural,Likely Natural
+city\city_63.jpg,NATURAL,96.81%,3.19%,Likely AI Generated,Likely AI Generated
+city\city_64.jpg,NATURAL,96.57%,3.43%,Likely AI Generated,Likely AI Generated
+city\city_65.jpg,NATURAL,18.01%,81.99%,Likely Natural,Likely Natural
+city\city_66.jpg,NATURAL,13.14%,86.86%,Likely Natural,Likely Natural
+city\city_67.jpg,NATURAL,92.52%,7.48%,Likely AI Generated,Uncertain
+city\city_68.jpg,NATURAL,96.95%,3.05%,Likely AI Generated,Likely AI Generated
+city\city_69.jpg,NATURAL,45.98%,54.02%,Likely Natural,Likely Natural
+city\city_7.jpg,NATURAL,2.47%,97.53%,Likely Natural,Likely Natural
+city\city_70.jpg,NATURAL,94.7%,5.3%,Likely AI Generated,Uncertain
+city\city_71.jpg,NATURAL,2.92%,97.08%,Likely Natural,Likely Natural
+city\city_72.jpg,NATURAL,2.78%,97.22%,Likely Natural,Likely Natural
+city\city_73.jpg,NATURAL,96.2%,3.8%,Likely AI Generated,Likely AI Generated
+city\city_74.jpg,NATURAL,97.63%,2.37%,Likely AI Generated,Likely AI Generated
+city\city_75.jpg,NATURAL,97.67%,2.33%,Likely AI Generated,Likely AI Generated
+city\city_76.jpg,NATURAL,96.84%,3.16%,Likely AI Generated,Likely AI Generated
+city\city_77.jpg,NATURAL,3.23%,96.77%,Likely Natural,Likely Natural
+city\city_78.jpg,NATURAL,97.01%,2.99%,Likely AI Generated,Likely AI Generated
+city\city_79.jpg,NATURAL,3.63%,96.37%,Likely Natural,Likely Natural
+city\city_8.jpg,NATURAL,97.43%,2.57%,Likely AI Generated,Likely AI Generated
+city\city_80.jpg,NATURAL,95.89%,4.11%,Likely AI Generated,Likely AI Generated
+city\city_81.jpg,NATURAL,51.63%,48.37%,Likely AI Generated,Uncertain
+city\city_82.jpg,NATURAL,67.49%,32.51%,Likely AI Generated,Uncertain
+city\city_83.jpg,NATURAL,75.2%,24.8%,Likely AI Generated,Uncertain
+city\city_84.jpg,NATURAL,95.36%,4.64%,Likely AI Generated,Likely AI Generated
+city\city_85.jpg,NATURAL,3.62%,96.38%,Likely Natural,Likely Natural
+city\city_86.jpg,NATURAL,3.0%,97.0%,Likely Natural,Likely Natural
+city\city_87.jpg,NATURAL,3.53%,96.47%,Likely Natural,Likely Natural
+city\city_88.jpg,NATURAL,96.74%,3.26%,Likely AI Generated,Likely AI Generated
+city\city_89.jpg,NATURAL,2.39%,97.61%,Likely Natural,Likely Natural
+city\city_9.jpg,NATURAL,90.74%,9.26%,Likely AI Generated,Uncertain
+city\city_90.jpg,NATURAL,96.68%,3.32%,Likely AI Generated,Likely AI Generated
+city\city_91.jpg,NATURAL,94.85%,5.15%,Likely AI Generated,Uncertain
+city\city_92.jpg,NATURAL,97.53%,2.47%,Likely AI Generated,Likely AI Generated
+city\city_93.jpg,NATURAL,4.0%,96.0%,Likely Natural,Likely Natural
+city\city_94.jpg,NATURAL,17.31%,82.69%,Likely Natural,Likely Natural
+city\city_95.jpg,NATURAL,95.99%,4.01%,Likely AI Generated,Likely AI Generated
+city\city_96.jpg,NATURAL,3.49%,96.51%,Likely Natural,Likely Natural
+city\city_97.jpg,NATURAL,3.68%,96.32%,Likely Natural,Likely Natural
+city\city_98.jpg,NATURAL,97.54%,2.46%,Likely AI Generated,Likely AI Generated
+city\city_99.jpg,NATURAL,3.61%,96.39%,Likely Natural,Likely Natural
+food\food_0.jpg,NATURAL,95.64%,4.36%,Likely AI Generated,Likely AI Generated
+food\food_1.jpg,NATURAL,2.96%,97.04%,Likely Natural,Likely Natural
+food\food_10.jpg,NATURAL,87.11%,12.89%,Likely AI Generated,Uncertain
+food\food_100.jpg,NATURAL,94.2%,5.8%,Likely AI Generated,Uncertain
+food\food_101.jpg,NATURAL,2.84%,97.16%,Likely Natural,Likely Natural
+food\food_102.jpg,NATURAL,86.78%,13.22%,Likely AI Generated,Uncertain
+food\food_103.jpg,NATURAL,94.51%,5.49%,Likely AI Generated,Uncertain
+food\food_104.jpg,NATURAL,94.03%,5.97%,Likely AI Generated,Uncertain
+food\food_105.jpg,NATURAL,81.59%,18.41%,Likely AI Generated,Uncertain
+food\food_106.jpg,NATURAL,23.51%,76.49%,Likely Natural,Likely Natural
+food\food_107.jpg,NATURAL,95.33%,4.67%,Likely AI Generated,Likely AI Generated
+food\food_108.jpg,NATURAL,78.09%,21.91%,Likely AI Generated,Uncertain
+food\food_109.jpg,NATURAL,97.16%,2.84%,Likely AI Generated,Likely AI Generated
+food\food_11.jpg,NATURAL,3.29%,96.71%,Likely Natural,Likely Natural
+food\food_110.jpg,NATURAL,5.88%,94.12%,Likely Natural,Likely Natural
+food\food_111.jpg,NATURAL,75.77%,24.23%,Likely AI Generated,Uncertain
+food\food_112.jpg,NATURAL,43.97%,56.03%,Likely Natural,Likely Natural
+food\food_113.jpg,NATURAL,96.6%,3.4%,Likely AI Generated,Likely AI Generated
+food\food_114.jpg,NATURAL,94.87%,5.13%,Likely AI Generated,Uncertain
+food\food_115.jpg,NATURAL,93.06%,6.94%,Likely AI Generated,Uncertain
+food\food_116.jpg,NATURAL,92.94%,7.06%,Likely AI Generated,Uncertain
+food\food_117.jpg,NATURAL,86.81%,13.19%,Likely AI Generated,Uncertain
+food\food_118.jpg,NATURAL,97.09%,2.91%,Likely AI Generated,Likely AI Generated
+food\food_119.jpg,NATURAL,96.64%,3.36%,Likely AI Generated,Likely AI Generated
+food\food_12.jpg,NATURAL,6.03%,93.97%,Likely Natural,Likely Natural
+food\food_120.jpg,NATURAL,97.05%,2.95%,Likely AI Generated,Likely AI Generated
+food\food_121.jpg,NATURAL,96.6%,3.4%,Likely AI Generated,Likely AI Generated
+food\food_122.jpg,NATURAL,92.77%,7.23%,Likely AI Generated,Uncertain
+food\food_123.jpg,NATURAL,7.2%,92.8%,Likely Natural,Likely Natural
+food\food_124.jpg,NATURAL,91.9%,8.1%,Likely AI Generated,Uncertain
+food\food_125.jpg,NATURAL,4.61%,95.39%,Likely Natural,Likely Natural
+food\food_126.jpg,NATURAL,97.35%,2.65%,Likely AI Generated,Likely AI Generated
+food\food_127.jpg,NATURAL,97.45%,2.55%,Likely AI Generated,Likely AI Generated
+food\food_128.jpg,NATURAL,95.42%,4.58%,Likely AI Generated,Likely AI Generated
+food\food_129.jpg,NATURAL,96.6%,3.4%,Likely AI Generated,Likely AI Generated
+food\food_13.jpg,NATURAL,96.72%,3.28%,Likely AI Generated,Likely AI Generated
+food\food_130.jpg,NATURAL,96.98%,3.02%,Likely AI Generated,Likely AI Generated
+food\food_131.jpg,NATURAL,97.36%,2.64%,Likely AI Generated,Likely AI Generated
+food\food_132.jpg,NATURAL,43.84%,56.16%,Likely Natural,Likely Natural
+food\food_133.jpg,NATURAL,89.63%,10.37%,Likely AI Generated,Uncertain
+food\food_134.jpg,NATURAL,96.38%,3.62%,Likely AI Generated,Likely AI Generated
+food\food_135.jpg,NATURAL,2.94%,97.06%,Likely Natural,Likely Natural
+food\food_136.jpg,NATURAL,10.96%,89.04%,Likely Natural,Likely Natural
+food\food_137.jpg,NATURAL,96.14%,3.86%,Likely AI Generated,Likely AI Generated
+food\food_138.jpg,NATURAL,5.74%,94.26%,Likely Natural,Likely Natural
+food\food_139.jpg,NATURAL,97.13%,2.87%,Likely AI Generated,Likely AI Generated
+food\food_14.jpg,NATURAL,95.79%,4.21%,Likely AI Generated,Likely AI Generated
+food\food_140.jpg,NATURAL,4.31%,95.69%,Likely Natural,Likely Natural
+food\food_141.jpg,NATURAL,11.53%,88.47%,Likely Natural,Likely Natural
+food\food_142.jpg,NATURAL,97.01%,2.99%,Likely AI Generated,Likely AI Generated
+food\food_143.jpg,NATURAL,85.44%,14.56%,Likely AI Generated,Uncertain
+food\food_144.jpg,NATURAL,95.28%,4.72%,Likely AI Generated,Likely AI Generated
+food\food_145.jpg,NATURAL,9.95%,90.05%,Likely Natural,Likely Natural
+food\food_146.jpg,NATURAL,97.31%,2.69%,Likely AI Generated,Likely AI Generated
+food\food_147.jpg,NATURAL,4.25%,95.75%,Likely Natural,Likely Natural
+food\food_148.jpg,NATURAL,3.32%,96.68%,Likely Natural,Likely Natural
+food\food_149.jpg,NATURAL,3.12%,96.88%,Likely Natural,Likely Natural
+food\food_15.jpg,NATURAL,2.97%,97.03%,Likely Natural,Likely Natural
+food\food_16.jpg,NATURAL,95.61%,4.39%,Likely AI Generated,Likely AI Generated
+food\food_17.jpg,NATURAL,82.75%,17.25%,Likely AI Generated,Uncertain
+food\food_18.jpg,NATURAL,97.56%,2.44%,Likely AI Generated,Likely AI Generated
+food\food_19.jpg,NATURAL,2.81%,97.19%,Likely Natural,Likely Natural
+food\food_2.jpg,NATURAL,3.12%,96.88%,Likely Natural,Likely Natural
+food\food_20.jpg,NATURAL,9.68%,90.32%,Likely Natural,Likely Natural
+food\food_21.jpg,NATURAL,97.38%,2.62%,Likely AI Generated,Likely AI Generated
+food\food_22.jpg,NATURAL,95.0%,5.0%,Likely AI Generated,Likely AI Generated
+food\food_23.jpg,NATURAL,10.94%,89.06%,Likely Natural,Likely Natural
+food\food_24.jpg,NATURAL,97.33%,2.67%,Likely AI Generated,Likely AI Generated
+food\food_25.jpg,NATURAL,96.79%,3.21%,Likely AI Generated,Likely AI Generated
+food\food_26.jpg,NATURAL,88.89%,11.11%,Likely AI Generated,Uncertain
+food\food_27.jpg,NATURAL,96.7%,3.3%,Likely AI Generated,Likely AI Generated
+food\food_28.jpg,NATURAL,95.75%,4.25%,Likely AI Generated,Likely AI Generated
+food\food_29.jpg,NATURAL,3.57%,96.43%,Likely Natural,Likely Natural
+food\food_3.jpg,NATURAL,4.42%,95.58%,Likely Natural,Likely Natural
+food\food_30.jpg,NATURAL,3.03%,96.97%,Likely Natural,Likely Natural
+food\food_31.jpg,NATURAL,97.27%,2.73%,Likely AI Generated,Likely AI Generated
+food\food_32.jpg,NATURAL,9.17%,90.83%,Likely Natural,Likely Natural
+food\food_33.jpg,NATURAL,96.67%,3.33%,Likely AI Generated,Likely AI Generated
+food\food_34.jpg,NATURAL,96.75%,3.25%,Likely AI Generated,Likely AI Generated
+food\food_35.jpg,NATURAL,96.58%,3.42%,Likely AI Generated,Likely AI Generated
+food\food_36.jpg,NATURAL,3.39%,96.61%,Likely Natural,Likely Natural
+food\food_37.jpg,NATURAL,93.31%,6.69%,Likely AI Generated,Uncertain
+food\food_38.jpg,NATURAL,96.52%,3.48%,Likely AI Generated,Likely AI Generated
+food\food_39.jpg,NATURAL,2.72%,97.28%,Likely Natural,Likely Natural
+food\food_4.jpg,NATURAL,97.37%,2.63%,Likely AI Generated,Likely AI Generated
+food\food_40.jpg,NATURAL,96.93%,3.07%,Likely AI Generated,Likely AI Generated
+food\food_41.jpg,NATURAL,92.44%,7.56%,Likely AI Generated,Uncertain
+food\food_42.jpg,NATURAL,97.45%,2.55%,Likely AI Generated,Likely AI Generated
+food\food_43.jpg,NATURAL,96.16%,3.84%,Likely AI Generated,Likely AI Generated
+food\food_44.jpg,NATURAL,94.82%,5.18%,Likely AI Generated,Uncertain
+food\food_45.jpg,NATURAL,97.1%,2.9%,Likely AI Generated,Likely AI Generated
+food\food_46.jpg,NATURAL,77.73%,22.27%,Likely AI Generated,Uncertain
+food\food_47.jpg,NATURAL,96.92%,3.08%,Likely AI Generated,Likely AI Generated
+food\food_48.jpg,NATURAL,79.66%,20.34%,Likely AI Generated,Uncertain
+food\food_49.jpg,NATURAL,2.65%,97.35%,Likely Natural,Likely Natural
+food\food_5.jpg,NATURAL,96.87%,3.13%,Likely AI Generated,Likely AI Generated
+food\food_50.jpg,NATURAL,71.85%,28.15%,Likely AI Generated,Uncertain
+food\food_51.jpg,NATURAL,95.8%,4.2%,Likely AI Generated,Likely AI Generated
+food\food_52.jpg,NATURAL,52.51%,47.49%,Likely AI Generated,Uncertain
+food\food_53.jpg,NATURAL,3.3%,96.7%,Likely Natural,Likely Natural
+food\food_54.jpg,NATURAL,2.58%,97.42%,Likely Natural,Likely Natural
+food\food_55.jpg,NATURAL,21.38%,78.62%,Likely Natural,Likely Natural
+food\food_56.jpg,NATURAL,4.54%,95.46%,Likely Natural,Likely Natural
+food\food_57.jpg,NATURAL,97.53%,2.47%,Likely AI Generated,Likely AI Generated
+food\food_58.jpg,NATURAL,3.3%,96.7%,Likely Natural,Likely Natural
+food\food_59.jpg,NATURAL,74.94%,25.06%,Likely AI Generated,Uncertain
+food\food_6.jpg,NATURAL,97.35%,2.65%,Likely AI Generated,Likely AI Generated
+food\food_60.jpg,NATURAL,4.8%,95.2%,Likely Natural,Likely Natural
+food\food_61.jpg,NATURAL,97.18%,2.82%,Likely AI Generated,Likely AI Generated
+food\food_62.jpg,NATURAL,96.14%,3.86%,Likely AI Generated,Likely AI Generated
+food\food_63.jpg,NATURAL,97.14%,2.86%,Likely AI Generated,Likely AI Generated
+food\food_64.jpg,NATURAL,97.05%,2.95%,Likely AI Generated,Likely AI Generated
+food\food_65.jpg,NATURAL,3.85%,96.15%,Likely Natural,Likely Natural
+food\food_66.jpg,NATURAL,3.06%,96.94%,Likely Natural,Likely Natural
+food\food_67.jpg,NATURAL,97.05%,2.95%,Likely AI Generated,Likely AI Generated
+food\food_68.jpg,NATURAL,2.56%,97.44%,Likely Natural,Likely Natural
+food\food_69.jpg,NATURAL,95.97%,4.03%,Likely AI Generated,Likely AI Generated
+food\food_7.jpg,NATURAL,93.62%,6.38%,Likely AI Generated,Uncertain
+food\food_70.jpg,NATURAL,94.52%,5.48%,Likely AI Generated,Uncertain
+food\food_71.jpg,NATURAL,3.54%,96.46%,Likely Natural,Likely Natural
+food\food_72.jpg,NATURAL,96.85%,3.15%,Likely AI Generated,Likely AI Generated
+food\food_73.jpg,NATURAL,72.95%,27.05%,Likely AI Generated,Uncertain
+food\food_74.jpg,NATURAL,4.77%,95.23%,Likely Natural,Likely Natural
+food\food_75.jpg,NATURAL,95.68%,4.32%,Likely AI Generated,Likely AI Generated
+food\food_76.jpg,NATURAL,3.39%,96.61%,Likely Natural,Likely Natural
+food\food_77.jpg,NATURAL,3.29%,96.71%,Likely Natural,Likely Natural
+food\food_78.jpg,NATURAL,96.58%,3.42%,Likely AI Generated,Likely AI Generated
+food\food_79.jpg,NATURAL,4.41%,95.59%,Likely Natural,Likely Natural
+food\food_8.jpg,NATURAL,96.12%,3.88%,Likely AI Generated,Likely AI Generated
+food\food_80.jpg,NATURAL,96.7%,3.3%,Likely AI Generated,Likely AI Generated
+food\food_81.jpg,NATURAL,6.26%,93.74%,Likely Natural,Likely Natural
+food\food_82.jpg,NATURAL,39.49%,60.51%,Likely Natural,Likely Natural
+food\food_83.jpg,NATURAL,12.83%,87.17%,Likely Natural,Likely Natural
+food\food_84.jpg,NATURAL,97.47%,2.53%,Likely AI Generated,Likely AI Generated
+food\food_85.jpg,NATURAL,92.78%,7.22%,Likely AI Generated,Uncertain
+food\food_86.jpg,NATURAL,97.37%,2.63%,Likely AI Generated,Likely AI Generated
+food\food_87.jpg,NATURAL,12.64%,87.36%,Likely Natural,Likely Natural
+food\food_88.jpg,NATURAL,2.96%,97.04%,Likely Natural,Likely Natural
+food\food_89.jpg,NATURAL,97.17%,2.83%,Likely AI Generated,Likely AI Generated
+food\food_9.jpg,NATURAL,4.58%,95.42%,Likely Natural,Likely Natural
+food\food_90.jpg,NATURAL,96.92%,3.08%,Likely AI Generated,Likely AI Generated
+food\food_91.jpg,NATURAL,96.82%,3.18%,Likely AI Generated,Likely AI Generated
+food\food_92.jpg,NATURAL,96.73%,3.27%,Likely AI Generated,Likely AI Generated
+food\food_93.jpg,NATURAL,94.38%,5.62%,Likely AI Generated,Uncertain
+food\food_94.jpg,NATURAL,3.43%,96.57%,Likely Natural,Likely Natural
+food\food_95.jpg,NATURAL,3.28%,96.72%,Likely Natural,Likely Natural
+food\food_96.jpg,NATURAL,97.33%,2.67%,Likely AI Generated,Likely AI Generated
+food\food_97.jpg,NATURAL,3.73%,96.27%,Likely Natural,Likely Natural
+food\food_98.jpg,NATURAL,95.98%,4.02%,Likely AI Generated,Likely AI Generated
+food\food_99.jpg,NATURAL,96.03%,3.97%,Likely AI Generated,Likely AI Generated
+nature\nature_0.jpg,NATURAL,3.96%,96.04%,Likely Natural,Likely Natural
+nature\nature_1.jpg,NATURAL,96.89%,3.11%,Likely AI Generated,Likely AI Generated
+nature\nature_10.jpg,NATURAL,3.08%,96.92%,Likely Natural,Likely Natural
+nature\nature_100.jpg,NATURAL,96.66%,3.34%,Likely AI Generated,Likely AI Generated
+nature\nature_101.jpg,NATURAL,2.9%,97.1%,Likely Natural,Likely Natural
+nature\nature_102.jpg,NATURAL,96.22%,3.78%,Likely AI Generated,Likely AI Generated
+nature\nature_103.jpg,NATURAL,2.55%,97.45%,Likely Natural,Likely Natural
+nature\nature_104.jpg,NATURAL,70.36%,29.64%,Likely AI Generated,Uncertain
+nature\nature_105.jpg,NATURAL,4.12%,95.88%,Likely Natural,Likely Natural
+nature\nature_106.jpg,NATURAL,97.53%,2.47%,Likely AI Generated,Likely AI Generated
+nature\nature_107.jpg,NATURAL,3.14%,96.86%,Likely Natural,Likely Natural
+nature\nature_108.jpg,NATURAL,96.08%,3.92%,Likely AI Generated,Likely AI Generated
+nature\nature_109.jpg,NATURAL,95.68%,4.32%,Likely AI Generated,Likely AI Generated
+nature\nature_11.jpg,NATURAL,96.18%,3.82%,Likely AI Generated,Likely AI Generated
+nature\nature_110.jpg,NATURAL,4.07%,95.93%,Likely Natural,Likely Natural
+nature\nature_111.jpg,NATURAL,2.67%,97.33%,Likely Natural,Likely Natural
+nature\nature_112.jpg,NATURAL,96.76%,3.24%,Likely AI Generated,Likely AI Generated
+nature\nature_113.jpg,NATURAL,92.63%,7.37%,Likely AI Generated,Uncertain
+nature\nature_114.jpg,NATURAL,2.53%,97.47%,Likely Natural,Likely Natural
+nature\nature_115.jpg,NATURAL,2.48%,97.52%,Likely Natural,Likely Natural
+nature\nature_116.jpg,NATURAL,93.45%,6.55%,Likely AI Generated,Uncertain
+nature\nature_117.jpg,NATURAL,84.12%,15.88%,Likely AI Generated,Uncertain
+nature\nature_118.jpg,NATURAL,94.71%,5.29%,Likely AI Generated,Uncertain
+nature\nature_119.jpg,NATURAL,2.58%,97.42%,Likely Natural,Likely Natural
+nature\nature_12.jpg,NATURAL,83.47%,16.53%,Likely AI Generated,Uncertain
+nature\nature_120.jpg,NATURAL,3.21%,96.79%,Likely Natural,Likely Natural
+nature\nature_121.jpg,NATURAL,3.44%,96.56%,Likely Natural,Likely Natural
+nature\nature_122.jpg,NATURAL,50.54%,49.46%,Likely AI Generated,Uncertain
+nature\nature_123.jpg,NATURAL,2.61%,97.39%,Likely Natural,Likely Natural
+nature\nature_124.jpg,NATURAL,3.33%,96.67%,Likely Natural,Likely Natural
+nature\nature_125.jpg,NATURAL,95.3%,4.7%,Likely AI Generated,Likely AI Generated
+nature\nature_126.jpg,NATURAL,95.12%,4.88%,Likely AI Generated,Likely AI Generated
+nature\nature_127.jpg,NATURAL,3.19%,96.81%,Likely Natural,Likely Natural
+nature\nature_128.jpg,NATURAL,96.83%,3.17%,Likely AI Generated,Likely AI Generated
+nature\nature_129.jpg,NATURAL,2.8%,97.2%,Likely Natural,Likely Natural
+nature\nature_13.jpg,NATURAL,4.92%,95.08%,Likely Natural,Likely Natural
+nature\nature_130.jpg,NATURAL,2.76%,97.24%,Likely Natural,Likely Natural
+nature\nature_131.jpg,NATURAL,95.46%,4.54%,Likely AI Generated,Likely AI Generated
+nature\nature_132.jpg,NATURAL,4.14%,95.86%,Likely Natural,Likely Natural
+nature\nature_133.jpg,NATURAL,2.63%,97.37%,Likely Natural,Likely Natural
+nature\nature_134.jpg,NATURAL,2.63%,97.37%,Likely Natural,Likely Natural
+nature\nature_135.jpg,NATURAL,2.69%,97.31%,Likely Natural,Likely Natural
+nature\nature_136.jpg,NATURAL,4.25%,95.75%,Likely Natural,Likely Natural
+nature\nature_137.jpg,NATURAL,97.32%,2.68%,Likely AI Generated,Likely AI Generated
+nature\nature_138.jpg,NATURAL,5.68%,94.32%,Likely Natural,Likely Natural
+nature\nature_139.jpg,NATURAL,3.02%,96.98%,Likely Natural,Likely Natural
+nature\nature_14.jpg,NATURAL,2.48%,97.52%,Likely Natural,Likely Natural
+nature\nature_140.jpg,NATURAL,95.88%,4.12%,Likely AI Generated,Likely AI Generated
+nature\nature_141.jpg,NATURAL,97.41%,2.59%,Likely AI Generated,Likely AI Generated
+nature\nature_142.jpg,NATURAL,2.98%,97.02%,Likely Natural,Likely Natural
+nature\nature_143.jpg,NATURAL,3.09%,96.91%,Likely Natural,Likely Natural
+nature\nature_144.jpg,NATURAL,97.48%,2.52%,Likely AI Generated,Likely AI Generated
+nature\nature_145.jpg,NATURAL,95.4%,4.6%,Likely AI Generated,Likely AI Generated
+nature\nature_146.jpg,NATURAL,97.21%,2.79%,Likely AI Generated,Likely AI Generated
+nature\nature_147.jpg,NATURAL,3.78%,96.22%,Likely Natural,Likely Natural
+nature\nature_148.jpg,NATURAL,2.82%,97.18%,Likely Natural,Likely Natural
+nature\nature_149.jpg,NATURAL,4.31%,95.69%,Likely Natural,Likely Natural
+nature\nature_15.jpg,NATURAL,4.3%,95.7%,Likely Natural,Likely Natural
+nature\nature_16.jpg,NATURAL,93.94%,6.06%,Likely AI Generated,Uncertain
+nature\nature_17.jpg,NATURAL,3.71%,96.29%,Likely Natural,Likely Natural
+nature\nature_18.jpg,NATURAL,96.39%,3.61%,Likely AI Generated,Likely AI Generated
+nature\nature_19.jpg,NATURAL,53.71%,46.29%,Likely AI Generated,Uncertain
+nature\nature_2.jpg,NATURAL,2.48%,97.52%,Likely Natural,Likely Natural
+nature\nature_20.jpg,NATURAL,95.33%,4.67%,Likely AI Generated,Likely AI Generated
+nature\nature_21.jpg,NATURAL,5.76%,94.24%,Likely Natural,Likely Natural
+nature\nature_22.jpg,NATURAL,97.55%,2.45%,Likely AI Generated,Likely AI Generated
+nature\nature_23.jpg,NATURAL,2.5%,97.5%,Likely Natural,Likely Natural
+nature\nature_24.jpg,NATURAL,23.77%,76.23%,Likely Natural,Likely Natural
+nature\nature_25.jpg,NATURAL,3.24%,96.76%,Likely Natural,Likely Natural
+nature\nature_26.jpg,NATURAL,2.99%,97.01%,Likely Natural,Likely Natural
+nature\nature_27.jpg,NATURAL,3.07%,96.93%,Likely Natural,Likely Natural
+nature\nature_28.jpg,NATURAL,2.74%,97.26%,Likely Natural,Likely Natural
+nature\nature_29.jpg,NATURAL,27.12%,72.88%,Likely Natural,Likely Natural
+nature\nature_3.jpg,NATURAL,2.63%,97.37%,Likely Natural,Likely Natural
+nature\nature_30.jpg,NATURAL,19.2%,80.8%,Likely Natural,Likely Natural
+nature\nature_31.jpg,NATURAL,2.51%,97.49%,Likely Natural,Likely Natural
+nature\nature_32.jpg,NATURAL,9.7%,90.3%,Likely Natural,Likely Natural
+nature\nature_33.jpg,NATURAL,19.06%,80.94%,Likely Natural,Likely Natural
+nature\nature_34.jpg,NATURAL,2.85%,97.15%,Likely Natural,Likely Natural
+nature\nature_35.jpg,NATURAL,97.24%,2.76%,Likely AI Generated,Likely AI Generated
+nature\nature_36.jpg,NATURAL,97.12%,2.88%,Likely AI Generated,Likely AI Generated
+nature\nature_37.jpg,NATURAL,2.4%,97.6%,Likely Natural,Likely Natural
+nature\nature_38.jpg,NATURAL,96.35%,3.65%,Likely AI Generated,Likely AI Generated
+nature\nature_39.jpg,NATURAL,6.87%,93.13%,Likely Natural,Likely Natural
+nature\nature_4.jpg,NATURAL,57.59%,42.41%,Likely AI Generated,Uncertain
+nature\nature_40.jpg,NATURAL,3.85%,96.15%,Likely Natural,Likely Natural
+nature\nature_41.jpg,NATURAL,42.48%,57.52%,Likely Natural,Likely Natural
+nature\nature_42.jpg,NATURAL,3.76%,96.24%,Likely Natural,Likely Natural
+nature\nature_43.jpg,NATURAL,2.61%,97.39%,Likely Natural,Likely Natural
+nature\nature_44.jpg,NATURAL,96.44%,3.56%,Likely AI Generated,Likely AI Generated
+nature\nature_45.jpg,NATURAL,2.63%,97.37%,Likely Natural,Likely Natural
+nature\nature_46.jpg,NATURAL,6.37%,93.63%,Likely Natural,Likely Natural
+nature\nature_47.jpg,NATURAL,97.23%,2.77%,Likely AI Generated,Likely AI Generated
+nature\nature_48.jpg,NATURAL,3.06%,96.94%,Likely Natural,Likely Natural
+nature\nature_49.jpg,NATURAL,95.32%,4.68%,Likely AI Generated,Likely AI Generated
+nature\nature_5.jpg,NATURAL,16.71%,83.29%,Likely Natural,Likely Natural
+nature\nature_50.jpg,NATURAL,3.02%,96.98%,Likely Natural,Likely Natural
+nature\nature_51.jpg,NATURAL,9.33%,90.67%,Likely Natural,Likely Natural
+nature\nature_52.jpg,NATURAL,3.85%,96.15%,Likely Natural,Likely Natural
+nature\nature_53.jpg,NATURAL,3.92%,96.08%,Likely Natural,Likely Natural
+nature\nature_54.jpg,NATURAL,44.64%,55.36%,Likely Natural,Likely Natural
+nature\nature_55.jpg,NATURAL,3.32%,96.68%,Likely Natural,Likely Natural
+nature\nature_56.jpg,NATURAL,4.24%,95.76%,Likely Natural,Likely Natural
+nature\nature_57.jpg,NATURAL,4.06%,95.94%,Likely Natural,Likely Natural
+nature\nature_58.jpg,NATURAL,3.93%,96.07%,Likely Natural,Likely Natural
+nature\nature_59.jpg,NATURAL,2.62%,97.38%,Likely Natural,Likely Natural
+nature\nature_6.jpg,NATURAL,4.47%,95.53%,Likely Natural,Likely Natural
+nature\nature_60.jpg,NATURAL,87.32%,12.68%,Likely AI Generated,Uncertain
+nature\nature_61.jpg,NATURAL,2.9%,97.1%,Likely Natural,Likely Natural
+nature\nature_62.jpg,NATURAL,4.6%,95.4%,Likely Natural,Likely Natural
+nature\nature_63.jpg,NATURAL,78.65%,21.35%,Likely AI Generated,Uncertain
+nature\nature_64.jpg,NATURAL,2.64%,97.36%,Likely Natural,Likely Natural
+nature\nature_65.jpg,NATURAL,95.65%,4.35%,Likely AI Generated,Likely AI Generated
+nature\nature_66.jpg,NATURAL,96.82%,3.18%,Likely AI Generated,Likely AI Generated
+nature\nature_67.jpg,NATURAL,12.95%,87.05%,Likely Natural,Likely Natural
+nature\nature_68.jpg,NATURAL,75.95%,24.05%,Likely AI Generated,Uncertain
+nature\nature_69.jpg,NATURAL,3.88%,96.12%,Likely Natural,Likely Natural
+nature\nature_7.jpg,NATURAL,96.76%,3.24%,Likely AI Generated,Likely AI Generated
+nature\nature_70.jpg,NATURAL,97.59%,2.41%,Likely AI Generated,Likely AI Generated
+nature\nature_71.jpg,NATURAL,93.74%,6.26%,Likely AI Generated,Uncertain
+nature\nature_72.jpg,NATURAL,2.64%,97.36%,Likely Natural,Likely Natural
+nature\nature_73.jpg,NATURAL,3.09%,96.91%,Likely Natural,Likely Natural
+nature\nature_74.jpg,NATURAL,4.91%,95.09%,Likely Natural,Likely Natural
+nature\nature_75.jpg,NATURAL,2.75%,97.25%,Likely Natural,Likely Natural
+nature\nature_76.jpg,NATURAL,2.38%,97.62%,Likely Natural,Likely Natural
+nature\nature_77.jpg,NATURAL,4.38%,95.62%,Likely Natural,Likely Natural
+nature\nature_78.jpg,NATURAL,7.06%,92.94%,Likely Natural,Likely Natural
+nature\nature_79.jpg,NATURAL,97.23%,2.77%,Likely AI Generated,Likely AI Generated
+nature\nature_8.jpg,NATURAL,3.13%,96.87%,Likely Natural,Likely Natural
+nature\nature_80.jpg,NATURAL,2.82%,97.18%,Likely Natural,Likely Natural
+nature\nature_81.jpg,NATURAL,2.52%,97.48%,Likely Natural,Likely Natural
+nature\nature_82.jpg,NATURAL,20.85%,79.15%,Likely Natural,Likely Natural
+nature\nature_83.jpg,NATURAL,2.83%,97.17%,Likely Natural,Likely Natural
+nature\nature_84.jpg,NATURAL,2.55%,97.45%,Likely Natural,Likely Natural
+nature\nature_85.jpg,NATURAL,53.49%,46.51%,Likely AI Generated,Uncertain
+nature\nature_86.jpg,NATURAL,97.26%,2.74%,Likely AI Generated,Likely AI Generated
+nature\nature_87.jpg,NATURAL,2.65%,97.35%,Likely Natural,Likely Natural
+nature\nature_88.jpg,NATURAL,45.85%,54.15%,Likely Natural,Likely Natural
+nature\nature_89.jpg,NATURAL,2.84%,97.16%,Likely Natural,Likely Natural
+nature\nature_9.jpg,NATURAL,3.27%,96.73%,Likely Natural,Likely Natural
+nature\nature_90.jpg,NATURAL,81.4%,18.6%,Likely AI Generated,Uncertain
+nature\nature_91.jpg,NATURAL,97.21%,2.79%,Likely AI Generated,Likely AI Generated
+nature\nature_92.jpg,NATURAL,4.67%,95.33%,Likely Natural,Likely Natural
+nature\nature_93.jpg,NATURAL,3.38%,96.62%,Likely Natural,Likely Natural
+nature\nature_94.jpg,NATURAL,2.22%,97.78%,Likely Natural,Likely Natural
+nature\nature_95.jpg,NATURAL,95.81%,4.19%,Likely AI Generated,Likely AI Generated
+nature\nature_96.jpg,NATURAL,7.22%,92.78%,Likely Natural,Likely Natural
+nature\nature_97.jpg,NATURAL,95.89%,4.11%,Likely AI Generated,Likely AI Generated
+nature\nature_98.jpg,NATURAL,2.45%,97.55%,Likely Natural,Likely Natural
+nature\nature_99.jpg,NATURAL,2.49%,97.51%,Likely Natural,Likely Natural
+people\people_0.jpg,NATURAL,97.18%,2.82%,Likely AI Generated,Likely AI Generated
+people\people_1.jpg,NATURAL,2.52%,97.48%,Likely Natural,Likely Natural
+people\people_10.jpg,NATURAL,3.29%,96.71%,Likely Natural,Likely Natural
+people\people_100.jpg,NATURAL,3.21%,96.79%,Likely Natural,Likely Natural
+people\people_101.jpg,NATURAL,92.52%,7.48%,Likely AI Generated,Uncertain
+people\people_102.jpg,NATURAL,4.62%,95.38%,Likely Natural,Likely Natural
+people\people_103.jpg,NATURAL,89.85%,10.15%,Likely AI Generated,Uncertain
+people\people_104.jpg,NATURAL,2.47%,97.53%,Likely Natural,Likely Natural
+people\people_105.jpg,NATURAL,2.51%,97.49%,Likely Natural,Likely Natural
+people\people_106.jpg,NATURAL,97.11%,2.89%,Likely AI Generated,Likely AI Generated
+people\people_107.jpg,NATURAL,2.53%,97.47%,Likely Natural,Likely Natural
+people\people_108.jpg,NATURAL,3.23%,96.77%,Likely Natural,Likely Natural
+people\people_109.jpg,NATURAL,4.06%,95.94%,Likely Natural,Likely Natural
+people\people_11.jpg,NATURAL,2.4%,97.6%,Likely Natural,Likely Natural
+people\people_110.jpg,NATURAL,2.49%,97.51%,Likely Natural,Likely Natural
+people\people_111.jpg,NATURAL,94.95%,5.05%,Likely AI Generated,Uncertain
+people\people_112.jpg,NATURAL,4.72%,95.28%,Likely Natural,Likely Natural
+people\people_113.jpg,NATURAL,5.32%,94.68%,Likely Natural,Likely Natural
+people\people_114.jpg,NATURAL,96.29%,3.71%,Likely AI Generated,Likely AI Generated
+people\people_115.jpg,NATURAL,97.55%,2.45%,Likely AI Generated,Likely AI Generated
+people\people_116.jpg,NATURAL,78.7%,21.3%,Likely AI Generated,Uncertain
+people\people_117.jpg,NATURAL,6.77%,93.23%,Likely Natural,Likely Natural
+people\people_118.jpg,NATURAL,2.52%,97.48%,Likely Natural,Likely Natural
+people\people_119.jpg,NATURAL,17.36%,82.64%,Likely Natural,Likely Natural
+people\people_12.jpg,NATURAL,3.1%,96.9%,Likely Natural,Likely Natural
+people\people_120.jpg,NATURAL,2.49%,97.51%,Likely Natural,Likely Natural
+people\people_121.jpg,NATURAL,94.49%,5.51%,Likely AI Generated,Uncertain
+people\people_122.jpg,NATURAL,2.98%,97.02%,Likely Natural,Likely Natural
+people\people_123.jpg,NATURAL,86.8%,13.2%,Likely AI Generated,Uncertain
+people\people_124.jpg,NATURAL,3.91%,96.09%,Likely Natural,Likely Natural
+people\people_125.jpg,NATURAL,2.62%,97.38%,Likely Natural,Likely Natural
+people\people_126.jpg,NATURAL,18.58%,81.42%,Likely Natural,Likely Natural
+people\people_127.jpg,NATURAL,3.74%,96.26%,Likely Natural,Likely Natural
+people\people_128.jpg,NATURAL,2.78%,97.22%,Likely Natural,Likely Natural
+people\people_129.jpg,NATURAL,3.7%,96.3%,Likely Natural,Likely Natural
+people\people_13.jpg,NATURAL,3.61%,96.39%,Likely Natural,Likely Natural
+people\people_130.jpg,NATURAL,5.28%,94.72%,Likely Natural,Likely Natural
+people\people_131.jpg,NATURAL,2.87%,97.13%,Likely Natural,Likely Natural
+people\people_132.jpg,NATURAL,2.97%,97.03%,Likely Natural,Likely Natural
+people\people_133.jpg,NATURAL,3.46%,96.54%,Likely Natural,Likely Natural
+people\people_134.jpg,NATURAL,2.52%,97.48%,Likely Natural,Likely Natural
+people\people_135.jpg,NATURAL,2.8%,97.2%,Likely Natural,Likely Natural
+people\people_136.jpg,NATURAL,2.37%,97.63%,Likely Natural,Likely Natural
+people\people_137.jpg,NATURAL,4.66%,95.34%,Likely Natural,Likely Natural
+people\people_138.jpg,NATURAL,2.97%,97.03%,Likely Natural,Likely Natural
+people\people_139.jpg,NATURAL,2.43%,97.57%,Likely Natural,Likely Natural
+people\people_14.jpg,NATURAL,14.67%,85.33%,Likely Natural,Likely Natural
+people\people_140.jpg,NATURAL,70.26%,29.74%,Likely AI Generated,Uncertain
+people\people_141.jpg,NATURAL,2.5%,97.5%,Likely Natural,Likely Natural
+people\people_142.jpg,NATURAL,3.0%,97.0%,Likely Natural,Likely Natural
+people\people_143.jpg,NATURAL,2.48%,97.52%,Likely Natural,Likely Natural
+people\people_144.jpg,NATURAL,96.18%,3.82%,Likely AI Generated,Likely AI Generated
+people\people_145.jpg,NATURAL,3.66%,96.34%,Likely Natural,Likely Natural
+people\people_146.jpg,NATURAL,2.83%,97.17%,Likely Natural,Likely Natural
+people\people_15.jpg,NATURAL,3.71%,96.29%,Likely Natural,Likely Natural
+people\people_16.jpg,NATURAL,90.13%,9.87%,Likely AI Generated,Uncertain
+people\people_17.jpg,NATURAL,2.81%,97.19%,Likely Natural,Likely Natural
+people\people_18.jpg,NATURAL,2.46%,97.54%,Likely Natural,Likely Natural
+people\people_19.jpg,NATURAL,2.57%,97.43%,Likely Natural,Likely Natural
+people\people_2.jpg,NATURAL,6.33%,93.67%,Likely Natural,Likely Natural
+people\people_20.jpg,NATURAL,4.76%,95.24%,Likely Natural,Likely Natural
+people\people_21.jpg,NATURAL,7.74%,92.26%,Likely Natural,Likely Natural
+people\people_22.jpg,NATURAL,6.05%,93.95%,Likely Natural,Likely Natural
+people\people_23.jpg,NATURAL,97.3%,2.7%,Likely AI Generated,Likely AI Generated
+people\people_24.jpg,NATURAL,2.71%,97.29%,Likely Natural,Likely Natural
+people\people_25.jpg,NATURAL,97.23%,2.77%,Likely AI Generated,Likely AI Generated
+people\people_26.jpg,NATURAL,97.12%,2.88%,Likely AI Generated,Likely AI Generated
+people\people_27.jpg,NATURAL,2.82%,97.18%,Likely Natural,Likely Natural
+people\people_28.jpg,NATURAL,2.38%,97.62%,Likely Natural,Likely Natural
+people\people_29.jpg,NATURAL,2.49%,97.51%,Likely Natural,Likely Natural
+people\people_3.jpg,NATURAL,3.62%,96.38%,Likely Natural,Likely Natural
+people\people_30.jpg,NATURAL,2.43%,97.57%,Likely Natural,Likely Natural
+people\people_31.jpg,NATURAL,95.99%,4.01%,Likely AI Generated,Likely AI Generated
+people\people_32.jpg,NATURAL,95.25%,4.75%,Likely AI Generated,Likely AI Generated
+people\people_33.jpg,NATURAL,8.74%,91.26%,Likely Natural,Likely Natural
+people\people_34.jpg,NATURAL,2.9%,97.1%,Likely Natural,Likely Natural
+people\people_35.jpg,NATURAL,97.39%,2.61%,Likely AI Generated,Likely AI Generated
+people\people_36.jpg,NATURAL,3.15%,96.85%,Likely Natural,Likely Natural
+people\people_37.jpg,NATURAL,96.55%,3.45%,Likely AI Generated,Likely AI Generated
+people\people_38.jpg,NATURAL,49.17%,50.83%,Likely Natural,Likely Natural
+people\people_39.jpg,NATURAL,3.59%,96.41%,Likely Natural,Likely Natural
+people\people_4.jpg,NATURAL,95.91%,4.09%,Likely AI Generated,Likely AI Generated
+people\people_40.jpg,NATURAL,2.81%,97.19%,Likely Natural,Likely Natural
+people\people_41.jpg,NATURAL,2.54%,97.46%,Likely Natural,Likely Natural
+people\people_42.jpg,NATURAL,2.75%,97.25%,Likely Natural,Likely Natural
+people\people_43.jpg,NATURAL,3.68%,96.32%,Likely Natural,Likely Natural
+people\people_44.jpg,NATURAL,3.33%,96.67%,Likely Natural,Likely Natural
+people\people_45.jpg,NATURAL,2.66%,97.34%,Likely Natural,Likely Natural
+people\people_46.jpg,NATURAL,2.55%,97.45%,Likely Natural,Likely Natural
+people\people_47.jpg,NATURAL,7.52%,92.48%,Likely Natural,Likely Natural
+people\people_48.jpg,NATURAL,45.05%,54.95%,Likely Natural,Likely Natural
+people\people_49.jpg,NATURAL,97.29%,2.71%,Likely AI Generated,Likely AI Generated
+people\people_5.jpg,NATURAL,90.85%,9.15%,Likely AI Generated,Uncertain
+people\people_50.jpg,NATURAL,96.34%,3.66%,Likely AI Generated,Likely AI Generated
+people\people_51.jpg,NATURAL,2.63%,97.37%,Likely Natural,Likely Natural
+people\people_52.jpg,NATURAL,92.33%,7.67%,Likely AI Generated,Uncertain
+people\people_53.jpg,NATURAL,3.08%,96.92%,Likely Natural,Likely Natural
+people\people_54.jpg,NATURAL,79.04%,20.96%,Likely AI Generated,Uncertain
+people\people_55.jpg,NATURAL,4.37%,95.63%,Likely Natural,Likely Natural
+people\people_56.jpg,NATURAL,94.53%,5.47%,Likely AI Generated,Uncertain
+people\people_57.jpg,NATURAL,97.49%,2.51%,Likely AI Generated,Likely AI Generated
+people\people_58.jpg,NATURAL,97.11%,2.89%,Likely AI Generated,Likely AI Generated
+people\people_59.jpg,NATURAL,97.03%,2.97%,Likely AI Generated,Likely AI Generated
+people\people_6.jpg,NATURAL,95.79%,4.21%,Likely AI Generated,Likely AI Generated
+people\people_60.jpg,NATURAL,2.68%,97.32%,Likely Natural,Likely Natural
+people\people_61.jpg,NATURAL,3.02%,96.98%,Likely Natural,Likely Natural
+people\people_62.jpg,NATURAL,3.41%,96.59%,Likely Natural,Likely Natural
+people\people_63.jpg,NATURAL,2.41%,97.59%,Likely Natural,Likely Natural
+people\people_64.jpg,NATURAL,3.28%,96.72%,Likely Natural,Likely Natural
+people\people_65.jpg,NATURAL,2.65%,97.35%,Likely Natural,Likely Natural
+people\people_66.jpg,NATURAL,2.41%,97.59%,Likely Natural,Likely Natural
+people\people_67.jpg,NATURAL,2.88%,97.12%,Likely Natural,Likely Natural
+people\people_68.jpg,NATURAL,97.76%,2.24%,Likely AI Generated,Likely AI Generated
+people\people_69.jpg,NATURAL,95.73%,4.27%,Likely AI Generated,Likely AI Generated
+people\people_7.jpg,NATURAL,5.04%,94.96%,Likely Natural,Likely Natural
+people\people_70.jpg,NATURAL,94.71%,5.29%,Likely AI Generated,Uncertain
+people\people_71.jpg,NATURAL,2.91%,97.09%,Likely Natural,Likely Natural
+people\people_72.jpg,NATURAL,2.54%,97.46%,Likely Natural,Likely Natural
+people\people_73.jpg,NATURAL,2.66%,97.34%,Likely Natural,Likely Natural
+people\people_74.jpg,NATURAL,3.04%,96.96%,Likely Natural,Likely Natural
+people\people_75.jpg,NATURAL,3.44%,96.56%,Likely Natural,Likely Natural
+people\people_76.jpg,NATURAL,2.9%,97.1%,Likely Natural,Likely Natural
+people\people_77.jpg,NATURAL,3.12%,96.88%,Likely Natural,Likely Natural
+people\people_78.jpg,NATURAL,2.63%,97.37%,Likely Natural,Likely Natural
+people\people_79.jpg,NATURAL,2.66%,97.34%,Likely Natural,Likely Natural
+people\people_8.jpg,NATURAL,97.15%,2.85%,Likely AI Generated,Likely AI Generated
+people\people_80.jpg,NATURAL,97.0%,3.0%,Likely AI Generated,Likely AI Generated
+people\people_81.jpg,NATURAL,2.52%,97.48%,Likely Natural,Likely Natural
+people\people_82.jpg,NATURAL,2.46%,97.54%,Likely Natural,Likely Natural
+people\people_83.jpg,NATURAL,2.69%,97.31%,Likely Natural,Likely Natural
+people\people_84.jpg,NATURAL,2.95%,97.05%,Likely Natural,Likely Natural
+people\people_85.jpg,NATURAL,91.64%,8.36%,Likely AI Generated,Uncertain
+people\people_86.jpg,NATURAL,2.59%,97.41%,Likely Natural,Likely Natural
+people\people_87.jpg,NATURAL,97.42%,2.58%,Likely AI Generated,Likely AI Generated
+people\people_88.jpg,NATURAL,2.7%,97.3%,Likely Natural,Likely Natural
+people\people_89.jpg,NATURAL,97.46%,2.54%,Likely AI Generated,Likely AI Generated
+people\people_9.jpg,NATURAL,2.33%,97.67%,Likely Natural,Likely Natural
+people\people_90.jpg,NATURAL,2.4%,97.6%,Likely Natural,Likely Natural
+people\people_91.jpg,NATURAL,2.69%,97.31%,Likely Natural,Likely Natural
+people\people_92.jpg,NATURAL,2.38%,97.62%,Likely Natural,Likely Natural
+people\people_93.jpg,NATURAL,49.48%,50.52%,Likely Natural,Likely Natural
+people\people_94.jpg,NATURAL,3.55%,96.45%,Likely Natural,Likely Natural
+people\people_95.jpg,NATURAL,6.15%,93.85%,Likely Natural,Likely Natural
+people\people_96.jpg,NATURAL,2.66%,97.34%,Likely Natural,Likely Natural
+people\people_97.jpg,NATURAL,6.22%,93.78%,Likely Natural,Likely Natural
+people\people_98.jpg,NATURAL,3.49%,96.51%,Likely Natural,Likely Natural
+people\people_99.jpg,NATURAL,7.92%,92.08%,Likely Natural,Likely Natural
+animals\image-10.png,AI,97.46%,2.54%,Likely AI Generated,Likely AI Generated
+animals\image-11.png,AI,97.53%,2.47%,Likely AI Generated,Likely AI Generated
+animals\image-12.png,AI,97.48%,2.52%,Likely AI Generated,Likely AI Generated
+animals\image-13.png,AI,96.47%,3.53%,Likely AI Generated,Likely AI Generated
+animals\image-14.png,AI,97.47%,2.53%,Likely AI Generated,Likely AI Generated
+animals\image-15.png,AI,97.52%,2.48%,Likely AI Generated,Likely AI Generated
+animals\image-16.png,AI,97.4%,2.6%,Likely AI Generated,Likely AI Generated
+animals\image-17.png,AI,97.36%,2.64%,Likely AI Generated,Likely AI Generated
+animals\image-18.png,AI,97.42%,2.58%,Likely AI Generated,Likely AI Generated
+animals\image-19.png,AI,97.39%,2.61%,Likely AI Generated,Likely AI Generated
+animals\image-2.png,AI,97.51%,2.49%,Likely AI Generated,Likely AI Generated
+animals\image-20.png,AI,97.49%,2.51%,Likely AI Generated,Likely AI Generated
+animals\image-21.png,AI,96.96%,3.04%,Likely AI Generated,Likely AI Generated
+animals\image-22.png,AI,97.43%,2.57%,Likely AI Generated,Likely AI Generated
+animals\image-23.png,AI,97.45%,2.55%,Likely AI Generated,Likely AI Generated
+animals\image-24.png,AI,97.39%,2.61%,Likely AI Generated,Likely AI Generated
+animals\image-25.png,AI,97.29%,2.71%,Likely AI Generated,Likely AI Generated
+animals\image-26.png,AI,97.46%,2.54%,Likely AI Generated,Likely AI Generated
+animals\image-27.png,AI,97.52%,2.48%,Likely AI Generated,Likely AI Generated
+animals\image-28.png,AI,97.47%,2.53%,Likely AI Generated,Likely AI Generated
+animals\image-29.png,AI,97.42%,2.58%,Likely AI Generated,Likely AI Generated
+animals\image-3.png,AI,97.47%,2.53%,Likely AI Generated,Likely AI Generated
+animals\image-30.png,AI,97.34%,2.66%,Likely AI Generated,Likely AI Generated
+animals\image-31.png,AI,97.43%,2.57%,Likely AI Generated,Likely AI Generated
+animals\image-32.png,AI,97.43%,2.57%,Likely AI Generated,Likely AI Generated
+animals\image-33.png,AI,97.22%,2.78%,Likely AI Generated,Likely AI Generated
+animals\image-34.png,AI,97.63%,2.37%,Likely AI Generated,Likely AI Generated
+animals\image-35.png,AI,97.26%,2.74%,Likely AI Generated,Likely AI Generated
+animals\image-36.png,AI,97.34%,2.66%,Likely AI Generated,Likely AI Generated
+animals\image-37.png,AI,97.56%,2.44%,Likely AI Generated,Likely AI Generated
+animals\image-38.png,AI,97.44%,2.56%,Likely AI Generated,Likely AI Generated
+animals\image-39.png,AI,97.45%,2.55%,Likely AI Generated,Likely AI Generated
+animals\image-4.png,AI,97.65%,2.35%,Likely AI Generated,Likely AI Generated
+animals\image-40.png,AI,97.4%,2.6%,Likely AI Generated,Likely AI Generated
+animals\image-41.png,AI,97.53%,2.47%,Likely AI Generated,Likely AI Generated
+animals\image-42.png,AI,97.4%,2.6%,Likely AI Generated,Likely AI Generated
+animals\image-43.png,AI,97.49%,2.51%,Likely AI Generated,Likely AI Generated
+animals\image-44.png,AI,97.24%,2.76%,Likely AI Generated,Likely AI Generated
+animals\image-45.png,AI,97.76%,2.24%,Likely AI Generated,Likely AI Generated
+animals\image-46.png,AI,97.45%,2.55%,Likely AI Generated,Likely AI Generated
+animals\image-47.png,AI,97.52%,2.48%,Likely AI Generated,Likely AI Generated
+animals\image-48.png,AI,97.47%,2.53%,Likely AI Generated,Likely AI Generated
+animals\image-49.png,AI,97.42%,2.58%,Likely AI Generated,Likely AI Generated
+animals\image-5.png,AI,97.47%,2.53%,Likely AI Generated,Likely AI Generated
+animals\image-50.png,AI,97.61%,2.39%,Likely AI Generated,Likely AI Generated
+animals\image-6.png,AI,97.44%,2.56%,Likely AI Generated,Likely AI Generated
+animals\image-7.png,AI,97.47%,2.53%,Likely AI Generated,Likely AI Generated
+animals\image-8.png,AI,97.48%,2.52%,Likely AI Generated,Likely AI Generated
+animals\image-9.png,AI,97.5%,2.5%,Likely AI Generated,Likely AI Generated
+animals\image.png,AI,97.46%,2.54%,Likely AI Generated,Likely AI Generated
+city\image-10.png,AI,97.5%,2.5%,Likely AI Generated,Likely AI Generated
+city\image-11.png,AI,96.78%,3.22%,Likely AI Generated,Likely AI Generated
+city\image-12.png,AI,97.09%,2.91%,Likely AI Generated,Likely AI Generated
+city\image-13.png,AI,97.45%,2.55%,Likely AI Generated,Likely AI Generated
+city\image-14.png,AI,97.52%,2.48%,Likely AI Generated,Likely AI Generated
+city\image-15.png,AI,97.4%,2.6%,Likely AI Generated,Likely AI Generated
+city\image-16.png,AI,97.3%,2.7%,Likely AI Generated,Likely AI Generated
+city\image-17.png,AI,97.4%,2.6%,Likely AI Generated,Likely AI Generated
+city\image-18.png,AI,97.4%,2.6%,Likely AI Generated,Likely AI Generated
+city\image-19.png,AI,97.39%,2.61%,Likely AI Generated,Likely AI Generated
+city\image-2.png,AI,97.38%,2.62%,Likely AI Generated,Likely AI Generated
+city\image-20.png,AI,96.61%,3.39%,Likely AI Generated,Likely AI Generated
+city\image-21.png,AI,97.48%,2.52%,Likely AI Generated,Likely AI Generated
+city\image-22.png,AI,97.55%,2.45%,Likely AI Generated,Likely AI Generated
+city\image-23.png,AI,97.35%,2.65%,Likely AI Generated,Likely AI Generated
+city\image-24.png,AI,96.1%,3.9%,Likely AI Generated,Likely AI Generated
+city\image-25.png,AI,97.33%,2.67%,Likely AI Generated,Likely AI Generated
+city\image-26.png,AI,96.83%,3.17%,Likely AI Generated,Likely AI Generated
+city\image-27.png,AI,96.59%,3.41%,Likely AI Generated,Likely AI Generated
+city\image-28.png,AI,97.36%,2.64%,Likely AI Generated,Likely AI Generated
+city\image-29.png,AI,97.5%,2.5%,Likely AI Generated,Likely AI Generated
+city\image-3.png,AI,97.49%,2.51%,Likely AI Generated,Likely AI Generated
+city\image-30.png,AI,97.48%,2.52%,Likely AI Generated,Likely AI Generated
+city\image-31.png,AI,97.4%,2.6%,Likely AI Generated,Likely AI Generated
+city\image-32.png,AI,97.39%,2.61%,Likely AI Generated,Likely AI Generated
+city\image-33.png,AI,97.56%,2.44%,Likely AI Generated,Likely AI Generated
+city\image-34.png,AI,96.89%,3.11%,Likely AI Generated,Likely AI Generated
+city\image-35.png,AI,97.22%,2.78%,Likely AI Generated,Likely AI Generated
+city\image-36.png,AI,97.43%,2.57%,Likely AI Generated,Likely AI Generated
+city\image-37.png,AI,97.19%,2.81%,Likely AI Generated,Likely AI Generated
+city\image-38.png,AI,97.42%,2.58%,Likely AI Generated,Likely AI Generated
+city\image-39.png,AI,97.48%,2.52%,Likely AI Generated,Likely AI Generated
+city\image-4.png,AI,97.17%,2.83%,Likely AI Generated,Likely AI Generated
+city\image-40.png,AI,97.49%,2.51%,Likely AI Generated,Likely AI Generated
+city\image-41.png,AI,97.29%,2.71%,Likely AI Generated,Likely AI Generated
+city\image-42.png,AI,97.03%,2.97%,Likely AI Generated,Likely AI Generated
+city\image-43.png,AI,97.48%,2.52%,Likely AI Generated,Likely AI Generated
+city\image-44.png,AI,97.09%,2.91%,Likely AI Generated,Likely AI Generated
+city\image-45.png,AI,97.5%,2.5%,Likely AI Generated,Likely AI Generated
+city\image-46.png,AI,97.1%,2.9%,Likely AI Generated,Likely AI Generated
+city\image-47.png,AI,97.51%,2.49%,Likely AI Generated,Likely AI Generated
+city\image-48.png,AI,96.84%,3.16%,Likely AI Generated,Likely AI Generated
+city\image-49.png,AI,97.44%,2.56%,Likely AI Generated,Likely AI Generated
+city\image-5.png,AI,97.54%,2.46%,Likely AI Generated,Likely AI Generated
+city\image-50.png,AI,97.23%,2.77%,Likely AI Generated,Likely AI Generated
+city\image-6.png,AI,97.36%,2.64%,Likely AI Generated,Likely AI Generated
+city\image-7.png,AI,97.5%,2.5%,Likely AI Generated,Likely AI Generated
+city\image-8.png,AI,97.35%,2.65%,Likely AI Generated,Likely AI Generated
+city\image-9.png,AI,96.59%,3.41%,Likely AI Generated,Likely AI Generated
+city\image.png,AI,97.49%,2.51%,Likely AI Generated,Likely AI Generated
+food\image-10.png,AI,91.58%,8.42%,Likely AI Generated,Uncertain
+food\image-11.png,AI,96.53%,3.47%,Likely AI Generated,Likely AI Generated
+food\image-12.png,AI,97.34%,2.66%,Likely AI Generated,Likely AI Generated
+food\image-13.png,AI,97.57%,2.43%,Likely AI Generated,Likely AI Generated
+food\image-14.png,AI,97.47%,2.53%,Likely AI Generated,Likely AI Generated
+food\image-15.png,AI,97.29%,2.71%,Likely AI Generated,Likely AI Generated
+food\image-16.png,AI,97.35%,2.65%,Likely AI Generated,Likely AI Generated
+food\image-17.png,AI,97.36%,2.64%,Likely AI Generated,Likely AI Generated
+food\image-18.png,AI,97.38%,2.62%,Likely AI Generated,Likely AI Generated
+food\image-19.png,AI,97.25%,2.75%,Likely AI Generated,Likely AI Generated
+food\image-2.png,AI,97.35%,2.65%,Likely AI Generated,Likely AI Generated
+food\image-20.png,AI,97.33%,2.67%,Likely AI Generated,Likely AI Generated
+food\image-21.png,AI,97.58%,2.42%,Likely AI Generated,Likely AI Generated
+food\image-22.png,AI,97.41%,2.59%,Likely AI Generated,Likely AI Generated
+food\image-23.png,AI,97.39%,2.61%,Likely AI Generated,Likely AI Generated
+food\image-24.png,AI,97.39%,2.61%,Likely AI Generated,Likely AI Generated
+food\image-25.png,AI,97.54%,2.46%,Likely AI Generated,Likely AI Generated
+food\image-26.png,AI,97.3%,2.7%,Likely AI Generated,Likely AI Generated
+food\image-27.png,AI,97.36%,2.64%,Likely AI Generated,Likely AI Generated
+food\image-28.png,AI,97.45%,2.55%,Likely AI Generated,Likely AI Generated
+food\image-29.png,AI,97.37%,2.63%,Likely AI Generated,Likely AI Generated
+food\image-3.png,AI,97.46%,2.54%,Likely AI Generated,Likely AI Generated
+food\image-30.png,AI,97.35%,2.65%,Likely AI Generated,Likely AI Generated
+food\image-31.png,AI,97.48%,2.52%,Likely AI Generated,Likely AI Generated
+food\image-32.png,AI,97.26%,2.74%,Likely AI Generated,Likely AI Generated
+food\image-33.png,AI,97.4%,2.6%,Likely AI Generated,Likely AI Generated
+food\image-34.png,AI,97.28%,2.72%,Likely AI Generated,Likely AI Generated
+food\image-35.png,AI,97.38%,2.62%,Likely AI Generated,Likely AI Generated
+food\image-36.png,AI,97.42%,2.58%,Likely AI Generated,Likely AI Generated
+food\image-37.png,AI,97.47%,2.53%,Likely AI Generated,Likely AI Generated
+food\image-38.png,AI,97.56%,2.44%,Likely AI Generated,Likely AI Generated
+food\image-39.png,AI,97.28%,2.72%,Likely AI Generated,Likely AI Generated
+food\image-4.png,AI,97.39%,2.61%,Likely AI Generated,Likely AI Generated
+food\image-40.png,AI,97.37%,2.63%,Likely AI Generated,Likely AI Generated
+food\image-41.png,AI,97.43%,2.57%,Likely AI Generated,Likely AI Generated
+food\image-42.png,AI,97.45%,2.55%,Likely AI Generated,Likely AI Generated
+food\image-43.png,AI,97.26%,2.74%,Likely AI Generated,Likely AI Generated
+food\image-44.png,AI,97.31%,2.69%,Likely AI Generated,Likely AI Generated
+food\image-45.png,AI,97.45%,2.55%,Likely AI Generated,Likely AI Generated
+food\image-46.png,AI,97.13%,2.87%,Likely AI Generated,Likely AI Generated
+food\image-47.png,AI,97.35%,2.65%,Likely AI Generated,Likely AI Generated
+food\image-48.png,AI,97.39%,2.61%,Likely AI Generated,Likely AI Generated
+food\image-49.png,AI,97.34%,2.66%,Likely AI Generated,Likely AI Generated
+food\image-5.png,AI,97.51%,2.49%,Likely AI Generated,Likely AI Generated
+food\image-50.png,AI,97.36%,2.64%,Likely AI Generated,Likely AI Generated
+food\image-6.png,AI,97.44%,2.56%,Likely AI Generated,Likely AI Generated
+food\image-7.png,AI,97.39%,2.61%,Likely AI Generated,Likely AI Generated
+food\image-8.png,AI,97.42%,2.58%,Likely AI Generated,Likely AI Generated
+food\image-9.png,AI,97.37%,2.63%,Likely AI Generated,Likely AI Generated
+food\image.png,AI,97.07%,2.93%,Likely AI Generated,Likely AI Generated
+nature\image-10.png,AI,97.62%,2.38%,Likely AI Generated,Likely AI Generated
+nature\image-11.png,AI,97.62%,2.38%,Likely AI Generated,Likely AI Generated
+nature\image-12.png,AI,97.49%,2.51%,Likely AI Generated,Likely AI Generated
+nature\image-13.png,AI,97.58%,2.42%,Likely AI Generated,Likely AI Generated
+nature\image-14.png,AI,97.49%,2.51%,Likely AI Generated,Likely AI Generated
+nature\image-15.png,AI,97.74%,2.26%,Likely AI Generated,Likely AI Generated
+nature\image-16.png,AI,97.25%,2.75%,Likely AI Generated,Likely AI Generated
+nature\image-17.png,AI,97.1%,2.9%,Likely AI Generated,Likely AI Generated
+nature\image-18.png,AI,97.29%,2.71%,Likely AI Generated,Likely AI Generated
+nature\image-19.png,AI,97.18%,2.82%,Likely AI Generated,Likely AI Generated
+nature\image-2.png,AI,97.5%,2.5%,Likely AI Generated,Likely AI Generated
+nature\image-20.png,AI,96.66%,3.34%,Likely AI Generated,Likely AI Generated
+nature\image-21.png,AI,97.45%,2.55%,Likely AI Generated,Likely AI Generated
+nature\image-22.png,AI,97.47%,2.53%,Likely AI Generated,Likely AI Generated
+nature\image-23.png,AI,97.38%,2.62%,Likely AI Generated,Likely AI Generated
+nature\image-24.png,AI,97.46%,2.54%,Likely AI Generated,Likely AI Generated
+nature\image-25.png,AI,97.17%,2.83%,Likely AI Generated,Likely AI Generated
+nature\image-26.png,AI,97.33%,2.67%,Likely AI Generated,Likely AI Generated
+nature\image-27.png,AI,97.44%,2.56%,Likely AI Generated,Likely AI Generated
+nature\image-28.png,AI,97.44%,2.56%,Likely AI Generated,Likely AI Generated
+nature\image-29.png,AI,97.25%,2.75%,Likely AI Generated,Likely AI Generated
+nature\image-3.png,AI,97.39%,2.61%,Likely AI Generated,Likely AI Generated
+nature\image-30.png,AI,97.38%,2.62%,Likely AI Generated,Likely AI Generated
+nature\image-31.png,AI,97.5%,2.5%,Likely AI Generated,Likely AI Generated
+nature\image-32.png,AI,97.47%,2.53%,Likely AI Generated,Likely AI Generated
+nature\image-33.png,AI,97.46%,2.54%,Likely AI Generated,Likely AI Generated
+nature\image-34.png,AI,97.06%,2.94%,Likely AI Generated,Likely AI Generated
+nature\image-35.png,AI,97.5%,2.5%,Likely AI Generated,Likely AI Generated
+nature\image-36.png,AI,97.5%,2.5%,Likely AI Generated,Likely AI Generated
+nature\image-37.png,AI,97.41%,2.59%,Likely AI Generated,Likely AI Generated
+nature\image-38.png,AI,97.51%,2.49%,Likely AI Generated,Likely AI Generated
+nature\image-39.png,AI,97.53%,2.47%,Likely AI Generated,Likely AI Generated
+nature\image-4.png,AI,97.49%,2.51%,Likely AI Generated,Likely AI Generated
+nature\image-40.png,AI,97.5%,2.5%,Likely AI Generated,Likely AI Generated
+nature\image-41.png,AI,97.15%,2.85%,Likely AI Generated,Likely AI Generated
+nature\image-42.png,AI,97.38%,2.62%,Likely AI Generated,Likely AI Generated
+nature\image-43.png,AI,97.47%,2.53%,Likely AI Generated,Likely AI Generated
+nature\image-44.png,AI,97.51%,2.49%,Likely AI Generated,Likely AI Generated
+nature\image-45.png,AI,97.58%,2.42%,Likely AI Generated,Likely AI Generated
+nature\image-46.png,AI,97.43%,2.57%,Likely AI Generated,Likely AI Generated
+nature\image-47.png,AI,97.43%,2.57%,Likely AI Generated,Likely AI Generated
+nature\image-48.png,AI,97.38%,2.62%,Likely AI Generated,Likely AI Generated
+nature\image-49.png,AI,97.42%,2.58%,Likely AI Generated,Likely AI Generated
+nature\image-5.png,AI,97.53%,2.47%,Likely AI Generated,Likely AI Generated
+nature\image-50.png,AI,97.34%,2.66%,Likely AI Generated,Likely AI Generated
+nature\image-6.png,AI,97.55%,2.45%,Likely AI Generated,Likely AI Generated
+nature\image-7.png,AI,97.4%,2.6%,Likely AI Generated,Likely AI Generated
+nature\image-8.png,AI,97.75%,2.25%,Likely AI Generated,Likely AI Generated
+nature\image-9.png,AI,97.54%,2.46%,Likely AI Generated,Likely AI Generated
+nature\image.png,AI,97.14%,2.86%,Likely AI Generated,Likely AI Generated
+people\image-10.png,AI,97.0%,3.0%,Likely AI Generated,Likely AI Generated
+people\image-11.png,AI,97.46%,2.54%,Likely AI Generated,Likely AI Generated
+people\image-12.png,AI,97.38%,2.62%,Likely AI Generated,Likely AI Generated
+people\image-13.png,AI,97.72%,2.28%,Likely AI Generated,Likely AI Generated
+people\image-14.png,AI,97.45%,2.55%,Likely AI Generated,Likely AI Generated
+people\image-15.png,AI,97.38%,2.62%,Likely AI Generated,Likely AI Generated
+people\image-16.png,AI,97.06%,2.94%,Likely AI Generated,Likely AI Generated
+people\image-17.png,AI,96.88%,3.12%,Likely AI Generated,Likely AI Generated
+people\image-18.png,AI,96.68%,3.32%,Likely AI Generated,Likely AI Generated
+people\image-19.png,AI,97.64%,2.36%,Likely AI Generated,Likely AI Generated
+people\image-2.png,AI,97.39%,2.61%,Likely AI Generated,Likely AI Generated
+people\image-20.png,AI,97.67%,2.33%,Likely AI Generated,Likely AI Generated
+people\image-21.png,AI,97.4%,2.6%,Likely AI Generated,Likely AI Generated
+people\image-22.png,AI,97.48%,2.52%,Likely AI Generated,Likely AI Generated
+people\image-23.png,AI,97.26%,2.74%,Likely AI Generated,Likely AI Generated
+people\image-24.png,AI,97.59%,2.41%,Likely AI Generated,Likely AI Generated
+people\image-25.png,AI,97.35%,2.65%,Likely AI Generated,Likely AI Generated
+people\image-26.png,AI,97.47%,2.53%,Likely AI Generated,Likely AI Generated
+people\image-27.png,AI,97.69%,2.31%,Likely AI Generated,Likely AI Generated
+people\image-28.png,AI,97.41%,2.59%,Likely AI Generated,Likely AI Generated
+people\image-29.png,AI,97.6%,2.4%,Likely AI Generated,Likely AI Generated
+people\image-3.png,AI,97.17%,2.83%,Likely AI Generated,Likely AI Generated
+people\image-30.png,AI,97.73%,2.27%,Likely AI Generated,Likely AI Generated
+people\image-31.png,AI,97.37%,2.63%,Likely AI Generated,Likely AI Generated
+people\image-32.png,AI,97.59%,2.41%,Likely AI Generated,Likely AI Generated
+people\image-33.png,AI,97.37%,2.63%,Likely AI Generated,Likely AI Generated
+people\image-34.png,AI,97.47%,2.53%,Likely AI Generated,Likely AI Generated
+people\image-35.png,AI,97.34%,2.66%,Likely AI Generated,Likely AI Generated
+people\image-36.png,AI,97.41%,2.59%,Likely AI Generated,Likely AI Generated
+people\image-37.png,AI,97.34%,2.66%,Likely AI Generated,Likely AI Generated
+people\image-38.png,AI,97.46%,2.54%,Likely AI Generated,Likely AI Generated
+people\image-39.png,AI,97.46%,2.54%,Likely AI Generated,Likely AI Generated
+people\image-4.png,AI,97.47%,2.53%,Likely AI Generated,Likely AI Generated
+people\image-40.png,AI,96.55%,3.45%,Likely AI Generated,Likely AI Generated
+people\image-41.png,AI,97.52%,2.48%,Likely AI Generated,Likely AI Generated
+people\image-42.png,AI,97.56%,2.44%,Likely AI Generated,Likely AI Generated
+people\image-43.png,AI,97.5%,2.5%,Likely AI Generated,Likely AI Generated
+people\image-44.png,AI,97.4%,2.6%,Likely AI Generated,Likely AI Generated
+people\image-45.png,AI,97.4%,2.6%,Likely AI Generated,Likely AI Generated
+people\image-46.png,AI,97.38%,2.62%,Likely AI Generated,Likely AI Generated
+people\image-47.png,AI,97.36%,2.64%,Likely AI Generated,Likely AI Generated
+people\image-48.png,AI,97.48%,2.52%,Likely AI Generated,Likely AI Generated
+people\image-49.png,AI,97.34%,2.66%,Likely AI Generated,Likely AI Generated
+people\image-5.png,AI,97.38%,2.62%,Likely AI Generated,Likely AI Generated
+people\image-50.png,AI,97.56%,2.44%,Likely AI Generated,Likely AI Generated
+people\image-6.png,AI,97.52%,2.48%,Likely AI Generated,Likely AI Generated
+people\image-7.png,AI,97.54%,2.46%,Likely AI Generated,Likely AI Generated
+people\image-8.png,AI,97.29%,2.71%,Likely AI Generated,Likely AI Generated
+people\image-9.png,AI,97.51%,2.49%,Likely AI Generated,Likely AI Generated
+people\image.png,AI,96.92%,3.08%,Likely AI Generated,Likely AI Generated

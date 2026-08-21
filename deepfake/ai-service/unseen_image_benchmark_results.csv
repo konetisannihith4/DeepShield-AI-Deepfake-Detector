@@ -1,0 +1,16 @@
+filename,category,ground_truth,width,height,whole_probability,center_probability,max_patch_probability,final_probability,prediction,confidence
+unseen_ai_01_animal.jpg,AI animal,AI,1024,704,0.0862,0.0758,0.0862,0.081,Likely Natural,0.919
+unseen_ai_02_portrait.jpg,AI human portrait,AI,1024,1024,0.0047,0.2225,0.2225,0.1136,Likely Natural,0.8864
+unseen_ai_03_landscape.jpg,AI landscape,AI,512,512,0.3475,0.415,0.415,0.3813,Likely Natural,0.6187
+unseen_ai_04_city.jpg,AI city/street,AI,768,768,0.0584,0.0889,0.0889,0.0737,Likely Natural,0.9263
+unseen_ai_05_house_interior.jpg,AI house/interior,AI,768,768,0.0584,0.0889,0.0889,0.0737,Likely Natural,0.9263
+unseen_ai_06_food.jpg,AI food,AI,768,768,0.0584,0.0889,0.0889,0.0737,Likely Natural,0.9263
+unseen_ai_07_vehicle.jpg,AI vehicle,AI,768,768,0.0584,0.0889,0.0889,0.0737,Likely Natural,0.9263
+unseen_ai_08_artwork.jpg,AI artwork,AI,768,768,0.0584,0.0889,0.0889,0.0737,Likely Natural,0.9263
+unseen_ai_09_robot.jpg,AI robot/technology,AI,768,768,0.0584,0.0889,0.0889,0.0737,Likely Natural,0.9263
+unseen_ai_10_fantasy.jpg,AI fantasy scene,AI,512,512,0.0116,0.0854,0.0854,0.0485,Likely Natural,0.9515
+unseen_real_11_animal.jpg,Real animal photograph,NATURAL,800,541,0.0297,0.0823,0.0823,0.056,Likely Natural,0.944
+unseen_real_12_human.jpg,Real human photograph,NATURAL,800,1000,0.0019,0.9345,0.9345,0.9345,Uncertain,0.9345
+unseen_real_13_landscape.jpg,Real landscape photograph,NATURAL,800,534,0.2765,0.4865,0.4865,0.3815,Likely Natural,0.6185
+unseen_real_14_building.jpg,Real building/interior photograph,NATURAL,800,534,0.0474,0.0818,0.0818,0.0646,Likely Natural,0.9354
+unseen_real_15_food.jpg,Real object/food photograph,NATURAL,800,967,0.2465,0.3011,0.3011,0.2738,Likely Natural,0.7262

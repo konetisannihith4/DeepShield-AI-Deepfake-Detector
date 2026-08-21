@@ -1,0 +1,42 @@
+filename,ground_truth,category,dataset_split,AI_probability,real_probability,prediction,confidence,result_type
+ai_boy_portrait1.png,AI,Previous Benchmark,Previous 26,97.63%,2.37%,Likely AI Generated,97.63%,TP
+ai_boy_portrait1_crop.png,AI,Previous Benchmark,Previous 26,97.4%,2.6%,Likely AI Generated,97.4%,TP
+ai_boy_portrait1_jpeg_q50.jpg,AI,Previous Benchmark,Previous 26,97.41%,2.59%,Likely AI Generated,97.41%,TP
+ai_boy_portrait2.png,AI,Previous Benchmark,Previous 26,97.46%,2.54%,Likely AI Generated,97.46%,TP
+ai_chatgpt.png,AI,Previous Benchmark,Previous 26,97.61%,2.39%,Likely AI Generated,97.61%,TP
+ai_chatgpt_color_jitter.png,AI,Previous Benchmark,Previous 26,97.66%,2.34%,Likely AI Generated,97.66%,TP
+ai_chatgpt_resampled_0.5x.png,AI,Previous Benchmark,Previous 26,97.6%,2.4%,Likely AI Generated,97.6%,TP
+ai_gan_bedroom.jpg,AI,Previous Benchmark,Previous 26,97.06%,2.94%,Likely AI Generated,97.06%,TP
+ai_sdxl_img2img.jpg,AI,Previous Benchmark,Previous 26,97.56%,2.44%,Likely AI Generated,97.56%,TP
+ai_sdxl_landscape.jpg,AI,Previous Benchmark,Previous 26,97.6%,2.4%,Likely AI Generated,97.6%,TP
+ai_specimen3.jpg,NATURAL,Previous Benchmark,Previous 26,2.93%,97.07%,Likely Natural,97.07%,TN
+real_camera_building.jpg,NATURAL,Previous Benchmark,Previous 26,80.86%,19.14%,Uncertain,80.86%,UNCERTAIN
+real_camera_cat.jpg,NATURAL,Previous Benchmark,Previous 26,2.92%,97.08%,Likely Natural,97.08%,TN
+real_camera_food.jpg,NATURAL,Previous Benchmark,Previous 26,4.1%,95.9%,Likely Natural,95.9%,TN
+real_camera_landscape.jpg,NATURAL,Previous Benchmark,Previous 26,97.18%,2.82%,Likely AI Generated,97.18%,FP
+real_camera_nature.jpg,NATURAL,Previous Benchmark,Previous 26,4.01%,95.99%,Likely Natural,95.99%,TN
+real_camera_palace.jpg,NATURAL,Previous Benchmark,Previous 26,2.5%,97.5%,Likely Natural,97.5%,TN
+real_camera_person.jpg,NATURAL,Previous Benchmark,Previous 26,3.1%,96.9%,Likely Natural,96.9%,TN
+real_camera_teapot.jpg,NATURAL,Previous Benchmark,Previous 26,87.49%,12.51%,Uncertain,87.49%,UNCERTAIN
+real_camera_tiger.jpg,NATURAL,Previous Benchmark,Previous 26,2.84%,97.16%,Likely Natural,97.16%,TN
+real_edited_color_adjust.jpg,NATURAL,Previous Benchmark,Previous 26,4.66%,95.34%,Likely Natural,95.34%,TN
+real_edited_gaussian_blur.jpg,NATURAL,Previous Benchmark,Previous 26,8.32%,91.68%,Likely Natural,91.68%,TN
+real_edited_jpeg_q30.jpg,NATURAL,Previous Benchmark,Previous 26,2.48%,97.52%,Likely Natural,97.52%,TN
+real_edited_jpeg_q50.jpg,NATURAL,Previous Benchmark,Previous 26,2.38%,97.62%,Likely Natural,97.62%,TN
+real_edited_resample_0.5x.jpg,NATURAL,Previous Benchmark,Previous 26,3.83%,96.17%,Likely Natural,96.17%,TN
+test.jpg.jpg,NATURAL,Previous Benchmark,Previous 26,96.98%,3.02%,Likely AI Generated,96.98%,FP
+unseen_ai_01_animal.jpg,AI,Unseen AI animal,Unseen 15,2.73%,97.27%,Likely Natural,97.27%,FN
+unseen_ai_02_portrait.jpg,AI,Unseen AI human portrait,Unseen 15,97.59%,2.41%,Likely AI Generated,97.59%,TP
+unseen_ai_03_landscape.jpg,AI,Unseen AI landscape,Unseen 15,96.23%,3.77%,Likely AI Generated,96.23%,TP
+unseen_ai_04_city.jpg,AI,Unseen AI city/street,Unseen 15,96.66%,3.34%,Likely AI Generated,96.66%,TP
+unseen_ai_05_house_interior.jpg,AI,Unseen AI house/interior,Unseen 15,96.66%,3.34%,Likely AI Generated,96.66%,TP
+unseen_ai_06_food.jpg,AI,Unseen AI food,Unseen 15,96.66%,3.34%,Likely AI Generated,96.66%,TP
+unseen_ai_07_vehicle.jpg,AI,Unseen AI vehicle,Unseen 15,96.66%,3.34%,Likely AI Generated,96.66%,TP
+unseen_ai_08_artwork.jpg,AI,Unseen AI artwork,Unseen 15,96.66%,3.34%,Likely AI Generated,96.66%,TP
+unseen_ai_09_robot.jpg,AI,Unseen AI robot/technology,Unseen 15,96.66%,3.34%,Likely AI Generated,96.66%,TP
+unseen_ai_10_fantasy.jpg,AI,Unseen AI fantasy scene,Unseen 15,97.36%,2.64%,Likely AI Generated,97.36%,TP
+unseen_real_11_animal.jpg,NATURAL,Unseen Real animal photo,Unseen 15,2.5%,97.5%,Likely Natural,97.5%,TN
+unseen_real_12_human.jpg,NATURAL,Unseen Real human photo,Unseen 15,3.52%,96.48%,Likely Natural,96.48%,TN
+unseen_real_13_landscape.jpg,NATURAL,Unseen Real landscape photo,Unseen 15,2.44%,97.56%,Likely Natural,97.56%,TN
+unseen_real_14_building.jpg,NATURAL,Unseen Real building photo,Unseen 15,3.0%,97.0%,Likely Natural,97.0%,TN
+unseen_real_15_food.jpg,NATURAL,Unseen Real food photo,Unseen 15,3.39%,96.61%,Likely Natural,96.61%,TN

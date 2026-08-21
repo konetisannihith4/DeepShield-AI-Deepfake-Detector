@@ -1,0 +1,189 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  ANALYST
+  VIEWER
+}
+
+enum RiskLevel {
+  LOW
+  MODERATE
+  HIGH
+  CRITICAL
+}
+
+enum DetectionStatus {
+  PROCESSING
+  AUTHENTIC
+  DEEPFAKE
+  SUSPICIOUS
+  FAILED
+}
+
+model Organization {
+  id               String             @id @default(uuid())
+  name             String             @unique
+  slug             String             @unique
+  plan             String             @default("ENTERPRISE")
+  apiKey           String             @unique @default(uuid())
+  monthlyScanLimit Int                @default(10000)
+  scansUsed        Int                @default(0)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  users            User[]
+  detections       DetectionHistory[]
+
+  @@index([apiKey])
+}
+
+model User {
+  id             String         @id @default(uuid())
+  email          String         @unique
+  passwordHash   String
+  fullName       String
+  role                       Role                 @default(ANALYST)
+  isActive                   Boolean              @default(true)
+  isEmailVerified            Boolean              @default(false)
+  emailVerificationToken     String?              @db.VarChar(500)
+  emailVerificationExpiresAt DateTime?
+  organizationId             String
+  organization               Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  refreshTokens              RefreshToken[]
+  passwordResetTokens PasswordResetToken[]
+  auditLogs           AuditLog[]
+  notifications       Notification[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
+
+  @@index([email])
+  @@index([organizationId])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique @db.VarChar(500)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  revoked   Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid())
+  token     String   @unique @db.VarChar(500)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  used      Boolean  @default(false)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([token])
+  @@index([userId])
+}
+
+model DetectionHistory {
+  id                  String          @id @default(uuid())
+  originalFileName    String          @default("specimen.wav")
+  storedFileName      String          @default("specimen.wav")
+  fileName            String          // Alias for backward compatibility
+  mediaType           String          @default("AUDIO") // AUDIO or VIDEO
+  mimeType            String
+  fileSize            Int
+  duration            Float           @default(0.0)
+  durationSeconds     Float           // Alias for backward compatibility
+  sampleRate          Int             @default(16000)
+  channels            Int             @default(1)
+  fileHash            String?         @db.VarChar(64)
+  videoUrl            String?         @db.Text
+  audioUrl            String?         @db.Text
+  waveformData        Json
+  waveformJson        Json            // Alias for backward compatibility
+  spectrogramData     Json
+  spectrogramJson     Json            // Alias for backward compatibility
+  mfccData            Json
+  mfccJson            Json            // Alias for backward compatibility
+  pitchData           Json
+  pitchJson           Json            // Alias for backward compatibility
+  confidence          Float
+  deepfakeProbability Float           @default(0.0)
+  overallScore        Float           // Alias for backward compatibility
+  riskLevel           RiskLevel
+  verdict             DetectionStatus @default(AUTHENTIC)
+  status              DetectionStatus // Alias for backward compatibility
+  processingTime      Float           @default(0.0)
+  modelVersion        String          @default("DeepShield Vocal-Conformer v4.2")
+  syntheticSegments   Json
+  organizationId      String
+  organization        Organization    @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  reports             Report[]
+  createdAt           DateTime        @default(now())
+
+  @@index([organizationId])
+  @@index([riskLevel])
+  @@index([status])
+  @@index([fileHash])
+  @@index([createdAt])
+}
+
+model Report {
+  id          String           @id @default(uuid())
+  detectionId String
+  detection   DetectionHistory @relation(fields: [detectionId], references: [id], onDelete: Cascade)
+  title       String
+  pdfUrl      String?          @db.Text
+  summary     String           @db.Text
+  generatedBy String
+  createdAt   DateTime         @default(now())
+
+  @@index([detectionId])
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action    String
+  resource  String
+  details   Json
+  ipAddress String
+  userAgent String   @db.Text
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String   @db.Text
+  type      String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+}
+
+model SystemSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String   @db.Text
+  description String?  @db.Text
+  updatedAt   DateTime @updatedAt
+}

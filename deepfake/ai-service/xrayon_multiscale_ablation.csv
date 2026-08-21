@@ -1,0 +1,4 @@
+mode,3Way_AI_Recall_0.95,3Way_Natural_FPR_0.95,3Way_Precision_0.95,3Way_F1_0.95,3Way_Accuracy_0.95,Binary_AI_Recall_0.50,Binary_Natural_FPR_0.50,Binary_Precision_0.50,Binary_F1_0.50,Binary_Accuracy_0.50
+Whole Image Only,96.80%,22.42%,59.17%,73.44%,82.41%,98.80%,34.50%,49.01%,65.52%,73.87%
+Center Patch Only,90.00%,14.63%,67.37%,77.05%,86.53%,96.80%,26.44%,55.13%,70.25%,79.40%
+Multi-Scale Engine Aggregate,99.60%,29.66%,52.98%,69.17%,77.69%,100.00%,43.49%,43.55%,60.68%,67.44%

@@ -1,0 +1,118 @@
+# ==========================================
+# DeepShield Enterprise .gitignore
+# ==========================================
+
+# ------------------------------------------
+# Workspace Extra Folders & Archives
+# ------------------------------------------
+AIDE/
+Deepshield/
+deepfake.zip
+training/
+
+# ------------------------------------------
+# Node.js
+# ------------------------------------------
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ------------------------------------------
+# Python & Virtual Environments
+# ------------------------------------------
+**/venv/
+**/venv*/
+**/.venv/
+**/__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Python cache
+.pytest_cache/
+.mypy_cache/
+.cache/
+
+# ------------------------------------------
+# Environment Variables
+# ------------------------------------------
+.env
+.env.*
+!.env.example
+
+# ------------------------------------------
+# IDE & OS Files
+# ------------------------------------------
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ------------------------------------------
+# Build Output
+# ------------------------------------------
+dist/
+build/
+out/
+**/.vite/
+**/coverage/
+
+# ------------------------------------------
+# Logs
+# ------------------------------------------
+*.log
+logs/
+
+# ------------------------------------------
+# Backup & Scratch Files
+# ------------------------------------------
+*.tmp
+*.temp
+*.bak
+*.bak_*
+*.bak*
+
+# ------------------------------------------
+# Generated Uploads & Reports
+# ------------------------------------------
+**/uploads/
+**/reports/
+**/debug_wavs/
+**/scratch/
+**/video/
+**/non_existent_empty_dir/
+
+# ------------------------------------------
+# Model Weights & Hugging Face Cache
+# ------------------------------------------
+**/models/
+**/pretrained_model/
+**/pretrained_ckpts/
+**/weights/
+*.pth
+*.pt
+*.ckpt
+*.bin
+*.h5
+*.onnx
+*.safetensors
+
+# ------------------------------------------
+# SQLite & Database
+# ------------------------------------------
+*.sqlite
+*.sqlite3
+*.tsbuildinfo
+
+# ------------------------------------------
+# Jupyter
+# ------------------------------------------
+.ipynb_checkpoints/
+
+# ------------------------------------------
+# Keep project structure
+# ------------------------------------------
+!.gitkeep

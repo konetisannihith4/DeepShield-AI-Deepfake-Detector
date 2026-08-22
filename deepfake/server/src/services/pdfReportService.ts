@@ -248,20 +248,53 @@ export async function generateForensicPdfCertificate(input: DetectionPdfInputDat
       doc.end();
 
       stream.on('finish', () => {
-        // Enforce max 15 reports limit after saving new PDF
-        enforceReportStorageLimit(15);
+        try {
+          // Enforce max 15 reports limit after saving new PDF
+          enforceReportStorageLimit(15);
 
-        resolve({
-          pdfFilePath,
-          pdfFileName,
-          jsonFileName,
-          caseId,
-          reportId,
-          threatLevel,
-          sha256Hash,
-          createdAt: now,
-          aiExplanation,
-        });
+          if (!fs.existsSync(pdfFilePath)) {
+            return reject(new Error('PDF generation failed: File was not created on disk.'));
+          }
+
+          const stats = fs.statSync(pdfFilePath);
+          if (stats.size === 0) {
+            try { fs.unlinkSync(pdfFilePath); } catch {}
+            return reject(new Error('PDF generation failed: Created PDF file is 0 bytes.'));
+          }
+
+          const fd = fs.openSync(pdfFilePath, 'r');
+          const sigBuffer = Buffer.alloc(5);
+          fs.readSync(fd, sigBuffer, 0, 5, 0);
+          fs.closeSync(fd);
+
+          const validSignature = sigBuffer.toString('utf8') === '%PDF-';
+          if (!validSignature) {
+            try { fs.unlinkSync(pdfFilePath); } catch {}
+            return reject(new Error('PDF generation failed: Generated file does not begin with %PDF- signature.'));
+          }
+
+          console.log('[PDF Generator]: PDF generated successfully:', {
+            reportId,
+            caseId,
+            size: stats.size,
+            validSignature,
+            filePath: pdfFilePath,
+          });
+
+          resolve({
+            pdfFilePath,
+            pdfFileName,
+            jsonFileName,
+            caseId,
+            reportId,
+            threatLevel,
+            sha256Hash,
+            createdAt: now,
+            aiExplanation,
+          });
+        } catch (valErr) {
+          reject(valErr);
+        }
       });
 
       stream.on('error', (err) => {

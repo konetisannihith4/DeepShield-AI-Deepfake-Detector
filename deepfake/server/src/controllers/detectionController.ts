@@ -12,6 +12,10 @@ import { getStoredReportsList, enforceReportStorageLimit, REPORTS_DIR } from '..
 import { calculateThreatLevel, generateAIExplanation } from '../services/jsonReportService';
 
 export class DetectionController {
+  /**
+   * Upload and Analyze Media File (Audio / Image / Video)
+   * Enforces authenticated user ownership on all created records.
+   */
   public static async uploadAndAnalyze(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const file = req.file;
@@ -39,13 +43,13 @@ export class DetectionController {
         originalName
       );
 
-      console.log(`[DetectionController]: Fresh upload request for '${originalName}' (${fileSize} bytes, extracted audio: ${mediaResult.audioBuffer.length} bytes)...`);
+      console.log(`[DetectionController]: User ${user.id} upload request for '${originalName}' (${fileSize} bytes, extracted audio: ${mediaResult.audioBuffer.length} bytes)...`);
 
-      // 2. SHA-256 Duplicate Check against DB
+      // 2. SHA-256 Duplicate Check scoped to authenticated user
       let duplicateInfo: any = null;
       try {
         const existingScan = await prisma.detectionHistory.findFirst({
-          where: { fileHash: mediaResult.fileHash },
+          where: { fileHash: mediaResult.fileHash, userId: user.id },
           orderBy: { createdAt: 'desc' },
         });
 
@@ -57,7 +61,6 @@ export class DetectionController {
             previousVerdict: existingScan.verdict || existingScan.status,
             previousScore: existingScan.deepfakeProbability || existingScan.overallScore,
           };
-          console.log(`[DetectionController]: Duplicate SHA-256 hash detected -> previous scan Case ${duplicateInfo.previousCaseId}`);
         }
       } catch (e) {
         console.warn('[DetectionController]: Duplicate check warning', e);
@@ -75,30 +78,34 @@ export class DetectionController {
       const threatLevel = calculateThreatLevel(prob);
       const aiExplanation = generateAIExplanation(analysis.status, prob, analysis.features);
 
-      // Resolve valid organizationId to satisfy MySQL Foreign Key constraint
+      // Resolve organizationId safely
       let orgId = user.organizationId;
       try {
-        const existingOrg = await prisma.organization.findFirst();
-        if (existingOrg) {
-          orgId = existingOrg.id;
-        } else {
-          const newOrg = await prisma.organization.create({
-            data: {
-              name: 'Enterprise Cybersecurity Corp',
-              slug: 'enterprise-cybersecurity-corp',
-              plan: 'ENTERPRISE',
-              apiKey: 'ds-api-key-live-default',
-            },
-          });
-          orgId = newOrg.id;
+        const existingOrg = await prisma.organization.findUnique({ where: { id: orgId } });
+        if (!existingOrg) {
+          const fallbackOrg = await prisma.organization.findFirst();
+          if (fallbackOrg) {
+            orgId = fallbackOrg.id;
+          } else {
+            const newOrg = await prisma.organization.create({
+              data: {
+                name: 'Enterprise Cybersecurity Corp',
+                slug: 'enterprise-cybersecurity-corp',
+                plan: 'ENTERPRISE',
+                apiKey: `ds-api-key-${Date.now()}`,
+              },
+            });
+            orgId = newOrg.id;
+          }
         }
       } catch (e) {
         console.warn('[DetectionController]: Org resolution fallback:', e);
       }
 
-      // 4. Save Extended Specimen Metadata and Visualizer Matrices to MySQL via Prisma
+      // 4. Save Record to MySQL with Authenticated User Ownership (userId)
       const detection = await prisma.detectionHistory.create({
         data: {
+          userId: user.id,
           originalFileName: originalName,
           storedFileName: mediaResult.storedFileName,
           fileName: originalName,
@@ -139,7 +146,7 @@ export class DetectionController {
         data: { scansUsed: { increment: 1 } },
       }).catch((err: any) => console.warn('[Prisma Warning]: Update org scans failed', err.message));
 
-      // 5. AUTOMATIC UNIQUE FORENSIC PDF & JSON REPORT GENERATION
+      // 5. Automatic Forensic PDF & JSON Report Generation with User Ownership
       let pdfResult: any = null;
       try {
         pdfResult = await generateForensicPdfCertificate({
@@ -171,11 +178,10 @@ export class DetectionController {
           createdAt: detection.createdAt,
         });
 
-        console.log(`[DetectionController]: Unique Forensic PDF generated successfully -> ${pdfResult.pdfFileName}`);
-
-        // 6. Save Report Record into MySQL via Prisma Report Model
+        // Save Report Record associated with userId
         await prisma.report.create({
           data: {
+            userId: user.id,
             detectionId: detection.id,
             title: `Forensic PDF Certificate - ${detection.originalFileName}`,
             pdfUrl: `/api/reports/download/${pdfResult.pdfFileName}`,
@@ -244,54 +250,56 @@ export class DetectionController {
     }
   }
 
+  /**
+   * Get Forensic Reports History for Authenticated User
+   */
   public static async getReportHistory(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const user = req.user;
       if (!user) throw new AppError('Unauthorized', 401);
 
-      // Enforce storage limit of 15 max
-      const storedReportFiles = enforceReportStorageLimit(15);
-
-      // Query database records for detections
+      // Query database records for detections owned by user
       const detections = await prisma.detectionHistory.findMany({
+        where: { userId: user.id },
         orderBy: { createdAt: 'desc' },
         take: 50,
       }).catch(() => []);
 
-      const reportsList = storedReportFiles.map((file) => {
-        // Match with DB record or construct metadata
-        const matchingDb = detections.find((d) => {
-          const cleanName = d.originalFileName.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/\.[^/.]+$/, '');
-          return file.fileName.includes(cleanName);
-        });
+      const storedReportFiles = getStoredReportsList();
 
-        const now = file.birthtime;
-        const dateStr = now.toISOString().replace(/[-T:]/g, '').slice(0, 8);
-        const caseId = matchingDb
-          ? `CASE-${dateStr}-${matchingDb.id.slice(0, 6).toUpperCase()}`
-          : `CASE-${dateStr}-${file.fileName.slice(12, 18).toUpperCase()}`;
+      const reportsList = storedReportFiles
+        .map((file) => {
+          const matchingDb = detections.find((d) => {
+            const cleanName = d.originalFileName.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/\.[^/.]+$/, '');
+            return file.fileName.includes(cleanName) || file.fileName.includes(d.id);
+          });
 
-        const prob = matchingDb ? (matchingDb.deepfakeProbability || matchingDb.overallScore || 0) : 0.5;
-        const threatLevel = calculateThreatLevel(prob);
-        const verdict = matchingDb ? (matchingDb.verdict || matchingDb.status || 'DEEPFAKE') : 'DEEPFAKE';
-        const originalFileName = matchingDb ? matchingDb.originalFileName : file.fileName;
+          if (!matchingDb) return null; // Exclude reports not belonging to this user
 
-        return {
-          caseId,
-          reportId: matchingDb ? matchingDb.id : file.fileName,
-          reportName: file.fileName,
-          fileName: originalFileName,
-          verdict,
-          deepfakeProbability: Math.round(prob * 1000) / 10,
-          confidence: matchingDb ? Math.round((matchingDb.confidence || 0.95) * 1000) / 10 : 95.0,
-          threatLevel,
-          createdAt: file.birthtime,
-          fileSize: file.size,
-          sha256Hash: matchingDb ? matchingDb.fileHash : 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
-          pdfDownloadUrl: `/api/reports/download/${file.fileName}`,
-          jsonDownloadUrl: `/api/reports/download/${file.fileName.replace(/\.pdf$/, '.json')}`,
-        };
-      });
+          const now = file.birthtime;
+          const dateStr = now.toISOString().replace(/[-T:]/g, '').slice(0, 8);
+          const caseId = `CASE-${dateStr}-${matchingDb.id.slice(0, 6).toUpperCase()}`;
+          const prob = matchingDb.deepfakeProbability || matchingDb.overallScore || 0;
+          const threatLevel = calculateThreatLevel(prob);
+          const verdict = matchingDb.verdict || matchingDb.status || 'AUTHENTIC';
+
+          return {
+            caseId,
+            reportId: matchingDb.id,
+            reportName: file.fileName,
+            fileName: matchingDb.originalFileName,
+            verdict,
+            deepfakeProbability: Math.round(prob * 1000) / 10,
+            confidence: Math.round((matchingDb.confidence || 0.95) * 1000) / 10,
+            threatLevel,
+            createdAt: file.birthtime,
+            fileSize: file.size,
+            sha256Hash: matchingDb.fileHash || 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+            pdfDownloadUrl: `/api/reports/download/${file.fileName}`,
+            jsonDownloadUrl: `/api/reports/download/${file.fileName.replace(/\.pdf$/, '.json')}`,
+          };
+        })
+        .filter(Boolean);
 
       return res.json({
         success: true,
@@ -306,28 +314,29 @@ export class DetectionController {
     }
   }
 
+  /**
+   * Get Forensic Report Stats for Authenticated User
+   */
   public static async getReportStats(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const user = req.user;
       if (!user) throw new AppError('Unauthorized', 401);
 
-      const storedReportFiles = getStoredReportsList();
-
       const totalScans = await prisma.detectionHistory.count({
-        where: { organizationId: user.organizationId },
-      }).catch(() => storedReportFiles.length);
+        where: { userId: user.id },
+      }).catch(() => 0);
 
       const authenticCount = await prisma.detectionHistory.count({
-        where: { organizationId: user.organizationId, status: DetectionStatus.AUTHENTIC },
-      }).catch(() => 5);
+        where: { userId: user.id, status: DetectionStatus.AUTHENTIC },
+      }).catch(() => 0);
 
       const deepfakeCount = await prisma.detectionHistory.count({
-        where: { organizationId: user.organizationId, status: DetectionStatus.DEEPFAKE },
-      }).catch(() => 10);
+        where: { userId: user.id, status: DetectionStatus.DEEPFAKE },
+      }).catch(() => 0);
 
       const criticalThreats = await prisma.detectionHistory.count({
-        where: { organizationId: user.organizationId, riskLevel: RiskLevel.CRITICAL },
-      }).catch(() => 4);
+        where: { userId: user.id, riskLevel: RiskLevel.CRITICAL },
+      }).catch(() => 0);
 
       return res.json({
         success: true,
@@ -336,7 +345,7 @@ export class DetectionController {
           authenticFiles: authenticCount,
           deepfakeFiles: deepfakeCount,
           criticalThreats,
-          storageUsedCount: Math.min(storedReportFiles.length, 15),
+          storageUsedCount: Math.min(totalScans, 15),
           maxStorageLimit: 15,
         },
       });
@@ -345,36 +354,140 @@ export class DetectionController {
     }
   }
 
+  /**
+   * Secure Download of Report File with User Ownership Enforcement
+   */
   public static async downloadReportFile(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      const user = req.user;
+      if (!user) throw new AppError('Unauthorized', 401);
+
       const { filename } = req.params;
       const safeFileName = path.basename(filename);
-      const filePath = path.join(REPORTS_DIR, safeFileName);
+      let filePath = path.join(REPORTS_DIR, safeFileName);
+
+      const cleanName = safeFileName.replace(/\.(pdf|json)$/i, '');
+      const isGenericName = ['report', 'ds_report', 'certificate', 'forensic_report', 'ds_certificate'].includes(cleanName.toLowerCase());
+
+      // Verify Ownership: Match file strictly to user's DetectionHistory or Report
+      let userRecord = await prisma.detectionHistory.findFirst({
+        where: {
+          userId: user.id,
+          OR: [
+            { id: { contains: cleanName } },
+            { originalFileName: { contains: cleanName.replace(/[^a-zA-Z0-9._-]/g, '_') } },
+            { storedFileName: { contains: cleanName } },
+            { fileHash: { contains: cleanName } },
+          ],
+        },
+      });
+
+      // Fallback to user's latest scan ONLY if cleanName is a generic placeholder name (e.g. "report", "DS_report")
+      if (!userRecord && isGenericName) {
+        userRecord = await prisma.detectionHistory.findFirst({
+          where: { userId: user.id },
+          orderBy: { createdAt: 'desc' },
+        });
+      }
+
+      // If user has no permission or record not found, deny access with 403
+      if (!userRecord && user.role !== 'ADMIN') {
+        throw new AppError('Access denied: You do not have permission to download this report.', 403);
+      }
+
+      // Re-generate PDF on-the-fly if missing on disk
+      if ((!fs.existsSync(filePath) || safeFileName.includes('report')) && userRecord) {
+        try {
+          const pdfRes = await generateForensicPdfCertificate({
+            id: userRecord.id,
+            originalFileName: userRecord.originalFileName,
+            fileSize: userRecord.fileSize,
+            mimeType: userRecord.mimeType,
+            mediaType: userRecord.mediaType,
+            durationSeconds: userRecord.durationSeconds,
+            fileHash: userRecord.fileHash || undefined,
+            confidence: userRecord.confidence,
+            deepfakeProbability: userRecord.deepfakeProbability,
+            overallScore: userRecord.overallScore,
+            riskLevel: userRecord.riskLevel,
+            verdict: userRecord.verdict,
+            status: userRecord.status,
+            processingTime: userRecord.processingTime,
+            modelVersion: userRecord.modelVersion || undefined,
+            createdAt: userRecord.createdAt,
+          });
+          if (safeFileName.endsWith('.pdf')) {
+            filePath = pdfRes.pdfFilePath;
+          }
+        } catch (genErr) {
+          console.warn('[Report On-The-Fly Regeneration Warning]:', genErr);
+        }
+      }
 
       if (!fs.existsSync(filePath)) {
-        throw new AppError('Requested forensic report file does not exist or has been pruned.', 404);
+        throw new AppError('Requested forensic report file does not exist or could not be generated.', 404);
       }
 
-      if (safeFileName.endsWith('.pdf')) {
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="${safeFileName}"`);
-      } else if (safeFileName.endsWith('.json')) {
-        res.setHeader('Content-Type', 'application/json');
-        res.setHeader('Content-Disposition', `attachment; filename="${safeFileName}"`);
+      const fileBuffer = fs.readFileSync(filePath);
+      if (!fileBuffer || fileBuffer.length === 0) {
+        throw new AppError('PDF generation produced an empty file.', 500);
       }
 
-      return res.sendFile(filePath);
+      const isPdf = safeFileName.endsWith('.pdf') || filePath.endsWith('.pdf');
+      if (isPdf) {
+        const sig = fileBuffer.subarray(0, 5).toString('utf8');
+        if (sig !== '%PDF-') {
+          throw new AppError('Generated PDF file signature is invalid.', 500);
+        }
+      }
+
+      console.log('[PDF Download]: Serving valid forensic file:', {
+        reportId: userRecord?.id || safeFileName,
+        userId: user.id,
+        size: fileBuffer.length,
+        validSignature: isPdf ? fileBuffer.subarray(0, 5).toString('utf8') === '%PDF-' : true,
+        filePath,
+      });
+
+      const isInline = req.query.inline === 'true' || req.query.view === 'true';
+      const dispositionType = isInline ? 'inline' : 'attachment';
+
+      res.setHeader('Content-Type', isPdf ? 'application/pdf' : 'application/json');
+      res.setHeader('Content-Disposition', `${dispositionType}; filename="${safeFileName}"`);
+      res.setHeader('Content-Length', fileBuffer.length);
+      return res.status(200).send(fileBuffer);
     } catch (err) {
       next(err);
     }
   }
 
+  /**
+   * Delete Report File with Ownership Verification
+   */
   public static async deleteReportFile(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      const user = req.user;
+      if (!user) throw new AppError('Unauthorized', 401);
+
       const { filename } = req.params;
       const safeFileName = path.basename(filename);
       const filePath = path.join(REPORTS_DIR, safeFileName);
       const jsonPath = filePath.replace(/\.pdf$/, '.json');
+
+      const cleanName = safeFileName.replace(/\.(pdf|json)$/i, '');
+      const userRecord = await prisma.detectionHistory.findFirst({
+        where: {
+          userId: user.id,
+          OR: [
+            { id: { contains: cleanName } },
+            { originalFileName: { contains: cleanName.replace(/[^a-zA-Z0-9._-]/g, '_') } },
+          ],
+        },
+      });
+
+      if (!userRecord && user.role !== 'ADMIN') {
+        throw new AppError('Access denied: You do not have permission to delete this report.', 403);
+      }
 
       if (fs.existsSync(filePath)) {
         fs.unlinkSync(filePath);
@@ -392,6 +505,9 @@ export class DetectionController {
     }
   }
 
+  /**
+   * Get Detection History Filtered by User ID
+   */
   public static async getHistory(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const user = req.user;
@@ -405,7 +521,7 @@ export class DetectionController {
       const search = req.query.search as string | undefined;
 
       const whereClause: any = {
-        organizationId: user.organizationId,
+        userId: user.id,
       };
 
       if (riskLevel) whereClause.riskLevel = riskLevel;
@@ -415,7 +531,7 @@ export class DetectionController {
         whereClause.fileName = { contains: search };
       }
 
-      const total = await prisma.detectionHistory.count({ where: whereClause }).catch(() => 12);
+      const total = await prisma.detectionHistory.count({ where: whereClause }).catch(() => 0);
       const items = await prisma.detectionHistory.findMany({
         where: whereClause,
         orderBy: { createdAt: 'desc' },
@@ -435,16 +551,22 @@ export class DetectionController {
     }
   }
 
+  /**
+   * Get Detection Record by ID with Ownership Check
+   */
   public static async getById(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      const user = req.user;
+      if (!user) throw new AppError('Unauthorized', 401);
+
       const { id } = req.params;
-      const detection = await prisma.detectionHistory.findUnique({
-        where: { id },
+      const detection = await prisma.detectionHistory.findFirst({
+        where: { id, userId: user.id },
         include: { organization: true, reports: true },
       });
 
       if (!detection) {
-        throw new AppError('Detection record not found', 404);
+        throw new AppError('Detection record not found or access denied.', 404);
       }
 
       return res.json({
@@ -456,33 +578,36 @@ export class DetectionController {
     }
   }
 
+  /**
+   * Get Multi-Modal Detection Analytics Summary Scoped to User
+   */
   public static async getAnalyticsSummary(req: AuthRequest, res: Response, next: NextFunction) {
     try {
       const user = req.user;
       if (!user) throw new AppError('Unauthorized', 401);
 
       const totalScans = await prisma.detectionHistory.count({
-        where: { organizationId: user.organizationId },
-      }).catch(() => 124);
+        where: { userId: user.id },
+      }).catch(() => 0);
 
       const totalAudioFiles = await prisma.detectionHistory.count({
-        where: { organizationId: user.organizationId, mediaType: 'AUDIO' },
-      }).catch(() => 76);
+        where: { userId: user.id, mediaType: 'AUDIO' },
+      }).catch(() => 0);
 
       const totalVideoFiles = await prisma.detectionHistory.count({
-        where: { organizationId: user.organizationId, mediaType: 'VIDEO' },
-      }).catch(() => 48);
+        where: { userId: user.id, mediaType: 'VIDEO' },
+      }).catch(() => 0);
 
       const deepfakesDetected = await prisma.detectionHistory.count({
-        where: { organizationId: user.organizationId, status: DetectionStatus.DEEPFAKE },
-      }).catch(() => 48);
+        where: { userId: user.id, status: DetectionStatus.DEEPFAKE },
+      }).catch(() => 0);
 
       const authenticCount = await prisma.detectionHistory.count({
-        where: { organizationId: user.organizationId, status: DetectionStatus.AUTHENTIC },
-      }).catch(() => 68);
+        where: { userId: user.id, status: DetectionStatus.AUTHENTIC },
+      }).catch(() => 0);
 
       const recentUploads = await prisma.detectionHistory.findMany({
-        where: { organizationId: user.organizationId },
+        where: { userId: user.id },
         orderBy: { createdAt: 'desc' },
         take: 5,
       }).catch(() => []);
@@ -495,8 +620,8 @@ export class DetectionController {
           totalVideoFiles,
           deepfakesDetected,
           authenticCount,
-          deepfakeRatio: totalScans > 0 ? Math.round((deepfakesDetected / totalScans) * 100) : 38,
-          avgConfidence: 94.8,
+          deepfakeRatio: totalScans > 0 ? Math.round((deepfakesDetected / totalScans) * 100) : 0,
+          avgConfidence: totalScans > 0 ? 94.8 : 0,
           recentUploads,
         },
       });
@@ -506,7 +631,74 @@ export class DetectionController {
   }
 
   public static async generatePdfReport(req: AuthRequest, res: Response, next: NextFunction) {
-    return DetectionController.downloadReportFile(req, res, next);
+    try {
+      const user = req.user;
+      if (!user) throw new AppError('Unauthorized', 401);
+
+      const { id } = req.params;
+      const cleanId = path.basename(id).replace(/\.(pdf|json)$/i, '');
+
+      const detection = await prisma.detectionHistory.findFirst({
+        where: { id: cleanId, userId: user.id },
+      });
+
+      if (!detection && user.role !== 'ADMIN') {
+        throw new AppError('Detection record not found or access denied.', 404);
+      }
+
+      const userRecord = detection || await prisma.detectionHistory.findFirst({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (!userRecord) {
+        throw new AppError('No detection records found to generate report.', 404);
+      }
+
+      const pdfRes = await generateForensicPdfCertificate({
+        id: userRecord.id,
+        originalFileName: userRecord.originalFileName,
+        fileSize: userRecord.fileSize,
+        mimeType: userRecord.mimeType,
+        mediaType: userRecord.mediaType,
+        durationSeconds: userRecord.durationSeconds,
+        fileHash: userRecord.fileHash || undefined,
+        confidence: userRecord.confidence,
+        deepfakeProbability: userRecord.deepfakeProbability,
+        overallScore: userRecord.overallScore,
+        riskLevel: userRecord.riskLevel,
+        verdict: userRecord.verdict,
+        status: userRecord.status,
+        processingTime: userRecord.processingTime,
+        modelVersion: userRecord.modelVersion || undefined,
+        createdAt: userRecord.createdAt,
+      });
+
+      const fileBuffer = fs.readFileSync(pdfRes.pdfFilePath);
+      if (!fileBuffer || fileBuffer.length === 0) {
+        throw new AppError('PDF generation produced an empty file.', 500);
+      }
+
+      const sig = fileBuffer.subarray(0, 5).toString('utf8');
+      if (sig !== '%PDF-') {
+        throw new AppError('Generated PDF file signature is invalid.', 500);
+      }
+
+      console.log('[PDF Route]: Generated & Served PDF:', {
+        reportId: userRecord.id,
+        userId: user.id,
+        size: fileBuffer.length,
+        validSignature: sig === '%PDF-',
+        filePath: pdfRes.pdfFilePath,
+      });
+
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${pdfRes.pdfFileName}"`);
+      res.setHeader('Content-Length', fileBuffer.length);
+      return res.status(200).send(fileBuffer);
+    } catch (err) {
+      next(err);
+    }
   }
 
   public static async verifyReport(req: Request, res: Response, next: NextFunction) {
@@ -516,7 +708,7 @@ export class DetectionController {
 
       const cleanId = path.basename(id).replace(/\.(pdf|json)$/i, '');
 
-      // 1. Check DB for matching ID, fileHash, or originalFileName
+      // Check DB for matching ID, fileHash, or originalFileName
       const detection = await prisma.detectionHistory.findFirst({
         where: {
           OR: [
@@ -534,7 +726,6 @@ export class DetectionController {
         const threatLevel = calculateThreatLevel(prob);
         const aiExplanation = generateAIExplanation(detection.verdict || detection.status || 'AUTHENTIC', prob, null);
 
-        // Find associated PDF file if available
         const reportFiles = getStoredReportsList();
         const matchingPdf = reportFiles.find((f) => f.fileName.includes(detection.id) || f.fileName.includes(cleanId));
         const pdfFileName = matchingPdf ? matchingPdf.fileName : null;
@@ -575,53 +766,7 @@ export class DetectionController {
         });
       }
 
-      // 2. Fallback: Search disk for matching JSON report file
-      const reportFiles = getStoredReportsList();
-      for (const rFile of reportFiles) {
-        const jsonPath = rFile.filePath.replace(/\.pdf$/, '.json');
-        if (fs.existsSync(jsonPath)) {
-          try {
-            const raw = fs.readFileSync(jsonPath, 'utf8');
-            const parsed = JSON.parse(raw);
-            if (parsed.reportId === id || parsed.caseId === id || parsed.sha256Hash === id || rFile.fileName.includes(cleanId)) {
-              return res.json({
-                success: true,
-                verified: true,
-                verification: {
-                  ...parsed,
-                  pdfFileName: rFile.fileName,
-                  pdfDownloadUrl: `/api/reports/download/${rFile.fileName}`,
-                  jsonDownloadUrl: `/api/reports/download/${rFile.fileName.replace(/\.pdf$/, '.json')}`,
-                },
-              });
-            }
-          } catch {}
-        }
-      }
-
-      // 3. Fallback: If latest report exists, show top verification specimen
-      if (reportFiles.length > 0) {
-        const topFile = reportFiles[0];
-        const jsonPath = topFile.filePath.replace(/\.pdf$/, '.json');
-        if (fs.existsSync(jsonPath)) {
-          try {
-            const raw = fs.readFileSync(jsonPath, 'utf8');
-            const parsed = JSON.parse(raw);
-            return res.json({
-              success: true,
-              verified: true,
-              verification: {
-                ...parsed,
-                pdfFileName: topFile.fileName,
-                pdfDownloadUrl: `/api/reports/download/${topFile.fileName}`,
-                jsonDownloadUrl: `/api/reports/download/${topFile.fileName.replace(/\.pdf$/, '.json')}`,
-              },
-            });
-          } catch {}
-        }
-      }
-
-      throw new AppError('Forensic Report verification record not found or link has expired.', 404);
+      throw new AppError('Forensic Report verification record not found.', 404);
     } catch (err) {
       next(err);
     }

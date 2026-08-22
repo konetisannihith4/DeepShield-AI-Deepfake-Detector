@@ -27,6 +27,8 @@ import {
 } from 'lucide-react';
 import { apiClient } from '../services/apiClient';
 import { saveScanToHistory } from '../services/scanHistoryService';
+import { useAuth } from '../context/AuthContext';
+import { exportPdfCertificate, viewPdfReport, exportJsonReport } from '../services/reportExporter';
 
 const ALLOWED_EXTENSIONS = [
   '.wav', '.mp3', '.flac', '.aac', '.m4a', '.ogg', '.wma', '.aiff', '.opus',
@@ -101,6 +103,8 @@ const IMAGE_PIPELINE_STEPS = [
 
 export const UploadPage: React.FC = () => {
   const navigate = useNavigate();
+  const { user, theme } = useAuth();
+  const isLight = theme === 'light';
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
@@ -268,7 +272,7 @@ export const UploadPage: React.FC = () => {
             modelVersion: res.data.modelVersion || 'xRayon-ConvNeXtV2-Phase2',
             pdfDownloadUrl: res.data.pdfDownloadUrl || '/api/reports/download/report.pdf',
             jsonDownloadUrl: res.data.jsonDownloadUrl || '/api/reports/download/report.json'
-          });
+          }, user?.id);
         }
       } else {
         let res;
@@ -326,7 +330,7 @@ export const UploadPage: React.FC = () => {
             modelVersion: detectionData.modelVersion || (mType === 'video' ? 'Xception / EfficientNet Video Classifier' : 'DavidCombei/wavLM-base-Deepfake_V2'),
             pdfDownloadUrl: detectionData.pdfDownloadUrl || '/api/reports/download/report.pdf',
             jsonDownloadUrl: detectionData.jsonDownloadUrl || '/api/reports/download/report.json'
-          });
+          }, user?.id);
         }
       }
     } catch (err: any) {
@@ -344,35 +348,78 @@ export const UploadPage: React.FC = () => {
   };
 
   const handleDownloadFile = async (downloadUrl: string, fileName: string) => {
-    try {
-      const token = localStorage.getItem('deepshield_token') || localStorage.getItem('token');
-      const response = await fetch(downloadUrl, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+    if (!result) return;
+
+    const targetPdfUrl = downloadUrl && downloadUrl !== '#'
+      ? downloadUrl
+      : `/api/detect/${result.id || result.caseId || 'latest'}/report/pdf`;
+
+    if (fileName.endsWith('.json')) {
+      exportJsonReport({
+        caseId: result.caseId || `CASE-${result.id?.slice(0, 6) || 'SCAN'}`,
+        reportId: result.reportId || result.id || 'REP-001',
+        reportName: fileName,
+        fileName: file?.name || 'specimen.bin',
+        mediaType: result.mediaType || 'audio',
+        verdict: result.verdict || result.prediction || 'AUTHENTIC',
+        confidence: Number(result.confidence || 95.0),
+        deepfakeProbability: Number(result.deepfakeProbability || 0.05),
+        threatLevel: result.threatLevel || 'LOW',
+        createdAt: new Date().toISOString(),
+        fileSize: file?.size || 500000,
+        sha256Hash: result.sha256Hash || '826112549429f732d1383a99e28387dd29ef8acd95cea3daa935e573231e6cf2',
+        processingTime: result.processingTime || 0.42,
+        modelVersion: result.modelVersion || 'DeepShield Multi-Modal Engine',
+        pdfDownloadUrl: targetPdfUrl,
+        jsonDownloadUrl: '',
       });
-
-      if (!response.ok) {
-        throw new Error('Unable to generate forensic certificate.');
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (err: any) {
-      console.error('[Download Error]:', err);
-      setError('Unable to generate forensic certificate.');
+      return;
     }
+
+    exportPdfCertificate({
+      caseId: result.caseId || `CASE-${result.id?.slice(0, 6) || 'SCAN'}`,
+      reportId: result.reportId || result.id || 'REP-001',
+      reportName: fileName,
+      fileName: file?.name || 'specimen.bin',
+      mediaType: result.mediaType || 'audio',
+      verdict: result.verdict || result.prediction || 'AUTHENTIC',
+      confidence: Number(result.confidence || 95.0),
+      deepfakeProbability: Number(result.deepfakeProbability || 0.05),
+      threatLevel: result.threatLevel || 'LOW',
+      createdAt: new Date().toISOString(),
+      fileSize: file?.size || 500000,
+      sha256Hash: result.sha256Hash || '826112549429f732d1383a99e28387dd29ef8acd95cea3daa935e573231e6cf2',
+      processingTime: result.processingTime || 0.42,
+      modelVersion: result.modelVersion || 'DeepShield Multi-Modal Engine',
+      pdfDownloadUrl: targetPdfUrl,
+      jsonDownloadUrl: '',
+    });
   };
 
   const handleViewPdfReport = (downloadUrl: string) => {
-    window.open(downloadUrl, '_blank');
+    if (!result) return;
+    const targetPdfUrl = downloadUrl && downloadUrl !== '#'
+      ? downloadUrl
+      : `/api/detect/${result.id || result.caseId || 'latest'}/report/pdf`;
+
+    viewPdfReport({
+      caseId: result.caseId || `CASE-${result.id?.slice(0, 6) || 'SCAN'}`,
+      reportId: result.reportId || result.id || 'REP-001',
+      reportName: `DS_${result.caseId || 'report'}.pdf`,
+      fileName: file?.name || 'specimen.bin',
+      mediaType: result.mediaType || 'audio',
+      verdict: result.verdict || result.prediction || 'AUTHENTIC',
+      confidence: Number(result.confidence || 95.0),
+      deepfakeProbability: Number(result.deepfakeProbability || 0.05),
+      threatLevel: result.threatLevel || 'LOW',
+      createdAt: new Date().toISOString(),
+      fileSize: file?.size || 500000,
+      sha256Hash: result.sha256Hash || '826112549429f732d1383a99e28387dd29ef8acd95cea3daa935e573231e6cf2',
+      processingTime: result.processingTime || 0.42,
+      modelVersion: result.modelVersion || 'DeepShield Multi-Modal Engine',
+      pdfDownloadUrl: targetPdfUrl,
+      jsonDownloadUrl: '',
+    });
   };
 
   const copyToClipboard = (text: string) => {
@@ -432,14 +479,16 @@ export const UploadPage: React.FC = () => {
   const isImgUncertain = imgPred === 'Uncertain' || imgPred === 'UNCERTAIN';
 
   return (
-    <div className="p-8 space-y-8 max-w-6xl mx-auto selection:bg-[#00e6a8] selection:text-[#070c1a]">
+    <div className="p-8 space-y-8 max-w-6xl mx-auto selection:bg-[#5b63f6] selection:text-white font-sans">
       {/* Title & Upload Option Header */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
+      <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 border-b pb-6 ${isLight ? 'border-slate-200' : 'border-[#1e2a44]'}`}>
         <div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold font-display text-[#00e6a8] tracking-tight flex items-center gap-3">
-            <ScanFace className="w-8 h-8 text-[#00e6a8]" /> Detect DeepFake Images, Audio, Video & Music
+          <h1 className={`text-3xl sm:text-4xl font-extrabold font-display tracking-tight flex items-center gap-3 ${
+            isLight ? 'text-slate-900' : 'text-white'
+          }`}>
+            <ScanFace className="w-8 h-8 text-[#5b63f6]" /> Detect DeepFake Images, Audio, Video & Music
           </h1>
-          <p className="text-xs sm:text-sm text-slate-300 mt-1">
+          <p className={`text-xs sm:text-sm mt-1 font-medium ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
             Drag and drop images, videos, or music files from your file explorer for instant AI forensic analysis.
           </p>
         </div>
@@ -460,7 +509,7 @@ export const UploadPage: React.FC = () => {
           />
           <button
             onClick={() => document.getElementById('header-audio-input')?.click()}
-            className="px-5 py-2.5 rounded-xl text-xs font-extrabold bg-[#00e6a8] text-[#070c1a] hover:bg-[#36d399] transition-all flex items-center gap-2 glow-cyan uppercase tracking-wider hover:scale-105"
+            className="px-5 py-2.5 rounded-xl text-xs font-extrabold bg-[#5b63f6] text-white hover:bg-[#4f46e5] transition-all flex items-center gap-2 shadow-md shadow-[#5b63f6]/20 uppercase tracking-wider hover:scale-105"
           >
             <Upload className="w-4 h-4" /> Upload File
           </button>
@@ -474,8 +523,10 @@ export const UploadPage: React.FC = () => {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`max-w-2xl mx-auto p-8 rounded-2xl bg-[#0d1527] border border-[#00e6a8]/20 transition-all text-center glass-card ${
-              isDragging ? 'border-[#00e6a8] bg-[#00e6a8]/15 glow-cyan scale-[1.02]' : ''
+            className={`max-w-2xl mx-auto p-8 rounded-2xl border transition-all text-center ${
+              isLight
+                ? `bg-white border-slate-200 shadow-sm text-slate-900 ${isDragging ? 'border-[#5b63f6] bg-[#5b63f6]/10 scale-[1.02]' : ''}`
+                : `bg-[#0f172a] border-[#1e2a44] glass-card ${isDragging ? 'border-[#5b63f6] bg-[#5b63f6]/15 scale-[1.02]' : ''}`
             }`}
           >
             {/* Hidden File Input */}

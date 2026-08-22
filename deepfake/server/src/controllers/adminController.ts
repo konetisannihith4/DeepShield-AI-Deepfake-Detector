@@ -128,9 +128,12 @@ export class AdminController {
 
   public static async markNotificationRead(req: AuthRequest, res: Response, next: NextFunction) {
     try {
+      const userId = req.user?.id;
+      if (!userId) throw new AppError('Unauthorized', 401);
+
       const { id } = req.params;
-      await prisma.notification.update({
-        where: { id },
+      await prisma.notification.updateMany({
+        where: { id, userId },
         data: { isRead: true },
       }).catch(() => null);
 

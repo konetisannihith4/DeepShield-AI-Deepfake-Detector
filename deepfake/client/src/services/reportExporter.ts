@@ -113,27 +113,75 @@ const buildThresholdSection = (record: ScanRecord): string => {
   `;
 };
 
+export const viewPdfReport = async (record: ScanRecord) => {
+  const token = localStorage.getItem('deepshield_token') || localStorage.getItem('token') || '';
+  const downloadUrl = record.pdfDownloadUrl || `/api/reports/download/${record.caseId}.pdf`;
+  try {
+    const fullUrl = downloadUrl.startsWith('http')
+      ? downloadUrl
+      : `${window.location.origin}${downloadUrl.startsWith('/') ? '' : '/'}${downloadUrl}`;
+    const urlWithToken = `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}inline=true&token=${encodeURIComponent(token)}`;
+    const res = await fetch(urlWithToken, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.ok) {
+      const blob = await res.blob();
+      const headerText = await blob.slice(0, 5).text();
+      if (headerText.startsWith('%PDF')) {
+        const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+        const objectUrl = URL.createObjectURL(pdfBlob);
+        const previewWin = window.open(objectUrl, '_blank');
+        if (!previewWin) {
+          // If popup is blocked by browser, trigger direct download
+          const link = document.createElement('a');
+          link.href = objectUrl;
+          link.download = record.reportName || `DeepShield_Forensic_Report_${record.caseId}.pdf`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+        return;
+      }
+    }
+  } catch (err) {
+    console.warn('[View PDF Warning]: Failed to fetch valid PDF binary from backend:', err);
+  }
+
+  // Fallback if backend fetch fails
+  exportPdfCertificate(record);
+};
+
 export const exportPdfCertificate = async (record: ScanRecord) => {
-  // Try real backend PDF first
-  if (record.pdfDownloadUrl && record.pdfDownloadUrl.startsWith('http')) {
-    try {
-      const token = localStorage.getItem('deepshield_token') || 'demo-token';
-      const res = await fetch(record.pdfDownloadUrl, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
+  const token = localStorage.getItem('deepshield_token') || localStorage.getItem('token') || '';
+  const downloadUrl = record.pdfDownloadUrl || `/api/reports/download/${record.caseId}.pdf`;
+  
+  // 1. Try real backend PDF download first
+  try {
+    const fullUrl = downloadUrl.startsWith('http')
+      ? downloadUrl
+      : `${window.location.origin}${downloadUrl.startsWith('/') ? '' : '/'}${downloadUrl}`;
+    const urlWithToken = `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}`;
+    const res = await fetch(urlWithToken, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.ok) {
+      const blob = await res.blob();
+      const headerText = await blob.slice(0, 5).text();
+      if (headerText.startsWith('%PDF')) {
+        const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+        const url = URL.createObjectURL(pdfBlob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = record.reportName || `${record.caseId}_certificate.pdf`;
+        link.download = record.reportName || `DeepShield_Forensic_Report_${record.caseId}.pdf`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        URL.revokeObjectURL(url);
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
         return;
       }
-    } catch {}
+    }
+  } catch (err) {
+    console.warn('[PDF Export Warning]: Backend fetch failed, opening printable certificate fallback:', err);
   }
 
   // Fallback: Generate printable forensic certificate

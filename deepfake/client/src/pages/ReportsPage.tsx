@@ -19,6 +19,8 @@ import {
   Award
 } from 'lucide-react';
 import { apiClient } from '../services/apiClient';
+import { useAuth } from '../context/AuthContext';
+import { exportPdfCertificate, viewPdfReport } from '../services/reportExporter';
 
 interface ForensicReportItem {
   caseId: string;
@@ -46,6 +48,8 @@ interface ReportStats {
 }
 
 export const ReportsPage: React.FC = () => {
+  const { theme } = useAuth();
+  const isLight = theme === 'light';
   const [reports, setReports] = useState<ForensicReportItem[]>([]);
   const [stats, setStats] = useState<ReportStats>({
     reportsGenerated: 0,
@@ -104,10 +108,14 @@ export const ReportsPage: React.FC = () => {
     }
   };
 
-  const handleDownloadFile = async (downloadUrl: string, fileName: string) => {
+  const handleDownloadFile = async (downloadUrl: string, fileName: string, item?: ForensicReportItem) => {
     try {
-      const token = localStorage.getItem('deepshield_token') || localStorage.getItem('token');
-      const response = await fetch(downloadUrl, {
+      const token = localStorage.getItem('deepshield_token') || localStorage.getItem('token') || '';
+      const fullUrl = downloadUrl.startsWith('http')
+        ? downloadUrl
+        : `${window.location.origin}${downloadUrl.startsWith('/') ? '' : '/'}${downloadUrl}`;
+      const urlWithToken = `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}`;
+      const response = await fetch(urlWithToken, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -118,7 +126,9 @@ export const ReportsPage: React.FC = () => {
       }
 
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
+      const mimeType = fileName.endsWith('.json') ? 'application/json' : 'application/pdf';
+      const pdfBlob = new Blob([blob], { type: mimeType });
+      const url = window.URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;
       link.download = fileName;
@@ -128,12 +138,75 @@ export const ReportsPage: React.FC = () => {
       window.URL.revokeObjectURL(url);
     } catch (err: any) {
       console.error('[Download Error]:', err);
-      setError('Unable to download report file.');
+      if (item && fileName.endsWith('.pdf')) {
+        exportPdfCertificate({
+          caseId: item.caseId,
+          reportId: item.reportId,
+          reportName: item.reportName,
+          fileName: item.fileName,
+          mediaType: 'audio',
+          verdict: item.verdict,
+          confidence: item.confidence,
+          deepfakeProbability: item.deepfakeProbability,
+          threatLevel: item.threatLevel,
+          createdAt: item.createdAt,
+          fileSize: item.fileSize,
+          sha256Hash: item.sha256Hash,
+          processingTime: 0.42,
+          modelVersion: 'DeepShield Multi-Modal Forensic Engine',
+          pdfDownloadUrl: item.pdfDownloadUrl,
+          jsonDownloadUrl: item.jsonDownloadUrl,
+        });
+      } else {
+        setError('Unable to download report file.');
+      }
     }
   };
 
-  const handleViewPdfReport = (downloadUrl: string) => {
-    window.open(downloadUrl, '_blank');
+  const handleViewPdfReport = async (downloadUrl: string, item?: ForensicReportItem) => {
+    if (item) {
+      viewPdfReport({
+        caseId: item.caseId,
+        reportId: item.reportId,
+        reportName: item.reportName,
+        fileName: item.fileName,
+        mediaType: 'audio',
+        verdict: item.verdict,
+        confidence: item.confidence,
+        deepfakeProbability: item.deepfakeProbability,
+        threatLevel: item.threatLevel,
+        createdAt: item.createdAt,
+        fileSize: item.fileSize,
+        sha256Hash: item.sha256Hash,
+        processingTime: 0.42,
+        modelVersion: 'DeepShield Multi-Modal Forensic Engine',
+        pdfDownloadUrl: item.pdfDownloadUrl,
+        jsonDownloadUrl: item.jsonDownloadUrl,
+      });
+      return;
+    }
+    try {
+      const token = localStorage.getItem('deepshield_token') || localStorage.getItem('token') || '';
+      const fullUrl = downloadUrl.startsWith('http')
+        ? downloadUrl
+        : `${window.location.origin}${downloadUrl.startsWith('/') ? '' : '/'}${downloadUrl}`;
+      const urlWithToken = `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}inline=true&token=${encodeURIComponent(token)}`;
+      const response = await fetch(urlWithToken, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) {
+        throw new Error('Unable to view report PDF.');
+      }
+
+      const blob = await response.blob();
+      const pdfBlob = new Blob([blob], { type: 'application/pdf' });
+      const objectUrl = window.URL.createObjectURL(pdfBlob);
+      window.open(objectUrl, '_blank');
+    } catch (err: any) {
+      console.error('[View PDF Error]:', err);
+      setError('Unable to open PDF report file.');
+    }
   };
 
   const latestReport = reports.length > 0 ? reports[0] : null;
@@ -159,25 +232,29 @@ export const ReportsPage: React.FC = () => {
       case 'MODERATE':
         return 'bg-blue-500/20 text-blue-400 border-blue-500/40';
       default:
-        return 'bg-emerald-500/20 text-[#00e6a8] border-[#00e6a8]/40 glow-cyan';
+        return isLight ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40';
     }
   };
 
   return (
-    <div className="p-8 space-y-8 max-w-6xl mx-auto selection:bg-[#00e6a8] selection:text-[#070c1a]">
+    <div className="p-8 space-y-8 max-w-6xl mx-auto selection:bg-[#5b63f6] selection:text-white font-sans">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold font-display text-[#00e6a8] flex items-center gap-3">
-            <Shield className="w-8 h-8 text-[#00e6a8]" /> Detection History & SHA-256 Digital Reports
+          <h1 className={`text-3xl font-extrabold font-display flex items-center gap-3 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+            <Shield className="w-8 h-8 text-[#5b63f6]" /> Detection History & SHA-256 Digital Reports
           </h1>
-          <p className="text-xs text-slate-300 mt-1">
+          <p className={`text-xs mt-1 font-medium ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
             Searchable forensic report archive with cryptographic SHA-256 hash verification & PDF certificates.
           </p>
         </div>
         <button
           onClick={fetchReportsData}
-          className="px-4 py-2 rounded-lg text-xs font-bold bg-[#0d1527] hover:bg-slate-800 text-[#00e6a8] border border-[#00e6a8]/30 flex items-center gap-2 self-start md:self-auto transition-all"
+          className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 self-start md:self-auto transition-all ${
+            isLight
+              ? 'bg-white hover:bg-slate-100 text-[#5b63f6] border border-slate-200 shadow-sm'
+              : 'bg-[#0f172a] hover:bg-[#131d32] text-[#5b63f6] border border-[#1e2a44]'
+          }`}
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh Archive
         </button>

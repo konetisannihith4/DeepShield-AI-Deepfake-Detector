@@ -8,51 +8,67 @@
     --foreground: 213 31% 93%;
     --card: 224 45% 8%;
     --card-foreground: 213 31% 93%;
-    --primary: 165 100% 45%;
-    --primary-foreground: 224 50% 5%;
+    --primary: 239 84% 67%;
+    --primary-foreground: 0 0% 100%;
     --secondary: 222 47% 11%;
     --secondary-foreground: 213 31% 91%;
     --muted: 223 47% 10%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 165 100% 45%;
-    --accent-foreground: 224 50% 5%;
+    --accent: 239 84% 67%;
+    --accent-foreground: 0 0% 100%;
     --border: 217 33% 15%;
   }
 
-  .light {
-    --background: 220 33% 98%;
-    --foreground: 222 47% 10%;
+  .light, [data-theme="light"] {
+    --background: 210 40% 98%;
+    --foreground: 222 47% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 10%;
-    --primary: 165 100% 40%;
-    --primary-foreground: 222 47% 98%;
+    --card-foreground: 222 47% 11%;
+    --primary: 239 84% 67%;
+    --primary-foreground: 210 40% 98%;
     --secondary: 214 32% 93%;
-    --secondary-foreground: 222 47% 11.2%;
+    --secondary-foreground: 222 47% 11%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
     --accent: 214 32% 93%;
-    --accent-foreground: 222 47% 11.2%;
+    --accent-foreground: 222 47% 11%;
     --border: 214.3 31.8% 91.4%;
   }
 }
 
 body {
-  background-color: #070c1a;
+  background-color: #050816;
   background-image: 
-    radial-gradient(at 10% 10%, rgba(0, 230, 168, 0.07) 0px, transparent 50%),
-    radial-gradient(at 90% 10%, rgba(14, 165, 233, 0.08) 0px, transparent 50%),
-    radial-gradient(at 50% 90%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+    radial-gradient(at 10% 10%, rgba(91, 99, 246, 0.08) 0px, transparent 50%),
+    radial-gradient(at 90% 10%, rgba(79, 70, 229, 0.08) 0px, transparent 50%),
+    radial-gradient(at 50% 90%, rgba(59, 130, 246, 0.05) 0px, transparent 50%);
   background-attachment: fixed;
-  color: #f3f4f6;
+  color: #f8fafc;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Glassmorphism TrueVision Cyan Card */
+html.light body, body.light, [data-theme="light"] body {
+  background-color: #f8fafc;
+  background-image: none;
+  color: #0f172a;
+}
+
+/* Glassmorphism Dynamic Cards */
 .glass-card {
-  background: rgba(13, 21, 39, 0.85);
+  background: #0f172a;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 230, 168, 0.15);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.45);
+  border: 1px solid #1e2a44;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+html.light .glass-card, body.light .glass-card, [data-theme="light"] .glass-card {
+  background: #ffffff;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
 }
 
 .glass-card-hover {
@@ -60,29 +76,35 @@ body {
 }
 
 .glass-card-hover:hover {
-  border-color: rgba(0, 230, 168, 0.5);
-  box-shadow: 0 0 25px rgba(0, 230, 168, 0.2), 0 8px 32px 0 rgba(0, 0, 0, 0.55);
+  border-color: rgba(91, 99, 246, 0.5);
+  box-shadow: 0 0 25px rgba(91, 99, 246, 0.2), 0 8px 32px 0 rgba(0, 0, 0, 0.55);
   transform: translateY(-3px);
 }
 
-/* Cyan Glow Button */
-.btn-cyan {
-  background-color: #00e6a8;
-  color: #070c1a;
+html.light .glass-card-hover:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+/* Blue Primary Button */
+.btn-cyan, .btn-blue {
+  background-color: #5b63f6;
+  color: #ffffff;
   font-weight: 800;
-  box-shadow: 0 0 20px rgba(0, 230, 168, 0.35);
+  box-shadow: 0 0 20px rgba(91, 99, 246, 0.35);
   transition: all 0.2s ease;
 }
 
-.btn-cyan:hover {
-  background-color: #36d399;
-  box-shadow: 0 0 30px rgba(0, 230, 168, 0.6);
+.btn-cyan:hover, .btn-blue:hover {
+  background-color: #4f46e5;
+  box-shadow: 0 0 30px rgba(91, 99, 246, 0.6);
   transform: scale(1.02);
 }
 
 /* Cyber Glow Utilities */
-.glow-cyan {
-  box-shadow: 0 0 20px rgba(0, 230, 168, 0.4);
+.glow-cyan, .glow-blue {
+  box-shadow: 0 0 20px rgba(91, 99, 246, 0.4);
 }
 
 .glow-emerald {
@@ -100,18 +122,29 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(7, 12, 26, 0.9);
+  background: #050816;
+}
+
+html.light ::-webkit-scrollbar-track {
+  background: #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 230, 168, 0.4);
+  background: rgba(91, 99, 246, 0.4);
   border-radius: 4px;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 230, 168, 0.8);
+html.light ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
 }
 
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(91, 99, 246, 0.8);
+}
+
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
 
 /* Pulse animation for mic / live stream indicator */
 @keyframes pulse-ring {
@@ -145,4 +178,3 @@ body {
 .animate-scanline {
   animation: scanline 4s linear infinite;
 }
-

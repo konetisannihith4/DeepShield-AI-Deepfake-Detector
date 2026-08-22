@@ -45,10 +45,10 @@ model Organization {
 }
 
 model User {
-  id             String         @id @default(uuid())
-  email          String         @unique
-  passwordHash   String
-  fullName       String
+  id                         String               @id @default(uuid())
+  email                      String               @unique
+  passwordHash               String
+  fullName                   String
   role                       Role                 @default(ANALYST)
   isActive                   Boolean              @default(true)
   isEmailVerified            Boolean              @default(false)
@@ -57,11 +57,13 @@ model User {
   organizationId             String
   organization               Organization         @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   refreshTokens              RefreshToken[]
-  passwordResetTokens PasswordResetToken[]
-  auditLogs           AuditLog[]
-  notifications       Notification[]
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
+  passwordResetTokens        PasswordResetToken[]
+  auditLogs                  AuditLog[]
+  notifications              Notification[]
+  detections                 DetectionHistory[]
+  reports                    Report[]
+  createdAt                  DateTime             @default(now())
+  updatedAt                  DateTime             @updatedAt
 
   @@index([email])
   @@index([organizationId])
@@ -95,6 +97,8 @@ model PasswordResetToken {
 
 model DetectionHistory {
   id                  String          @id @default(uuid())
+  userId              String?
+  user                User?           @relation(fields: [userId], references: [id], onDelete: Cascade)
   originalFileName    String          @default("specimen.wav")
   storedFileName      String          @default("specimen.wav")
   fileName            String          // Alias for backward compatibility
@@ -130,6 +134,7 @@ model DetectionHistory {
   reports             Report[]
   createdAt           DateTime        @default(now())
 
+  @@index([userId])
   @@index([organizationId])
   @@index([riskLevel])
   @@index([status])
@@ -139,6 +144,8 @@ model DetectionHistory {
 
 model Report {
   id          String           @id @default(uuid())
+  userId      String?
+  user        User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
   detectionId String
   detection   DetectionHistory @relation(fields: [detectionId], references: [id], onDelete: Cascade)
   title       String
@@ -147,6 +154,7 @@ model Report {
   generatedBy String
   createdAt   DateTime         @default(now())
 
+  @@index([userId])
   @@index([detectionId])
 }
 
@@ -187,3 +195,18 @@ model SystemSetting {
   description String?  @db.Text
   updatedAt   DateTime @updatedAt
 }
+
+model OtpVerification {
+  id        String   @id @default(uuid())
+  email     String
+  otpHash   String   @db.VarChar(500)
+  purpose   String   // SIGNUP, LOGIN, FORGOT_PASSWORD
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([purpose])
+  @@index([createdAt])
+}
+

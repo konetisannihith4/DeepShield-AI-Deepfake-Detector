@@ -23,12 +23,12 @@ export const AnalyticsPage: React.FC = () => {
     }
   };
 
-  const totalScans = analytics?.totalScans || reportStats?.reportsGenerated || 124;
-  const authenticVoices = analytics?.authenticCount || reportStats?.authenticFiles || 76;
-  const aiVoices = analytics?.deepfakesDetected || reportStats?.deepfakeFiles || 48;
-  const criticalThreats = reportStats?.criticalThreats || 12;
-  const storageUsed = reportStats?.storageUsedCount || 15;
-  const storageMax = reportStats?.maxStorageLimit || 15;
+  const totalScans = analytics?.totalScans ?? reportStats?.reportsGenerated ?? 0;
+  const authenticVoices = analytics?.authenticCount ?? reportStats?.authenticFiles ?? 0;
+  const aiVoices = analytics?.deepfakesDetected ?? reportStats?.deepfakeFiles ?? 0;
+  const criticalThreats = reportStats?.criticalThreats ?? 0;
+  const storageUsed = reportStats?.storageUsedCount ?? 0;
+  const storageMax = reportStats?.maxStorageLimit ?? 15;
 
   return (
     <div className="p-8 space-y-8 max-w-7xl mx-auto selection:bg-blue-600 selection:text-white">
@@ -129,27 +129,29 @@ export const AnalyticsPage: React.FC = () => {
           </div>
 
           <div className="space-y-2.5">
-            {(analytics?.recentUploads || [
-              { fileName: 'CEO_Urgent_Call.wav', status: 'DEEPFAKE', overallScore: 0.984, createdAt: new Date().toISOString() },
-              { fileName: 'Customer_Support_Auth.mp3', status: 'AUTHENTIC', overallScore: 0.05, createdAt: new Date(Date.now() - 3600000).toISOString() },
-              { fileName: 'Executive_Voice_Memo.flac', status: 'DEEPFAKE', overallScore: 0.942, createdAt: new Date(Date.now() - 7200000).toISOString() },
-            ]).map((item: any, idx: number) => (
-              <div key={idx} className="p-3 rounded-xl bg-slate-955 border border-slate-800 flex items-center justify-between text-xs">
-                <div className="truncate max-w-xs">
-                  <span className="font-semibold text-white truncate block">{item.originalFileName || item.fileName}</span>
-                  <span className="text-[10px] text-slate-400">{new Date(item.createdAt).toLocaleString()}</span>
-                </div>
-                <span
-                  className={`px-2.5 py-1 rounded text-[10px] font-bold ${
-                    (item.status || item.verdict || '').toUpperCase().includes('DEEPFAKE') || (item.status || item.verdict || '').toUpperCase().includes('AI')
-                      ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                      : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                  }`}
-                >
-                  {(item.status || item.verdict || '').toUpperCase().includes('DEEPFAKE') ? 'AI GENERATED VOICE' : 'GENUINE VOICE'}
-                </span>
+            {(!analytics?.recentUploads || analytics.recentUploads.length === 0) ? (
+              <div className="py-8 text-center text-slate-500 text-xs">
+                No recent audio uploads recorded.
               </div>
-            ))}
+            ) : (
+              analytics.recentUploads.map((item: any, idx: number) => (
+                <div key={idx} className="p-3 rounded-xl bg-slate-955 border border-slate-800 flex items-center justify-between text-xs">
+                  <div className="truncate max-w-xs">
+                    <span className="font-semibold text-white truncate block">{item.originalFileName || item.fileName}</span>
+                    <span className="text-[10px] text-slate-400">{new Date(item.createdAt).toLocaleString()}</span>
+                  </div>
+                  <span
+                    className={`px-2.5 py-1 rounded text-[10px] font-bold ${
+                      (item.status || item.verdict || '').toUpperCase().includes('DEEPFAKE') || (item.status || item.verdict || '').toUpperCase().includes('AI')
+                        ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                        : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                    }`}
+                  >
+                    {(item.status || item.verdict || '').toUpperCase().includes('DEEPFAKE') ? 'AI GENERATED VOICE' : 'GENUINE VOICE'}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>

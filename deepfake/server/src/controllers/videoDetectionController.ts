@@ -92,9 +92,10 @@ export const analyzeVideo = async (req: AuthRequest, res: Response): Promise<voi
       ? aiResult['Processing Time']
       : parseFloat(String(aiResult['Processing Time'] || aiResult.processingTime || '0').replace(/[^\d.]/g, ''));
 
-    // 3. Save to Prisma DB History
+    // 3. Save to Prisma DB History with authenticated User ID ownership
     const detectionRecord = await prisma.detectionHistory.create({
       data: {
+        userId: req.user?.id,
         originalFileName: filename,
         storedFileName: filename,
         fileName: filename,

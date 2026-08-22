@@ -18,9 +18,12 @@ import {
 } from 'lucide-react';
 import { apiClient } from '../services/apiClient';
 import { getLocalScanHistory, ScanRecord } from '../services/scanHistoryService';
-import { exportPdfCertificate, exportJsonReport } from '../services/reportExporter';
+import { exportPdfCertificate, exportJsonReport, viewPdfReport } from '../services/reportExporter';
+import { useAuth } from '../context/AuthContext';
 
 export const HistoryPage: React.FC = () => {
+  const { user, theme } = useAuth();
+  const isLight = theme === 'light';
   const [items, setItems] = useState<ScanRecord[]>([]);
   const [selectedItem, setSelectedItem] = useState<ScanRecord | null>(null);
   const [loading, setLoading] = useState(true);
@@ -33,8 +36,11 @@ export const HistoryPage: React.FC = () => {
     setLoading(true);
     setError(null);
     try {
-      // 1. Get local persistent scans
-      const localScans = getLocalScanHistory();
+      // 1. Get local persistent scans for current user + guest fallback
+      const localScans = [
+        ...getLocalScanHistory(user?.id),
+        ...getLocalScanHistory(),
+      ];
 
       // 2. Fetch from backend endpoints if available
       const [reportsRes, detectRes] = await Promise.all([
@@ -101,9 +107,10 @@ export const HistoryPage: React.FC = () => {
             reportName: `report_${det.id}.pdf`,
             fileName: det.originalFileName || det.fileName || 'specimen.bin',
             mediaType: mType,
-            durationSeconds: det.durationSeconds || det.duration,
+            durationSeconds: det.durationSeconds || det.duration || 5,
             verdict: isAi ? (mType === 'image' ? 'Likely AI Generated' : mType === 'video' ? 'AI GENERATED VIDEO' : 'AI GENERATED VOICE') : (mType === 'image' ? 'Likely Natural' : 'GENUINE'),
             confidence: confPct,
+            deepfakeProbability: det.deepfakeProbability || (confPct / 100),
             threatLevel: (det.riskLevel || det.threatLevel || (isAi ? 'HIGH' : 'LOW')).toUpperCase() as any,
             createdAt: det.createdAt || new Date().toISOString(),
             fileSize: det.fileSize || 500000,
@@ -118,9 +125,14 @@ export const HistoryPage: React.FC = () => {
         }
       });
 
-      const normalizedList = Array.from(mergedMap.values());
+      localScans.forEach((loc) => {
+        const key = loc.sha256Hash || loc.caseId || loc.reportId;
+        if (!mergedMap.has(key)) {
+          mergedMap.set(key, loc);
+        }
+      });
 
-      // Detect duplicates by hash
+      const normalizedList = Array.from(mergedMap.values());
       const hashTracker = new Map<string, string>();
       normalizedList.forEach((rec) => {
         if (rec.sha256Hash) {
@@ -173,7 +185,7 @@ export const HistoryPage: React.FC = () => {
   };
 
   const handleViewPdfReport = (item: ScanRecord) => {
-    exportPdfCertificate(item);
+    viewPdfReport(item);
   };
 
   const copyToClipboard = (text: string) => {
@@ -193,9 +205,8 @@ export const HistoryPage: React.FC = () => {
     }
   };
 
-  // Filter items by search (filename, hash, caseId) and filterType
   const filteredItems = items.filter((item) => {
-    const query = search.toLowerCase().trim();
+    const query = search.trim().toLowerCase();
     const matchesSearch =
       !query ||
       item.fileName.toLowerCase().includes(query) ||
@@ -227,26 +238,30 @@ export const HistoryPage: React.FC = () => {
       case 'MODERATE':
         return 'bg-blue-500/20 text-blue-400 border-blue-500/40';
       default:
-        return 'bg-emerald-500/20 text-[#00e6a8] border-[#00e6a8]/40 glow-cyan';
+        return isLight ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40';
     }
   };
 
   return (
-    <div className="p-8 space-y-8 max-w-7xl mx-auto selection:bg-[#00e6a8] selection:text-[#070c1a]">
+    <div className="p-8 space-y-8 max-w-7xl mx-auto selection:bg-[#5b63f6] selection:text-white font-sans">
       {/* Title Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-extrabold font-display text-[#00e6a8] flex items-center gap-3">
-            <Shield className="w-8 h-8 text-[#00e6a8]" /> Multi-Modal Deepfake Scan Archive
+          <h1 className={`text-3xl font-extrabold font-display flex items-center gap-3 ${isLight ? 'text-slate-900' : 'text-white'}`}>
+            <Shield className="w-8 h-8 text-[#5b63f6]" /> Multi-Modal Deepfake Scan Archive
           </h1>
-          <p className="text-xs text-slate-300 mt-1">
+          <p className={`text-xs mt-1 font-medium ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
             Searchable forensic database of analyzed image, audio, and video specimens, SHA-256 cryptographic hashes, and PDF reports.
           </p>
         </div>
 
         <button
           onClick={fetchScanHistory}
-          className="px-4 py-2 rounded-xl text-xs font-bold bg-[#0d1527] hover:bg-slate-800 text-[#00e6a8] border border-[#00e6a8]/30 flex items-center gap-2 self-start md:self-auto transition-all"
+          className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-2 self-start md:self-auto transition-all ${
+            isLight
+              ? 'bg-white hover:bg-slate-100 text-[#5b63f6] border border-slate-200 shadow-sm'
+              : 'bg-[#0f172a] hover:bg-[#131d32] text-[#5b63f6] border border-[#1e2a44]'
+          }`}
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh Archive
         </button>
@@ -265,22 +280,30 @@ export const HistoryPage: React.FC = () => {
       {/* Search & Filter Controls */}
       <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
         <div className="relative w-full sm:w-96">
-          <Search className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
+          <Search className={`w-4 h-4 absolute left-3.5 top-3 ${isLight ? 'text-slate-500' : 'text-slate-400'}`} />
           <input
             type="text"
             placeholder="Search Filename, SHA-256 Hash, Case ID..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#070c1a] border border-slate-800 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-[#00e6a8]"
+            className={`w-full pl-10 pr-4 py-2.5 rounded-xl text-xs font-semibold transition-colors focus:outline-none ${
+              isLight
+                ? 'bg-white border border-slate-200 text-slate-900 placeholder-slate-500 focus:border-[#5b63f6] shadow-sm'
+                : 'bg-[#070c1a] border border-slate-800 text-slate-200 placeholder-slate-500 focus:border-[#00e6a8]'
+            }`}
           />
         </div>
 
         <div className="flex items-center gap-3 w-full sm:w-auto">
-          <Filter className="w-4 h-4 text-slate-400 shrink-0" />
+          <Filter className={`w-4 h-4 shrink-0 ${isLight ? 'text-slate-500' : 'text-slate-400'}`} />
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="px-4 py-2.5 rounded-xl bg-[#070c1a] border border-slate-800 text-xs text-slate-200 focus:outline-none focus:border-[#00e6a8]"
+            className={`px-4 py-2.5 rounded-xl text-xs font-semibold focus:outline-none transition-colors ${
+              isLight
+                ? 'bg-white border border-slate-200 text-slate-900 focus:border-[#5b63f6] shadow-sm'
+                : 'bg-[#070c1a] border border-slate-800 text-slate-200 focus:border-[#00e6a8]'
+            }`}
           >
             <option value="ALL">All Scan Records</option>
             <option value="IMAGE">Image Scans Only</option>
@@ -299,11 +322,17 @@ export const HistoryPage: React.FC = () => {
       {/* Main Grid: Left Table + Right Details Panel */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Left Side Table */}
-        <div className="lg:col-span-2 rounded-2xl bg-[#0d1527] border border-[#00e6a8]/20 p-6 glass-card space-y-4">
+        <div
+          className={`lg:col-span-2 rounded-2xl border p-6 space-y-4 transition-colors ${
+            isLight
+              ? 'bg-white border-slate-200 shadow-sm text-slate-900'
+              : 'bg-[#0d1527] border-[#00e6a8]/20 glass-card'
+          }`}
+        >
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="text-slate-400 border-b border-slate-800 uppercase tracking-wider text-[10px]">
+                <tr className={`border-b uppercase tracking-wider text-[10px] ${isLight ? 'text-slate-700 border-slate-200 font-extrabold' : 'text-slate-400 border-slate-800'}`}>
                   <th className="pb-3 px-3 font-bold">Case ID</th>
                   <th className="pb-3 px-3 font-bold">Media</th>
                   <th className="pb-3 px-3 font-bold">Filename</th>
@@ -428,16 +457,20 @@ export const HistoryPage: React.FC = () => {
         </div>
 
         {/* Right Side Details Panel */}
-        <div className="rounded-2xl bg-[#0d1527] border border-[#00e6a8]/30 p-6 glass-card space-y-6">
+        <div className={`rounded-2xl border p-6 space-y-6 ${
+          isLight ? 'bg-white border-slate-200 shadow-sm text-slate-900' : 'bg-[#0f172a] border-[#1e2a44]'
+        }`}>
           {selectedItem ? (
             <div className="space-y-5 text-xs">
-              <div className="flex items-center gap-3 pb-4 border-b border-slate-800">
-                <div className="w-10 h-10 rounded-xl bg-[#00e6a8]/20 border border-[#00e6a8]/40 text-[#00e6a8] flex items-center justify-center shrink-0">
+              <div className={`flex items-center gap-3 pb-4 border-b ${isLight ? 'border-slate-200' : 'border-slate-800'}`}>
+                <div className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${
+                  isLight ? 'bg-blue-50 border-blue-200 text-blue-600' : 'bg-[#00e6a8]/20 border-[#00e6a8]/40 text-[#00e6a8]'
+                }`}>
                   {getMediaIcon(selectedItem.mediaType)}
                 </div>
                 <div className="truncate">
-                  <h3 className="font-bold text-white text-sm truncate">{selectedItem.fileName}</h3>
-                  <span className="text-[10px] font-mono text-[#00e6a8]">{selectedItem.caseId}</span>
+                  <h3 className={`font-bold text-sm truncate ${isLight ? 'text-slate-900' : 'text-white'}`}>{selectedItem.fileName}</h3>
+                  <span className={`text-[10px] font-mono ${isLight ? 'text-blue-600' : 'text-[#00e6a8]'}`}>{selectedItem.caseId}</span>
                 </div>
               </div>
 
@@ -447,83 +480,83 @@ export const HistoryPage: React.FC = () => {
                   <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
                   <div>
                     <strong className="text-amber-300">Duplicate File Detected: </strong>
-                    This SHA-256 hash matches Case ID <span className="font-mono font-bold text-white">{selectedItem.duplicateCaseId || 'PREVIOUS_SCAN'}</span>.
+                    This SHA-256 hash matches Case ID <span className="font-mono font-bold">{selectedItem.duplicateCaseId || 'PREVIOUS_SCAN'}</span>.
                   </div>
                 </div>
               )}
 
               {/* Populated Telemetry Fields */}
               <div className="space-y-3">
-                <div className="p-3 rounded-xl bg-[#070c1a] border border-slate-800 flex justify-between items-center">
-                  <span className="text-[10px] uppercase font-mono text-slate-400">Media Modality</span>
-                  <span className="font-mono font-bold uppercase text-[#00e6a8] flex items-center gap-1.5">
+                <div className={`p-3 rounded-xl border flex justify-between items-center ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#070c1a] border-slate-800'}`}>
+                  <span className={`text-[10px] uppercase font-mono ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Media Modality</span>
+                  <span className={`font-mono font-bold uppercase flex items-center gap-1.5 ${isLight ? 'text-blue-600' : 'text-[#00e6a8]'}`}>
                     {getMediaIcon(selectedItem.mediaType)}
                     {selectedItem.mediaType}
                   </span>
                 </div>
 
-                <div className="p-3 rounded-xl bg-[#070c1a] border border-slate-800 flex justify-between items-center">
-                  <span className="text-[10px] uppercase font-mono text-slate-400">Case ID</span>
-                  <span className="font-mono font-bold text-[#00e6a8]">{selectedItem.caseId}</span>
+                <div className={`p-3 rounded-xl border flex justify-between items-center ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#070c1a] border-slate-800'}`}>
+                  <span className={`text-[10px] uppercase font-mono ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Case ID</span>
+                  <span className={`font-mono font-bold ${isLight ? 'text-blue-600' : 'text-[#00e6a8]'}`}>{selectedItem.caseId}</span>
                 </div>
 
-                <div className="p-3 rounded-xl bg-[#070c1a] border border-slate-800 space-y-1">
+                <div className={`p-3 rounded-xl border space-y-1 ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#070c1a] border-slate-800'}`}>
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] uppercase font-mono text-slate-400">SHA-256 Hash</span>
+                    <span className={`text-[10px] uppercase font-mono ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>SHA-256 Hash</span>
                     <button
                       onClick={() => copyToClipboard(selectedItem.sha256Hash)}
-                      className="text-[10px] text-[#00e6a8] hover:underline font-bold flex items-center gap-1"
+                      className={`text-[10px] hover:underline font-bold flex items-center gap-1 ${isLight ? 'text-blue-600' : 'text-[#00e6a8]'}`}
                     >
                       <Copy className="w-3 h-3" /> {copiedHash ? 'Copied' : 'Copy'}
                     </button>
                   </div>
-                  <p className="font-mono text-[10px] text-slate-300 break-all">{selectedItem.sha256Hash}</p>
+                  <p className={`font-mono text-[10px] break-all ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>{selectedItem.sha256Hash}</p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 rounded-xl bg-[#070c1a] border border-slate-800 text-center space-y-1">
-                    <span className="text-[10px] uppercase font-mono text-slate-400 block">Prediction</span>
+                  <div className={`p-3 rounded-xl border text-center space-y-1 ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#070c1a] border-slate-800'}`}>
+                    <span className={`text-[10px] uppercase font-mono block ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Prediction</span>
                     <strong
                       className={`text-sm ${
                         selectedItem.verdict.toUpperCase().includes('AI') || selectedItem.verdict.toUpperCase().includes('DEEPFAKE')
-                          ? 'text-red-400'
+                          ? 'text-red-600 dark:text-red-400'
                           : selectedItem.verdict === 'Uncertain'
-                          ? 'text-amber-400'
-                          : 'text-[#00e6a8]'
+                          ? 'text-amber-600 dark:text-amber-400'
+                          : 'text-emerald-600 dark:text-[#00e6a8]'
                       }`}
                     >
                       {selectedItem.verdict}
                     </strong>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-[#070c1a] border border-slate-800 text-center space-y-1">
-                    <span className="text-[10px] uppercase font-mono text-slate-400 block">Confidence</span>
-                    <strong className="text-sm text-white font-mono">{selectedItem.confidence}%</strong>
+                  <div className={`p-3 rounded-xl border text-center space-y-1 ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#070c1a] border-slate-800'}`}>
+                    <span className={`text-[10px] uppercase font-mono block ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Confidence</span>
+                    <strong className={`text-sm font-mono ${isLight ? 'text-slate-900' : 'text-white'}`}>{selectedItem.confidence}%</strong>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="p-3 rounded-xl bg-[#070c1a] border border-slate-800 text-center space-y-1">
-                    <span className="text-[10px] uppercase font-mono text-slate-400 block">Threat Level</span>
+                  <div className={`p-3 rounded-xl border text-center space-y-1 ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#070c1a] border-slate-800'}`}>
+                    <span className={`text-[10px] uppercase font-mono block ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Threat Level</span>
                     <span className={`px-2 py-0.5 rounded text-[10px] font-bold border inline-block ${getThreatBadgeStyle(selectedItem.threatLevel)}`}>
                       {selectedItem.threatLevel}
                     </span>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-[#070c1a] border border-slate-800 text-center space-y-1">
-                    <span className="text-[10px] uppercase font-mono text-slate-400 block">Processing Time</span>
-                    <strong className="text-sm text-slate-200 font-mono">{selectedItem.processingTime}s</strong>
+                  <div className={`p-3 rounded-xl border text-center space-y-1 ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#070c1a] border-slate-800'}`}>
+                    <span className={`text-[10px] uppercase font-mono block ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Processing Time</span>
+                    <strong className={`text-sm font-mono ${isLight ? 'text-slate-800' : 'text-slate-200'}`}>{selectedItem.processingTime}s</strong>
                   </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-[#070c1a] border border-slate-800 space-y-1">
-                  <span className="text-[10px] uppercase font-mono text-slate-400 block">Model Version</span>
-                  <span className="font-mono text-purple-300 font-bold block">{selectedItem.modelVersion}</span>
+                <div className={`p-3 rounded-xl border space-y-1 ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#070c1a] border-slate-800'}`}>
+                  <span className={`text-[10px] uppercase font-mono block ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Model Version</span>
+                  <span className={`font-mono font-bold block ${isLight ? 'text-purple-700' : 'text-purple-300'}`}>{selectedItem.modelVersion}</span>
                 </div>
 
-                <div className="p-3 rounded-xl bg-[#070c1a] border border-slate-800 space-y-1">
-                  <span className="text-[10px] uppercase font-mono text-slate-400 block">Timestamp</span>
-                  <span className="text-slate-200 block font-mono">{new Date(selectedItem.createdAt).toLocaleString()}</span>
+                <div className={`p-3 rounded-xl border space-y-1 ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#070c1a] border-slate-800'}`}>
+                  <span className={`text-[10px] uppercase font-mono block ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>Timestamp</span>
+                  <span className={`block font-mono ${isLight ? 'text-slate-800' : 'text-slate-200'}`}>{new Date(selectedItem.createdAt).toLocaleString()}</span>
                 </div>
               </div>
 
@@ -531,22 +564,30 @@ export const HistoryPage: React.FC = () => {
               <div className="space-y-2.5 pt-2">
                 <button
                   onClick={() => handleDownloadFile(selectedItem, 'pdf')}
-                  className="w-full py-3 rounded-xl bg-[#00e6a8] text-[#070c1a] hover:bg-[#36d399] font-extrabold flex items-center justify-center gap-2 glow-cyan uppercase tracking-wider text-xs"
+                  className={`w-full py-3 rounded-xl font-extrabold flex items-center justify-center gap-2 uppercase tracking-wider text-xs shadow-sm transition-all ${
+                    isLight
+                      ? 'bg-[#5b63f6] hover:bg-[#4c54e0] text-white'
+                      : 'bg-[#00e6a8] text-[#070c1a] hover:bg-[#36d399] glow-cyan'
+                  }`}
                 >
                   <Download className="w-4 h-4" /> Download PDF Certificate
                 </button>
 
                 <button
                   onClick={() => handleDownloadFile(selectedItem, 'json')}
-                  className="w-full py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold flex items-center justify-center gap-2 border border-slate-700 text-xs"
+                  className={`w-full py-2.5 rounded-xl font-bold flex items-center justify-center gap-2 border text-xs transition-all ${
+                    isLight
+                      ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300'
+                      : 'bg-slate-800 hover:bg-slate-700 text-white border-slate-700'
+                  }`}
                 >
-                  <FileCode className="w-4 h-4 text-amber-400" /> Export JSON Report
+                  <FileCode className="w-4 h-4 text-amber-500" /> Export JSON Report
                 </button>
               </div>
             </div>
           ) : (
-            <div className="text-center py-16 text-slate-500 text-xs space-y-2">
-              <Shield className="w-8 h-8 text-slate-600 mx-auto" />
+            <div className={`text-center py-16 text-xs space-y-2 ${isLight ? 'text-slate-500' : 'text-slate-500'}`}>
+              <Shield className={`w-8 h-8 mx-auto ${isLight ? 'text-slate-400' : 'text-slate-600'}`} />
               <p>Select a scan row from the archive table to populate forensic telemetry details.</p>
             </div>
           )}

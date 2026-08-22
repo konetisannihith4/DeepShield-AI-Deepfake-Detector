@@ -39,15 +39,17 @@ apiRouter.get('/health', (req, res) => {
 
 // 1. Auth Endpoints
 apiRouter.post('/auth/register', authRateLimiter, AuthController.register);
-apiRouter.get('/auth/verify-email', AuthController.verifyEmail);
-apiRouter.post('/auth/resend-verification', authRateLimiter, AuthController.resendVerification);
+apiRouter.post('/auth/signup', authRateLimiter, AuthController.register);
+apiRouter.post('/auth/verify-otp', authRateLimiter, AuthController.verifyOtp);
+apiRouter.post('/auth/resend-otp', authRateLimiter, AuthController.resendOtp);
 apiRouter.post('/auth/login', authRateLimiter, AuthController.login);
+apiRouter.post('/auth/request-login-otp', authRateLimiter, AuthController.requestLoginOtp);
+apiRouter.post('/auth/login-with-otp', authRateLimiter, AuthController.loginWithOtp);
+apiRouter.post('/auth/forgot-password', authRateLimiter, AuthController.forgotPassword);
+apiRouter.post('/auth/reset-password', authRateLimiter, AuthController.resetPassword);
 apiRouter.post('/auth/refresh', AuthController.refresh);
 apiRouter.post('/auth/logout', AuthController.logout);
 apiRouter.get('/auth/me', authenticateToken, AuthController.getMe);
-apiRouter.post('/auth/forgot-password', authRateLimiter, AuthController.forgotPassword);
-apiRouter.get('/auth/verify-reset-token', AuthController.verifyResetToken);
-apiRouter.post('/auth/reset-password', authRateLimiter, AuthController.resetPassword);
 
 // 2. Detection & AI Endpoints
 apiRouter.use('/detect/video', videoDetectionRoutes);
@@ -116,17 +118,17 @@ apiRouter.delete(
   DetectionController.deleteReportFile
 );
 
-// 3. Admin & User Management Endpoints
-apiRouter.get('/users', authenticateToken, AdminController.getUsers);
+// 3. Admin & User Management Endpoints (Strict RBAC Protection)
+apiRouter.get('/users', authenticateToken, requireRole(Role.ADMIN), AdminController.getUsers);
 apiRouter.post('/users', authenticateToken, requireRole(Role.ADMIN), logAuditEvent('USER_CREATE', 'USER'), AdminController.createUser);
 
 apiRouter.get('/organizations', authenticateToken, requireRole(Role.ADMIN), AdminController.getOrganizations);
-apiRouter.get('/audit-logs', authenticateToken, requireRole(Role.ADMIN, Role.ANALYST), AdminController.getAuditLogs);
+apiRouter.get('/audit-logs', authenticateToken, requireRole(Role.ADMIN), AdminController.getAuditLogs);
 
 apiRouter.get('/notifications', authenticateToken, AdminController.getNotifications);
 apiRouter.put('/notifications/:id/read', authenticateToken, AdminController.markNotificationRead);
 
-apiRouter.get('/settings', authenticateToken, AdminController.getSettings);
+apiRouter.get('/settings', authenticateToken, requireRole(Role.ADMIN), AdminController.getSettings);
 apiRouter.put('/settings', authenticateToken, requireRole(Role.ADMIN), logAuditEvent('UPDATE_SETTINGS', 'SYSTEM'), AdminController.updateSettings);
 
-apiRouter.get('/model/details', AdminController.getModelDetails as any);
+apiRouter.get('/model/details', authenticateToken, requireRole(Role.ADMIN), AdminController.getModelDetails as any);

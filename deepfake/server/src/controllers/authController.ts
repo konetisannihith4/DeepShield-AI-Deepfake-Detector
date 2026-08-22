@@ -10,7 +10,7 @@ import { AuthRequest } from '../middleware/auth';
 import { Role } from '@prisma/client';
 import { EmailService } from '../services/emailService';
 
-// Schema Validation via Zod DTOs
+// Schema Validation DTOs
 const registerSchema = z.object({
   email: z.string().email('Invalid email address format').transform((val) => val.toLowerCase().trim()),
   password: z
@@ -28,8 +28,15 @@ const loginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 });
 
-const resendVerificationSchema = z.object({
+const verifyOtpSchema = z.object({
   email: z.string().email('Invalid email address format').transform((val) => val.toLowerCase().trim()),
+  otp: z.string().length(6, 'OTP must be exactly 6 digits').regex(/^[0-9]{6}$/, 'OTP must contain only numbers'),
+  purpose: z.enum(['SIGNUP', 'LOGIN', 'FORGOT_PASSWORD']).optional().default('SIGNUP'),
+});
+
+const requestOtpSchema = z.object({
+  email: z.string().email('Invalid email address format').transform((val) => val.toLowerCase().trim()),
+  purpose: z.enum(['SIGNUP', 'LOGIN', 'FORGOT_PASSWORD']).optional().default('LOGIN'),
 });
 
 const refreshTokenSchema = z.object({
@@ -41,7 +48,8 @@ const forgotPasswordSchema = z.object({
 });
 
 const resetPasswordSchema = z.object({
-  token: z.string().min(1, 'Reset token is required'),
+  email: z.string().email('Invalid email address format').transform((val) => val.toLowerCase().trim()),
+  otp: z.string().length(6, 'OTP must be exactly 6 digits').regex(/^[0-9]{6}$/, 'OTP must contain only numbers'),
   password: z
     .string()
     .min(8, 'Password must be at least 8 characters long')
@@ -50,9 +58,61 @@ const resetPasswordSchema = z.object({
     .regex(/[^A-Za-z0-9]/, 'Password must contain at least one special character'),
 });
 
+// Helper: Generate & Store Hashed OTP
+async function generateAndSendOtp(email: string, fullName: string, purpose: 'SIGNUP' | 'LOGIN' | 'FORGOT_PASSWORD') {
+  // 1. Clean up expired OTPs globally
+  await prisma.otpVerification.deleteMany({
+    where: { expiresAt: { lt: new Date() } },
+  });
+
+  // 2. Check 60-second resend cooldown for email + purpose
+  const latestOtp = await prisma.otpVerification.findFirst({
+    where: { email, purpose },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  if (latestOtp) {
+    const elapsedSeconds = (Date.now() - latestOtp.createdAt.getTime()) / 1000;
+    if (elapsedSeconds < 60) {
+      const waitSeconds = Math.ceil(60 - elapsedSeconds);
+      throw new AppError(`Please wait ${waitSeconds} seconds before requesting a new OTP.`, 429);
+    }
+  }
+
+  // 3. Invalidate previous active OTPs for this email + purpose
+  await prisma.otpVerification.deleteMany({
+    where: { email, purpose },
+  });
+
+  // 4. Generate cryptographically secure 6-digit OTP
+  const rawOtp = crypto.randomInt(100000, 1000000).toString();
+
+  // 5. Hash OTP before DB storage
+  const otpHash = await bcrypt.hash(rawOtp, 10);
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes expiration
+
+  // 6. Save hashed OTP to database
+  await prisma.otpVerification.create({
+    data: {
+      email,
+      otpHash,
+      purpose,
+      attempts: 0,
+      expiresAt,
+    },
+  });
+
+  // 7. Dispatch OTP via email (never store or return plaintext rawOtp)
+  const emailResult = await EmailService.sendOtpEmail(email, fullName, rawOtp, purpose);
+
+  return {
+    delivered: emailResult.delivered,
+  };
+}
+
 export class AuthController {
   /**
-   * Register a new user account with unverified status and dispatch verification email
+   * 1. SIGNUP: Register account & send 6-digit OTP
    */
   public static async register(req: Request, res: Response, next: NextFunction) {
     try {
@@ -87,11 +147,7 @@ export class AuthController {
       // Hash password securely with bcrypt
       const passwordHash = await bcrypt.hash(data.password, 10);
 
-      // Generate cryptographically secure verification token
-      const verificationToken = crypto.randomBytes(32).toString('hex');
-      const verificationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
-
-      // Create user with isEmailVerified: false
+      // Create unverified user account
       const user = await prisma.user.create({
         data: {
           email: data.email,
@@ -100,24 +156,18 @@ export class AuthController {
           role: Role.ANALYST,
           organizationId: org.id,
           isEmailVerified: false,
-          emailVerificationToken: verificationToken,
-          emailVerificationExpiresAt: verificationExpiresAt,
         },
       });
 
-      // Dispatch real verification email
-      const emailResult = await EmailService.sendVerificationEmail(
-        user.email,
-        user.fullName,
-        verificationToken
-      );
+      // Generate and dispatch 6-digit OTP
+      const otpResult = await generateAndSendOtp(user.email, user.fullName, 'SIGNUP');
 
       return res.status(201).json({
         success: true,
-        requiresVerification: true,
+        requiresOtp: true,
         email: user.email,
-        emailDelivered: emailResult.delivered,
-        message: 'Account created successfully. Please check your email to verify your account before logging in.',
+        emailDelivered: otpResult.delivered,
+        message: 'Account created successfully. Enter the 6-digit OTP sent to your email.',
       });
     } catch (err) {
       next(err);
@@ -125,43 +175,119 @@ export class AuthController {
   }
 
   /**
-   * Verify user account via cryptographic token
+   * 2. VERIFY OTP: Validate 6-digit OTP for SIGNUP or LOGIN
    */
-  public static async verifyEmail(req: Request, res: Response, next: NextFunction) {
+  public static async verifyOtp(req: Request, res: Response, next: NextFunction) {
     try {
-      const token = typeof req.query.token === 'string' ? req.query.token : req.body.token;
+      const data = verifyOtpSchema.parse(req.body);
 
-      if (!token) {
-        throw new AppError('Verification token is required', 400);
+      const record = await prisma.otpVerification.findFirst({
+        where: {
+          email: data.email,
+          purpose: data.purpose,
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (!record) {
+        throw new AppError('No active OTP code found for this email. Please request a new code.', 400);
       }
 
-      const user = await prisma.user.findFirst({
-        where: {
-          emailVerificationToken: token,
-          emailVerificationExpiresAt: { gt: new Date() },
-        },
+      // Check Expiration
+      if (record.expiresAt < new Date()) {
+        await prisma.otpVerification.delete({ where: { id: record.id } });
+        throw new AppError('OTP verification code has expired. Please request a new code.', 400);
+      }
+
+      // Check Attempt Limit
+      if (record.attempts >= 5) {
+        await prisma.otpVerification.delete({ where: { id: record.id } });
+        throw new AppError('Maximum verification attempts exceeded. Please request a new OTP code.', 429);
+      }
+
+      // Verify OTP Hash
+      const isValid = await bcrypt.compare(data.otp, record.otpHash);
+      if (!isValid) {
+        const updatedAttempts = record.attempts + 1;
+        if (updatedAttempts >= 5) {
+          await prisma.otpVerification.delete({ where: { id: record.id } });
+          throw new AppError('Maximum verification attempts exceeded. Please request a new OTP code.', 429);
+        } else {
+          await prisma.otpVerification.update({
+            where: { id: record.id },
+            data: { attempts: updatedAttempts },
+          });
+          const remaining = 5 - updatedAttempts;
+          throw new AppError(`Invalid OTP code. ${remaining} attempt(s) remaining.`, 400);
+        }
+      }
+
+      // Invalidate OTP immediately upon successful verification
+      await prisma.otpVerification.deleteMany({
+        where: { email: data.email, purpose: data.purpose },
+      });
+
+      // Find user & update email verification status
+      const user = await prisma.user.findUnique({
+        where: { email: data.email },
+        include: { organization: true },
       });
 
       if (!user) {
-        return res.status(400).json({
-          success: false,
-          message: 'Verification token is invalid or has expired. Please request a new verification link.',
+        throw new AppError('Associated user account was not found.', 404);
+      }
+
+      if (!user.isActive) {
+        throw new AppError('Account is disabled. Please contact security administrator.', 403);
+      }
+
+      if (!user.isEmailVerified) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { isEmailVerified: true },
         });
       }
 
-      // Mark user email verified and consume verification token
-      await prisma.user.update({
-        where: { id: user.id },
+      // Issue JWT Access & Refresh Tokens
+      const token = jwt.sign(
+        {
+          id: user.id,
+          email: user.email,
+          fullName: user.fullName,
+          role: user.role,
+          organizationId: user.organizationId,
+        },
+        ENV.JWT_SECRET,
+        { expiresIn: ENV.JWT_EXPIRES_IN as any }
+      );
+
+      const refreshToken = jwt.sign(
+        { id: user.id, jti: `${Date.now()}-${crypto.randomBytes(8).toString('hex')}` },
+        ENV.JWT_REFRESH_SECRET,
+        { expiresIn: ENV.JWT_REFRESH_EXPIRES_IN as any }
+      );
+
+      await prisma.refreshToken.create({
         data: {
-          isEmailVerified: true,
-          emailVerificationToken: null,
-          emailVerificationExpiresAt: null,
+          token: refreshToken,
+          userId: user.id,
+          expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         },
       });
 
       return res.json({
         success: true,
-        message: 'Your email address has been verified successfully. You may now sign in to your security console.',
+        message: 'Authentication successful.',
+        token,
+        refreshToken,
+        user: {
+          id: user.id,
+          email: user.email,
+          fullName: user.fullName,
+          role: user.role,
+          organizationId: user.organizationId,
+          organizationName: user.organization.name,
+        },
       });
     } catch (err) {
       next(err);
@@ -169,35 +295,24 @@ export class AuthController {
   }
 
   /**
-   * Resend account verification email
+   * 3. RESEND OTP: Request new 6-digit OTP with cooldown
    */
-  public static async resendVerification(req: Request, res: Response, next: NextFunction) {
+  public static async resendOtp(req: Request, res: Response, next: NextFunction) {
     try {
-      const data = resendVerificationSchema.parse(req.body);
+      const data = requestOtpSchema.parse(req.body);
 
       const user = await prisma.user.findUnique({
         where: { email: data.email },
       });
 
-      if (user && !user.isEmailVerified && user.isActive) {
-        const verificationToken = crypto.randomBytes(32).toString('hex');
-        const verificationExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
-
-        await prisma.user.update({
-          where: { id: user.id },
-          data: {
-            emailVerificationToken: verificationToken,
-            emailVerificationExpiresAt: verificationExpiresAt,
-          },
-        });
-
-        await EmailService.sendVerificationEmail(user.email, user.fullName, verificationToken);
+      if (user && user.isActive) {
+        await generateAndSendOtp(user.email, user.fullName, data.purpose);
       }
 
-      // Generic message prevents email enumeration
+      // Prevent email enumeration
       return res.json({
         success: true,
-        message: 'If an unverified account exists for this email address, a new verification link has been sent.',
+        message: 'If an active account exists for this email, a new 6-digit OTP code has been sent.',
       });
     } catch (err) {
       next(err);
@@ -205,7 +320,7 @@ export class AuthController {
   }
 
   /**
-   * Authenticate user credentials and enforce verified email check
+   * 4. LOGIN (Email + Password)
    */
   public static async login(req: Request, res: Response, next: NextFunction) {
     try {
@@ -229,13 +344,14 @@ export class AuthController {
         throw new AppError('Invalid email or password', 401);
       }
 
-      // Enforce email verification
+      // If email is not yet verified, send an OTP for verification
       if (!user.isEmailVerified) {
+        await generateAndSendOtp(user.email, user.fullName, 'SIGNUP');
         return res.status(403).json({
           success: false,
-          isUnverified: true,
+          requiresOtp: true,
           email: user.email,
-          message: 'Please verify your email address before signing in.',
+          message: 'Please verify your email address. A 6-digit OTP code has been sent.',
         });
       }
 
@@ -258,7 +374,6 @@ export class AuthController {
         { expiresIn: ENV.JWT_REFRESH_EXPIRES_IN as any }
       );
 
-      // Save refresh token to database
       await prisma.refreshToken.create({
         data: {
           token: refreshToken,
@@ -286,7 +401,149 @@ export class AuthController {
   }
 
   /**
-   * Refresh expired access token using valid refresh token
+   * 5. REQUEST LOGIN OTP (Email + OTP login flow step 1)
+   */
+  public static async requestLoginOtp(req: Request, res: Response, next: NextFunction) {
+    try {
+      const data = requestOtpSchema.parse({ ...req.body, purpose: 'LOGIN' });
+
+      const user = await prisma.user.findUnique({
+        where: { email: data.email },
+      });
+
+      if (user && user.isActive) {
+        await generateAndSendOtp(user.email, user.fullName, 'LOGIN');
+      }
+
+      // Generic response prevents email enumeration
+      return res.json({
+        success: true,
+        message: 'If an account exists for this email, a 6-digit OTP code has been sent.',
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * 6. LOGIN WITH OTP (Email + OTP login flow step 2)
+   */
+  public static async loginWithOtp(req: Request, res: Response, next: NextFunction) {
+    try {
+      req.body.purpose = 'LOGIN';
+      return await AuthController.verifyOtp(req, res, next);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * 7. FORGOT PASSWORD (Request 6-digit OTP for password reset)
+   */
+  public static async forgotPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const data = forgotPasswordSchema.parse(req.body);
+
+      const user = await prisma.user.findUnique({
+        where: { email: data.email },
+      });
+
+      if (user && user.isActive) {
+        await generateAndSendOtp(user.email, user.fullName, 'FORGOT_PASSWORD');
+      }
+
+      // Generic response prevents email enumeration
+      return res.json({
+        success: true,
+        message: 'If an account exists for this email, a 6-digit OTP code has been sent.',
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * 8. RESET PASSWORD (Verify OTP & Update Password)
+   */
+  public static async resetPassword(req: Request, res: Response, next: NextFunction) {
+    try {
+      const data = resetPasswordSchema.parse(req.body);
+
+      const record = await prisma.otpVerification.findFirst({
+        where: {
+          email: data.email,
+          purpose: 'FORGOT_PASSWORD',
+        },
+        orderBy: { createdAt: 'desc' },
+      });
+
+      if (!record) {
+        throw new AppError('No active password reset OTP code found for this email.', 400);
+      }
+
+      if (record.expiresAt < new Date()) {
+        await prisma.otpVerification.delete({ where: { id: record.id } });
+        throw new AppError('OTP code has expired. Please request a new password reset OTP.', 400);
+      }
+
+      if (record.attempts >= 5) {
+        await prisma.otpVerification.delete({ where: { id: record.id } });
+        throw new AppError('Maximum verification attempts exceeded. Please request a new password reset OTP.', 429);
+      }
+
+      const isValid = await bcrypt.compare(data.otp, record.otpHash);
+      if (!isValid) {
+        const updatedAttempts = record.attempts + 1;
+        if (updatedAttempts >= 5) {
+          await prisma.otpVerification.delete({ where: { id: record.id } });
+          throw new AppError('Maximum verification attempts exceeded. Please request a new OTP code.', 429);
+        } else {
+          await prisma.otpVerification.update({
+            where: { id: record.id },
+            data: { attempts: updatedAttempts },
+          });
+          const remaining = 5 - updatedAttempts;
+          throw new AppError(`Invalid OTP code. ${remaining} attempt(s) remaining.`, 400);
+        }
+      }
+
+      const user = await prisma.user.findUnique({
+        where: { email: data.email },
+      });
+
+      if (!user) {
+        throw new AppError('User account not found.', 404);
+      }
+
+      // Hash new password
+      const passwordHash = await bcrypt.hash(data.password, 10);
+
+      // Update user password & clean up OTP and refresh tokens
+      await prisma.$transaction([
+        prisma.user.update({
+          where: { id: user.id },
+          data: { passwordHash, isEmailVerified: true },
+        }),
+        prisma.otpVerification.deleteMany({
+          where: { email: data.email },
+        }),
+        prisma.refreshToken.updateMany({
+          where: { userId: user.id },
+          data: { revoked: true },
+        }),
+      ]);
+
+      return res.json({
+        success: true,
+        message: 'Your password has been reset successfully. Please log in with your new password.',
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  /**
+   * REFRESH TOKEN
    */
   public static async refresh(req: Request, res: Response, next: NextFunction) {
     try {
@@ -335,7 +592,7 @@ export class AuthController {
   }
 
   /**
-   * Invalidate refresh token and logout
+   * LOGOUT
    */
   public static async logout(req: AuthRequest, res: Response, next: NextFunction) {
     try {
@@ -353,7 +610,7 @@ export class AuthController {
   }
 
   /**
-   * Get current authenticated user profile
+   * GET ME
    */
   public static async getMe(req: AuthRequest, res: Response, next: NextFunction) {
     try {
@@ -384,128 +641,6 @@ export class AuthController {
           organizationId: user.organizationId,
           organizationName: user.organization.name,
         },
-      });
-    } catch (err) {
-      next(err);
-    }
-  }
-
-  /**
-   * Request password reset token and send real reset email
-   */
-  public static async forgotPassword(req: Request, res: Response, next: NextFunction) {
-    try {
-      const data = forgotPasswordSchema.parse(req.body);
-
-      const user = await prisma.user.findUnique({
-        where: { email: data.email },
-      });
-
-      if (user && user.isActive) {
-        // Invalidate any previous unused tokens for this user
-        await prisma.passwordResetToken.updateMany({
-          where: { userId: user.id, used: false },
-          data: { used: true },
-        });
-
-        // Generate crypto-secure random reset token
-        const resetToken = crypto.randomBytes(32).toString('hex');
-        const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
-
-        await prisma.passwordResetToken.create({
-          data: {
-            token: resetToken,
-            userId: user.id,
-            expiresAt,
-          },
-        });
-
-        // Send real password reset email
-        await EmailService.sendPasswordResetEmail(user.email, user.fullName, resetToken);
-      }
-
-      // Always return a generic response to prevent account enumeration
-      return res.json({
-        success: true,
-        message: 'If an account exists for this email, password reset instructions have been sent.',
-      });
-    } catch (err) {
-      next(err);
-    }
-  }
-
-  /**
-   * Verify whether a password reset token is valid before displaying form
-   */
-  public static async verifyResetToken(req: Request, res: Response, next: NextFunction) {
-    try {
-      const token = typeof req.query.token === 'string' ? req.query.token : req.body.token;
-      if (!token) {
-        throw new AppError('Reset token is required', 400);
-      }
-
-      const resetRecord = await prisma.passwordResetToken.findUnique({
-        where: { token },
-        include: { user: true },
-      });
-
-      if (!resetRecord || resetRecord.used || resetRecord.expiresAt < new Date()) {
-        return res.status(400).json({
-          success: false,
-          valid: false,
-          message: 'Password reset link is invalid or has expired.',
-        });
-      }
-
-      return res.json({
-        success: true,
-        valid: true,
-        email: resetRecord.user.email,
-      });
-    } catch (err) {
-      next(err);
-    }
-  }
-
-  /**
-   * Consume password reset token and update user password
-   */
-  public static async resetPassword(req: Request, res: Response, next: NextFunction) {
-    try {
-      const data = resetPasswordSchema.parse(req.body);
-
-      const resetRecord = await prisma.passwordResetToken.findUnique({
-        where: { token: data.token },
-        include: { user: true },
-      });
-
-      if (!resetRecord || resetRecord.used || resetRecord.expiresAt < new Date()) {
-        throw new AppError('Password reset token is invalid or has expired.', 400);
-      }
-
-      // Hash new password securely
-      const passwordHash = await bcrypt.hash(data.password, 10);
-
-      // Update user password and consume token in transaction
-      await prisma.$transaction([
-        prisma.user.update({
-          where: { id: resetRecord.userId },
-          data: { passwordHash },
-        }),
-        prisma.passwordResetToken.update({
-          where: { id: resetRecord.id },
-          data: { used: true },
-        }),
-        // Invalidate all existing refresh tokens for security
-        prisma.refreshToken.updateMany({
-          where: { userId: resetRecord.userId },
-          data: { revoked: true },
-        }),
-      ]);
-
-      return res.json({
-        success: true,
-        message: 'Password has been reset successfully. Please log in with your new credentials.',
       });
     } catch (err) {
       next(err);

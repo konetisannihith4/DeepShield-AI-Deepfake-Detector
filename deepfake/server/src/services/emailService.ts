@@ -68,6 +68,7 @@ export class EmailService {
       console.log(`📧 [Email Service - ${actionTitle}]`);
       console.log(`Recipient    : ${to} (${fullName || 'User'})`);
       console.log(`Purpose      : ${purpose}`);
+      console.log(`🔑 OTP Code   : >>> ${otp} <<<`);
       console.log(`SMTP Ready   : ${this.isConfigured() ? 'YES' : 'NO (Unconfigured in .env)'}`);
       console.log(`=======================================================\n`);
     }

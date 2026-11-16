@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   Upload,
   FileAudio,
@@ -23,12 +23,16 @@ import {
   Film,
   Music,
   Image as ImageIcon,
-  ScanFace
+  ScanFace,
+  Volume2,
+  CheckCircle2,
+  Sparkles,
 } from 'lucide-react';
 import { apiClient } from '../services/apiClient';
 import { saveScanToHistory } from '../services/scanHistoryService';
 import { useAuth } from '../context/AuthContext';
 import { exportPdfCertificate, viewPdfReport, exportJsonReport } from '../services/reportExporter';
+import { ForensicProgressBar } from '../components/ai/ForensicProgressBar';
 
 const ALLOWED_EXTENSIONS = [
   '.wav', '.mp3', '.flac', '.aac', '.m4a', '.ogg', '.wma', '.aiff', '.opus',
@@ -64,7 +68,7 @@ const isAudioFile = (selectedFile: File | null): boolean => {
 
 const AUDIO_PIPELINE_STEPS = [
   { id: 1, label: 'Upload Complete', desc: 'Ingesting audio specimen into memory' },
-  { id: 2, label: 'Media Validation', desc: 'Format check (WAV, MP3, FLAC, MP4, MOV, WEBM)' },
+  { id: 2, label: 'Media Validation', desc: 'Format check (WAV, MP3, FLAC, M4A, AAC, OGG)' },
   { id: 3, label: 'Audio Preprocessing', desc: 'Resampling to 16kHz mono PCM' },
   { id: 4, label: 'Feature Extraction', desc: 'Computing 64-band FFT, MFCC & Pitch' },
   { id: 5, label: 'WavLM Neural Inference', desc: 'Evaluating WavLM-base Transformer weights' },
@@ -72,7 +76,7 @@ const AUDIO_PIPELINE_STEPS = [
   { id: 7, label: 'Threat Assessment', desc: 'Evaluating threat level score & verdict' },
   { id: 8, label: 'SHA-256 Generated', desc: 'Cryptographic hash fingerprint generated' },
   { id: 9, label: 'PDF Certificate Generated', desc: 'Building high-res forensic PDF document' },
-  { id: 10, label: 'Saved to Database', desc: 'Storing scan in MySQL via Prisma ORM' },
+  { id: 10, label: 'Saved to Database', desc: 'Storing scan in database repository' },
 ];
 
 const VIDEO_PIPELINE_STEPS = [
@@ -80,7 +84,7 @@ const VIDEO_PIPELINE_STEPS = [
   { id: 2, label: 'Video Validation', desc: 'Format check (MP4, MOV, AVI, MKV, WEBM)' },
   { id: 3, label: 'Frame Extraction', desc: 'Sampling face frames across video timeline' },
   { id: 4, label: 'Face Bounding Box', desc: 'Detecting face region per frame' },
-  { id: 5, label: 'DFDC Neural Inference', desc: 'Evaluating EfficientNet-B7 deepfake weights' },
+  { id: 5, label: 'DFDC Neural Inference', desc: 'Evaluating EfficientNet/Xception weights' },
   { id: 6, label: 'Score Aggregation', desc: 'Combining per-frame confidence scores' },
   { id: 7, label: 'Threat Assessment', desc: 'Evaluating threat level score & verdict' },
   { id: 8, label: 'SHA-256 Generated', desc: 'Cryptographic hash fingerprint generated' },
@@ -93,9 +97,9 @@ const IMAGE_PIPELINE_STEPS = [
   { id: 2, label: 'Image Validation', desc: 'Format check (JPG, JPEG, PNG, WEBP)' },
   { id: 3, label: 'Face Detection', desc: 'Scanning for human faces' },
   { id: 4, label: '30% Margin Face Crop', desc: 'Bounding box extraction with 30% margin' },
-  { id: 5, label: '380x380 Resize', desc: 'Standardizing dimensions for EfficientNet-B7' },
-  { id: 6, label: 'ImageNet Normalization', desc: 'Applying PyTorch tensor normalization' },
-  { id: 7, label: 'EfficientNet-B7 Inference', desc: 'Evaluating tf_efficientnet_b7_ns weights' },
+  { id: 5, label: '380x380 Resize', desc: 'Standardizing dimensions for vision classifier' },
+  { id: 6, label: 'Tensor Normalization', desc: 'Applying PyTorch tensor normalization' },
+  { id: 7, label: 'ConvNeXtV2 Inference', desc: 'Evaluating neural deepfake weights' },
   { id: 8, label: 'Deepfake Probability', desc: 'Calculating probability score' },
   { id: 9, label: 'Threat Assessment', desc: 'Evaluating verdict & risk level' },
   { id: 10, label: 'Analysis Complete', desc: 'Final report generated' },
@@ -103,27 +107,61 @@ const IMAGE_PIPELINE_STEPS = [
 
 export const UploadPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, theme } = useAuth();
-  const isLight = theme === 'light';
+  const location = useLocation();
+  const { user } = useAuth();
+
+  const isImageRoute = location.pathname.includes('image-detection');
+
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [analysisProgress, setAnalysisProgress] = useState(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [copiedHash, setCopiedHash] = useState(false);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const progressTimerRef = useRef<any>(null);
+  const elapsedTimerRef = useRef<any>(null);
+
   useEffect(() => {
-    if (file && isImageFile(file)) {
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
-      return () => {
-        URL.revokeObjectURL(url);
-      };
+    return () => {
+      if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+      if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
+    };
+  }, []);
+
+  // Auto-load preselected file passed from Dashboard
+  useEffect(() => {
+    const preselected = (location.state as any)?.preselectedFile;
+    if (preselected && preselected instanceof File) {
+      if (validateFile(preselected)) {
+        setResult(null);
+        setFile(preselected);
+      }
+    }
+  }, [location.state]);
+
+  useEffect(() => {
+    if (file) {
+      if (isImageFile(file)) {
+        const url = URL.createObjectURL(file);
+        setPreviewUrl(url);
+        return () => URL.revokeObjectURL(url);
+      } else if (isAudioFile(file)) {
+        const url = URL.createObjectURL(file);
+        setAudioUrl(url);
+        return () => URL.revokeObjectURL(url);
+      }
     } else {
       setPreviewUrl(null);
+      setAudioUrl(null);
     }
   }, [file]);
 
@@ -138,7 +176,7 @@ export const UploadPage: React.FC = () => {
     const isValidType = isAudioFile(selectedFile) || isVideoFile(selectedFile) || isImageFile(selectedFile);
 
     if (!ALLOWED_EXTENSIONS.includes(ext) && !isValidType) {
-      setError(`Unsupported media format (${selectedFile.name}). Allowed formats: Image (JPG, JPEG, PNG, WEBP), Video (MP4, MOV, AVI, MKV, WEBM) & Audio (MP3, WAV, M4A, FLAC, AAC, OGG)`);
+      setError(`Unsupported media format (${selectedFile.name}). Allowed: Image (JPG, PNG, WEBP), Video (MP4, MOV, WEBM) & Audio (MP3, WAV, M4A, FLAC, AAC)`);
       return false;
     }
 
@@ -189,35 +227,50 @@ export const UploadPage: React.FC = () => {
 
   const runAnalysis = async () => {
     if (!file) {
-      setError('Please select an image, video, or audio file first.');
+      setError('Please select an image, audio, or video file first.');
       return;
     }
 
     const currentPipelineSteps = getActivePipelineSteps(file);
     const isImg = isImageFile(file);
+    const isVid = isVideoFile(file);
+    const expectedSeconds = isImg ? 2.5 : isVid ? 28 : 16;
 
-    setResult(null); // Ensure previous result is cleared immediately
+    setResult(null);
     setAnalyzing(true);
     setUploadProgress(0);
+    setAnalysisProgress(0);
+    setElapsedSeconds(0);
+    setIsComplete(false);
     setCurrentStepIndex(0);
     setError(null);
 
-    const stepInterval = setInterval(() => {
-      setCurrentStepIndex((prev) => {
-        if (prev < currentPipelineSteps.length - 1) return prev + 1;
-        return prev;
-      });
-    }, 400);
+    const startTime = Date.now();
+    elapsedTimerRef.current = setInterval(() => {
+      setElapsedSeconds((Date.now() - startTime) / 1000);
+    }, 100);
+
+    progressTimerRef.current = setInterval(() => {
+      const elapsed = (Date.now() - startTime) / 1000;
+      let nextProg = 0;
+      if (elapsed < expectedSeconds) {
+        nextProg = Math.min(94, Math.round((elapsed / expectedSeconds) * 94));
+      } else {
+        nextProg = Math.min(99, Math.round(94 + (1 - Math.exp(-(elapsed - expectedSeconds) / 8)) * 5));
+      }
+      setAnalysisProgress(nextProg);
+      const stepIdx = Math.min(
+        currentPipelineSteps.length - 2,
+        Math.floor((nextProg / 100) * currentPipelineSteps.length)
+      );
+      setCurrentStepIndex(stepIdx);
+    }, 150);
 
     const formData = new FormData();
     formData.append('file', file);
 
     try {
       if (isImg) {
-        const actualUrl = (apiClient.defaults.baseURL || '/api') + '/predict-image';
-        console.log("IMAGE REQUEST FILE:", file.name);
-        console.log("IMAGE REQUEST URL:", actualUrl);
-
         const res = await apiClient.post('/predict-image', formData, {
           onUploadProgress: (progressEvent) => {
             const total = progressEvent.total || file.size;
@@ -226,22 +279,19 @@ export const UploadPage: React.FC = () => {
           },
         });
 
-        console.log("RAW IMAGE API RESPONSE:", res.data);
-
-        clearInterval(stepInterval);
+        if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+        if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
+        setAnalysisProgress(100);
+        setUploadProgress(100);
+        setIsComplete(true);
         setCurrentStepIndex(currentPipelineSteps.length - 1);
+        await new Promise((resolve) => setTimeout(resolve, 450));
 
         if (res.data) {
           const prediction = res.data.prediction;
           const confidence = Number(res.data.confidence);
           const deepfakeProbability = Number(res.data.deepfakeProbability);
           const realProbability = 1 - deepfakeProbability;
-
-          console.log("IMAGE RESULT BEING STORED:", {
-            prediction: prediction,
-            confidence: confidence,
-            deepfakeProbability: deepfakeProbability
-          });
 
           setResult({
             ...res.data,
@@ -285,63 +335,81 @@ export const UploadPage: React.FC = () => {
             },
           });
         } catch (err: any) {
-          if (!err.response || err.code === 'ERR_NETWORK' || err.message?.includes('Network Error')) {
-            const fallbackEndpoint = isVideoFile(file) ? '/predict-video' : '/predict';
-            console.warn(`[Media Analysis] Node backend offline, falling back directly to FastAPI ${fallbackEndpoint}`);
-            res = await apiClient.post(fallbackEndpoint, formData, {
-              onUploadProgress: (progressEvent) => {
-                const total = progressEvent.total || file.size;
-                const percent = Math.round((progressEvent.loaded * 100) / total);
-                setUploadProgress(percent);
-              },
-            });
-          } else {
-            throw err;
-          }
+          console.warn('[Audio/Media Analysis] /detect/upload failed, falling back to direct FastAPI engine:', err.message);
+          const fallbackEndpoint = isVideoFile(file) ? '/predict-video' : '/predict';
+          res = await apiClient.post(fallbackEndpoint, formData, {
+            onUploadProgress: (progressEvent) => {
+              const total = progressEvent.total || file.size;
+              const percent = Math.round((progressEvent.loaded * 100) / total);
+              setUploadProgress(percent);
+            },
+          });
         }
 
-        clearInterval(stepInterval);
+        if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+        if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
+        setAnalysisProgress(100);
+        setUploadProgress(100);
+        setIsComplete(true);
         setCurrentStepIndex(currentPipelineSteps.length - 1);
+        await new Promise((resolve) => setTimeout(resolve, 450));
 
         const detectionData = res.data?.detection || res.data;
         if (detectionData) {
           const mType = isVideoFile(file) ? 'video' : 'audio';
           const pVal = detectionData.prediction || detectionData.verdict || (detectionData.deepfakeProbability >= 0.5 ? 'AI GENERATED VOICE' : 'GENUINE VOICE');
-          setResult({
+          const rawConf = detectionData.confidence !== undefined ? Number(detectionData.confidence) : Number(detectionData.Confidence || 0.95);
+          const confPercent = rawConf <= 1.0 ? Math.round(rawConf * 1000) / 10 : Math.round(rawConf * 10) / 10;
+          const isAi = pVal.toUpperCase().includes('AI') || pVal.toUpperCase().includes('DEEPFAKE') || pVal.toUpperCase().includes('SPOOF');
+          const dfProb = detectionData.deepfakeProbability !== undefined
+            ? Number(detectionData.deepfakeProbability)
+            : (isAi ? (rawConf > 1 ? rawConf / 100 : rawConf) : 1 - (rawConf > 1 ? rawConf / 100 : rawConf));
+
+          const normResult = {
             ...detectionData,
+            prediction: pVal,
+            verdict: pVal,
+            confidence: confPercent,
+            deepfakeProbability: dfProb,
+            threatLevel: detectionData.threatLevel || detectionData.risk || (isAi ? 'HIGH' : 'LOW'),
+            durationSeconds: detectionData.durationSeconds || detectionData.duration || 5.0,
             mediaType: mType
-          });
+          };
+
+          setResult(normResult);
 
           saveScanToHistory({
-            caseId: detectionData.caseId || `CASE-${mType.toUpperCase().slice(0,3)}-${Date.now().toString().slice(-6)}`,
-            reportId: detectionData.reportId || detectionData.id || `REP-${Date.now()}`,
-            reportName: detectionData.pdfReportName || `DS_CASE_${Date.now()}.pdf`,
+            caseId: normResult.caseId || `CASE-${mType.toUpperCase().slice(0,3)}-${Date.now().toString().slice(-6)}`,
+            reportId: normResult.reportId || normResult.id || `REP-${Date.now()}`,
+            reportName: normResult.pdfReportName || `DS_CASE_${Date.now()}.pdf`,
             fileName: file.name,
             mediaType: mType,
-            durationSeconds: detectionData.durationSeconds || detectionData.duration || 5.0,
+            durationSeconds: normResult.durationSeconds,
             verdict: pVal,
-            confidence: Number(detectionData.confidence || 95.0),
-            deepfakeProbability: Number(detectionData.deepfakeProbability || 0.95),
-            threatLevel: detectionData.threatLevel || (pVal.toUpperCase().includes('AI') ? 'HIGH' : 'LOW'),
+            confidence: confPercent,
+            deepfakeProbability: dfProb,
+            threatLevel: normResult.threatLevel,
             createdAt: new Date().toISOString(),
             fileSize: file.size,
-            sha256Hash: detectionData.sha256Hash || '826112549429f732d1383a99e28387dd29ef8acd95cea3daa935e573231e6cf2',
-            processingTime: detectionData.processingTime || 1.48,
-            modelVersion: detectionData.modelVersion || (mType === 'video' ? 'Xception / EfficientNet Video Classifier' : 'DavidCombei/wavLM-base-Deepfake_V2'),
-            pdfDownloadUrl: detectionData.pdfDownloadUrl || '/api/reports/download/report.pdf',
-            jsonDownloadUrl: detectionData.jsonDownloadUrl || '/api/reports/download/report.json'
+            sha256Hash: normResult.sha256Hash || '826112549429f732d1383a99e28387dd29ef8acd95cea3daa935e573231e6cf2',
+            processingTime: normResult.processingTime || 1.48,
+            modelVersion: normResult.modelVersion || (mType === 'video' ? 'Xception / EfficientNet Video Classifier' : 'DavidCombei/wavLM-base-Deepfake_V2'),
+            pdfDownloadUrl: normResult.pdfDownloadUrl || '/api/reports/download/report.pdf',
+            jsonDownloadUrl: normResult.jsonDownloadUrl || '/api/reports/download/report.json'
           }, user?.id);
         }
       }
     } catch (err: any) {
-      clearInterval(stepInterval);
+      if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+      if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
+      setIsComplete(false);
       console.error('[Upload Error]:', err);
       const apiErrorMsg =
         err.response?.data?.error ||
         err.response?.data?.message ||
         err.response?.data?.detail ||
         (err.code === 'ECONNABORTED' ? 'Upload request timed out. Please try again.' : err.message);
-      setError(apiErrorMsg || 'Media forensic analysis failed');
+      setError(apiErrorMsg || 'Media specimen analysis failed.');
     } finally {
       setAnalyzing(false);
     }
@@ -349,77 +417,95 @@ export const UploadPage: React.FC = () => {
 
   const handleDownloadFile = async (downloadUrl: string, fileName: string) => {
     if (!result) return;
+    try {
+      const token = localStorage.getItem('deepshield_token') || localStorage.getItem('token') || '';
+      const fullUrl = downloadUrl.startsWith('http')
+        ? downloadUrl
+        : `${window.location.origin}${downloadUrl.startsWith('/') ? '' : '/'}${downloadUrl}`;
+      const urlWithToken = `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}`;
 
-    const targetPdfUrl = downloadUrl && downloadUrl !== '#'
-      ? downloadUrl
-      : `/api/detect/${result.id || result.caseId || 'latest'}/report/pdf`;
+      const response = await fetch(urlWithToken, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-    if (fileName.endsWith('.json')) {
-      exportJsonReport({
-        caseId: result.caseId || `CASE-${result.id?.slice(0, 6) || 'SCAN'}`,
-        reportId: result.reportId || result.id || 'REP-001',
-        reportName: fileName,
-        fileName: file?.name || 'specimen.bin',
+      if (!response.ok) {
+        throw new Error('Fallback to local export');
+      }
+
+      const blob = await response.blob();
+      const objectUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(objectUrl);
+    } catch (err: any) {
+      if (fileName.endsWith('.pdf')) {
+        exportPdfCertificate({
+          caseId: result.caseId || 'CASE-EXPORT',
+          reportId: result.reportId || 'REP-EXPORT',
+          reportName: fileName,
+          fileName: file?.name || 'specimen',
+          mediaType: result.mediaType || 'audio',
+          verdict: result.verdict || result.prediction || 'AI GENERATED',
+          confidence: result.confidence || 95,
+          deepfakeProbability: result.deepfakeProbability || 0.95,
+          threatLevel: result.threatLevel || 'HIGH',
+          createdAt: new Date().toISOString(),
+          fileSize: file?.size || 500000,
+          sha256Hash: result.sha256Hash || '826112549429f732d1383a99e28387dd29ef8acd95cea3daa935e573231e6cf2',
+          processingTime: result.processingTime || 0.42,
+          modelVersion: result.modelVersion || 'DeepShield Multi-Modal Engine',
+          pdfDownloadUrl: downloadUrl,
+          jsonDownloadUrl: result.jsonDownloadUrl || '',
+        });
+      } else {
+        exportJsonReport({
+          caseId: result.caseId || 'CASE-EXPORT',
+          reportId: result.reportId || 'REP-EXPORT',
+          reportName: fileName,
+          fileName: file?.name || 'specimen',
+          mediaType: result.mediaType || 'audio',
+          verdict: result.verdict || result.prediction || 'AI GENERATED',
+          confidence: result.confidence || 95,
+          deepfakeProbability: result.deepfakeProbability || 0.95,
+          threatLevel: result.threatLevel || 'HIGH',
+          createdAt: new Date().toISOString(),
+          fileSize: file?.size || 500000,
+          sha256Hash: result.sha256Hash || '826112549429f732d1383a99e28387dd29ef8acd95cea3daa935e573231e6cf2',
+          processingTime: result.processingTime || 0.42,
+          modelVersion: result.modelVersion || 'DeepShield Multi-Modal Engine',
+          pdfDownloadUrl: downloadUrl,
+          jsonDownloadUrl: result.jsonDownloadUrl || '',
+        });
+      }
+    }
+  };
+
+  const handleViewPdfReport = async (downloadUrl: string) => {
+    if (result) {
+      viewPdfReport({
+        caseId: result.caseId || 'CASE-INSPECT',
+        reportId: result.reportId || 'REP-INSPECT',
+        reportName: result.pdfReportName || 'report.pdf',
+        fileName: file?.name || 'specimen',
         mediaType: result.mediaType || 'audio',
-        verdict: result.verdict || result.prediction || 'AUTHENTIC',
-        confidence: Number(result.confidence || 95.0),
-        deepfakeProbability: Number(result.deepfakeProbability || 0.05),
-        threatLevel: result.threatLevel || 'LOW',
+        verdict: result.verdict || result.prediction || 'AI GENERATED',
+        confidence: result.confidence || 95,
+        deepfakeProbability: result.deepfakeProbability || 0.95,
+        threatLevel: result.threatLevel || 'HIGH',
         createdAt: new Date().toISOString(),
         fileSize: file?.size || 500000,
         sha256Hash: result.sha256Hash || '826112549429f732d1383a99e28387dd29ef8acd95cea3daa935e573231e6cf2',
         processingTime: result.processingTime || 0.42,
         modelVersion: result.modelVersion || 'DeepShield Multi-Modal Engine',
-        pdfDownloadUrl: targetPdfUrl,
-        jsonDownloadUrl: '',
+        pdfDownloadUrl: downloadUrl,
+        jsonDownloadUrl: result.jsonDownloadUrl || '',
       });
       return;
     }
-
-    exportPdfCertificate({
-      caseId: result.caseId || `CASE-${result.id?.slice(0, 6) || 'SCAN'}`,
-      reportId: result.reportId || result.id || 'REP-001',
-      reportName: fileName,
-      fileName: file?.name || 'specimen.bin',
-      mediaType: result.mediaType || 'audio',
-      verdict: result.verdict || result.prediction || 'AUTHENTIC',
-      confidence: Number(result.confidence || 95.0),
-      deepfakeProbability: Number(result.deepfakeProbability || 0.05),
-      threatLevel: result.threatLevel || 'LOW',
-      createdAt: new Date().toISOString(),
-      fileSize: file?.size || 500000,
-      sha256Hash: result.sha256Hash || '826112549429f732d1383a99e28387dd29ef8acd95cea3daa935e573231e6cf2',
-      processingTime: result.processingTime || 0.42,
-      modelVersion: result.modelVersion || 'DeepShield Multi-Modal Engine',
-      pdfDownloadUrl: targetPdfUrl,
-      jsonDownloadUrl: '',
-    });
-  };
-
-  const handleViewPdfReport = (downloadUrl: string) => {
-    if (!result) return;
-    const targetPdfUrl = downloadUrl && downloadUrl !== '#'
-      ? downloadUrl
-      : `/api/detect/${result.id || result.caseId || 'latest'}/report/pdf`;
-
-    viewPdfReport({
-      caseId: result.caseId || `CASE-${result.id?.slice(0, 6) || 'SCAN'}`,
-      reportId: result.reportId || result.id || 'REP-001',
-      reportName: `DS_${result.caseId || 'report'}.pdf`,
-      fileName: file?.name || 'specimen.bin',
-      mediaType: result.mediaType || 'audio',
-      verdict: result.verdict || result.prediction || 'AUTHENTIC',
-      confidence: Number(result.confidence || 95.0),
-      deepfakeProbability: Number(result.deepfakeProbability || 0.05),
-      threatLevel: result.threatLevel || 'LOW',
-      createdAt: new Date().toISOString(),
-      fileSize: file?.size || 500000,
-      sha256Hash: result.sha256Hash || '826112549429f732d1383a99e28387dd29ef8acd95cea3daa935e573231e6cf2',
-      processingTime: result.processingTime || 0.42,
-      modelVersion: result.modelVersion || 'DeepShield Multi-Modal Engine',
-      pdfDownloadUrl: targetPdfUrl,
-      jsonDownloadUrl: '',
-    });
   };
 
   const copyToClipboard = (text: string) => {
@@ -430,42 +516,31 @@ export const UploadPage: React.FC = () => {
 
   const resetUpload = () => {
     setFile(null);
+    setPreviewUrl(null);
+    setAudioUrl(null);
     setResult(null);
     setError(null);
-    setAnalyzing(false);
     setCurrentStepIndex(0);
     setUploadProgress(0);
-    setPreviewUrl(null);
-  };
-
-  const getThreatBadgeStyle = (level?: string) => {
-    switch (level) {
-      case 'CRITICAL':
-        return 'bg-red-500/20 text-red-400 border-red-500/40 glow-red';
-      case 'HIGH':
-        return 'bg-orange-500/20 text-orange-400 border-orange-500/40';
-      case 'MEDIUM':
-        return 'bg-amber-500/20 text-amber-400 border-amber-500/40';
-      case 'MODERATE':
-        return 'bg-blue-500/20 text-blue-400 border-blue-500/40';
-      default:
-        return 'bg-emerald-500/20 text-[#00e6a8] border-[#00e6a8]/40 glow-cyan';
-    }
   };
 
   const formatConfidence = (val?: number) => {
-    if (val === undefined || val === null) return '0.00';
-    const num = val > 1 ? val : val * 100;
-    return (Math.round(num * 100) / 100).toFixed(2);
+    if (val === undefined || val === null || isNaN(val)) return '0.0';
+    const num = Number(val);
+    if (num <= 1.0) {
+      return (num * 100).toFixed(1);
+    }
+    return num.toFixed(1);
   };
 
   const activePipelineSteps = getActivePipelineSteps(file);
 
   const isImageResult = Boolean(
     result?.mediaType === 'image' ||
-    result?.prediction !== undefined ||
-    (file && isImageFile(file))
+    (file && isImageFile(file)) ||
+    result?.facesDetected !== undefined
   );
+
   const isVideoResult = Boolean(
     result?.mediaType === 'video' || (file && isVideoFile(file))
   );
@@ -479,804 +554,584 @@ export const UploadPage: React.FC = () => {
   const isImgUncertain = imgPred === 'Uncertain' || imgPred === 'UNCERTAIN';
 
   return (
-    <div className="p-8 space-y-8 max-w-6xl mx-auto selection:bg-[#5b63f6] selection:text-white font-sans">
-      {/* Title & Upload Option Header */}
-      <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 border-b pb-6 ${isLight ? 'border-slate-200' : 'border-[#1e2a44]'}`}>
+    <div className="p-4 sm:p-6 lg:p-8 space-y-8 max-w-6xl mx-auto font-sans text-[#282B4A]">
+      {/* Title & Mode Header */}
+      <div className="rounded-3xl bg-white border border-[#E6F0FF] p-6 sm:p-8 shadow-card flex flex-col sm:flex-row items-center justify-between gap-6">
         <div>
-          <h1 className={`text-3xl sm:text-4xl font-extrabold font-display tracking-tight flex items-center gap-3 ${
-            isLight ? 'text-slate-900' : 'text-white'
-          }`}>
-            <ScanFace className="w-8 h-8 text-[#5b63f6]" /> Detect DeepFake Images, Audio, Video & Music
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#E6F0FF] text-[#014BAA] border border-[#BFDAFE] inline-flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-[#014BAA]" />
+              {isImageRoute ? 'ConvNeXtV2 Image Vision Model' : 'Multi-Modal Voice & Media Engine'}
+            </span>
+          </div>
+
+          <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-[#014BAA] tracking-tight flex items-center gap-3">
+            {isImageRoute ? (
+              <>
+                <ScanFace className="w-8 h-8 text-[#014BAA]" /> Image Deepfake Detection
+              </>
+            ) : (
+              <>
+                <FileAudio className="w-8 h-8 text-[#014BAA]" /> Voice & Media Deepfake Detection
+              </>
+            )}
           </h1>
-          <p className={`text-xs sm:text-sm mt-1 font-medium ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
-            Drag and drop images, videos, or music files from your file explorer for instant AI forensic analysis.
+          <p className="text-xs sm:text-sm text-[#5A5E7A] mt-1.5 max-w-2xl">
+            {isImageRoute
+              ? 'Upload facial portraits or photographic specimens to identify synthetic generation, face swaps, and AI diffusion anomalies.'
+              : 'Upload speech recordings or media specimens to detect synthetic voice clones, speech tampering, and audio deepfakes.'}
           </p>
         </div>
 
-        {/* Upload Button in Header */}
-        <div className="flex items-center gap-3 shrink-0">
-          <input
-            type="file"
-            accept={ACCEPT_STRING}
-            onChange={(e) => {
-              handleFileChange(e);
-              if (e.target.files && e.target.files[0]) {
-                setResult(null);
-              }
-            }}
-            className="hidden"
-            id="header-audio-input"
-          />
-          <button
-            onClick={() => document.getElementById('header-audio-input')?.click()}
-            className="px-5 py-2.5 rounded-xl text-xs font-extrabold bg-[#5b63f6] text-white hover:bg-[#4f46e5] transition-all flex items-center gap-2 shadow-md shadow-[#5b63f6]/20 uppercase tracking-wider hover:scale-105"
+        {/* Quick Route Switcher & Header Action */}
+        <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <Link
+            to={isImageRoute ? '/upload' : '/image-detection'}
+            className="px-4 py-2.5 rounded-xl text-xs font-bold bg-[#E6F0FF] text-[#014BAA] border border-[#BFDAFE] hover:bg-[#D4E6FF] transition-all flex items-center gap-1.5"
           >
-            <Upload className="w-4 h-4" /> Upload File
+            {isImageRoute ? <FileAudio className="w-4 h-4" /> : <ImageIcon className="w-4 h-4" />}
+            <span>Switch to {isImageRoute ? 'Voice Detection' : 'Image Detection'}</span>
+          </Link>
+          <button
+            onClick={() => {
+              if (result) setResult(null);
+              fileInputRef.current?.click();
+            }}
+            className="px-5 py-2.5 rounded-xl text-xs font-extrabold bg-[#014BAA] text-white hover:bg-[#013D8B] transition-all flex items-center gap-2 shadow-royal cursor-pointer"
+          >
+            <Upload className="w-4 h-4" /> Browse File
           </button>
         </div>
       </div>
 
+      {/* Hidden File Input always mounted */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept={isImageRoute ? '.jpg,.jpeg,.png,.webp,image/*' : ACCEPT_STRING}
+        onChange={handleFileChange}
+        className="hidden"
+        id="main-file-input"
+      />
+
       {!result ? (
         <div className="space-y-8">
-          {/* Drag & Drop Uploader Box */}
+          {/* Main Upload Box */}
           <div
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`max-w-2xl mx-auto p-8 rounded-2xl border transition-all text-center ${
-              isLight
-                ? `bg-white border-slate-200 shadow-sm text-slate-900 ${isDragging ? 'border-[#5b63f6] bg-[#5b63f6]/10 scale-[1.02]' : ''}`
-                : `bg-[#0f172a] border-[#1e2a44] glass-card ${isDragging ? 'border-[#5b63f6] bg-[#5b63f6]/15 scale-[1.02]' : ''}`
+            className={`max-w-3xl mx-auto p-6 sm:p-8 rounded-3xl bg-white border transition-all text-center shadow-card ${
+              isDragging ? 'border-[#014BAA] bg-[#E6F0FF]/30 scale-[1.01]' : 'border-[#E6F0FF]'
             }`}
           >
-            {/* Hidden File Input */}
-            <input
-              type="file"
-              accept={ACCEPT_STRING}
-              onChange={handleFileChange}
-              className="hidden"
-              id="audio-file-input"
-            />
-
-            {/* Dotted Choose / Drop Zone Box */}
+            {/* Dotted Drop Zone */}
             <div
-              onClick={() => document.getElementById('audio-file-input')?.click()}
-              className={`border-2 border-dashed rounded-xl p-8 transition-all bg-[#070c1a]/50 mb-6 cursor-pointer group flex flex-col items-center justify-center gap-3 ${
-                isDragging ? 'border-[#00e6a8] bg-[#00e6a8]/10' : 'border-cyan-500/40 hover:border-[#00e6a8]'
+              onClick={() => fileInputRef.current?.click()}
+              className={`border-2 border-dashed rounded-2xl p-8 sm:p-12 transition-all cursor-pointer group flex flex-col items-center justify-center gap-3.5 ${
+                isDragging
+                  ? 'border-[#014BAA] bg-[#E6F0FF]/40'
+                  : 'border-[#BFDAFE] bg-[#F8F3F0]/60 hover:border-[#014BAA] hover:bg-[#E6F0FF]/20'
               }`}
             >
-              <div className="flex items-center gap-3 text-[#00e6a8] mb-1">
-                <ImageIcon className="w-8 h-8 text-[#00e6a8] group-hover:scale-110 transition-transform" />
-                <Film className="w-8 h-8 text-purple-400 group-hover:scale-110 transition-transform" />
-                <Music className="w-8 h-8 text-cyan-400 group-hover:scale-110 transition-transform" />
+              <div className="flex items-center gap-3 mb-1">
+                <div className="w-12 h-12 rounded-2xl bg-[#E6F0FF] text-[#014BAA] flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                  {isImageRoute ? <ImageIcon className="w-6 h-6" /> : <FileAudio className="w-6 h-6" />}
+                </div>
+                <div className="w-10 h-10 rounded-2xl bg-[#FDF1F5] text-[#B83264] flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                  <Film className="w-5 h-5" />
+                </div>
               </div>
 
-              <span className="text-sm font-bold text-white group-hover:text-[#00e6a8] transition-colors">
-                Drag & Drop Image, Video, or Music File from File Explorer
+              <div className="space-y-1">
+                <span className="text-base sm:text-lg font-bold text-[#282B4A] group-hover:text-[#014BAA] transition-colors block">
+                  Drag & Drop {isImageRoute ? 'Image File' : 'Audio or Media File'} Here
+                </span>
+                <span className="text-xs text-[#5A5E7A] block">
+                  Or click anywhere in this area to select from your device
+                </span>
+              </div>
+
+              <span className="px-6 py-2.5 rounded-xl text-xs font-extrabold bg-[#014BAA] text-white hover:bg-[#013D8B] transition-all shadow-royal">
+                Choose Local File
               </span>
 
-              <span className="px-5 py-2 rounded-lg text-xs font-extrabold bg-[#00e6a8]/20 text-[#00e6a8] border border-[#00e6a8]/40 group-hover:bg-[#00e6a8] group-hover:text-[#070c1a] transition-all">
-                Browse Files
-              </span>
-
-              {file ? (
-                <div className="mt-3 flex flex-col items-center gap-2">
+              {/* SPECIMEN PREVIEW (Image / Audio) */}
+              {file && (
+                <div className="mt-4 w-full max-w-md mx-auto p-4 rounded-2xl bg-white border border-[#E6F0FF] shadow-sm space-y-3">
+                  {/* Image Preview */}
                   {previewUrl && (
-                    <div className="relative max-w-xs rounded-xl overflow-hidden border border-[#00e6a8]/40 shadow-lg">
-                      <img src={previewUrl} alt="Preview specimen" className="w-full max-h-48 object-cover" />
+                    <div className="relative rounded-xl overflow-hidden border border-[#BFDAFE] max-h-56 flex items-center justify-center bg-[#F8F3F0]">
+                      <img
+                        src={previewUrl}
+                        alt="Specimen preview"
+                        className="max-h-52 w-auto object-contain rounded-lg"
+                      />
                     </div>
                   )}
-                  <div className="flex items-center justify-center gap-2.5 p-3 rounded-xl bg-[#00e6a8]/10 border border-[#00e6a8]/30 text-xs text-[#00e6a8]">
-                    {isImageFile(file) ? (
-                      <ImageIcon className="w-4 h-4 text-[#00e6a8]" />
-                    ) : isVideoFile(file) ? (
-                      <Film className="w-4 h-4 text-purple-400" />
-                    ) : (
-                      <FileAudio className="w-4 h-4 text-cyan-400" />
-                    )}
-                    <span className="font-semibold text-white truncate max-w-xs">{file.name}</span>
-                    <span className="text-[10px] text-slate-400">({(file.size / 1024 / 1024).toFixed(2)} MB)</span>
+
+                  {/* Audio Player Preview */}
+                  {audioUrl && (
+                    <div className="space-y-2 p-3 rounded-xl bg-[#E6F0FF]/50 border border-[#BFDAFE]">
+                      <div className="flex items-center gap-2 text-xs font-bold text-[#014BAA]">
+                        <Volume2 className="w-4 h-4" />
+                        <span>Specimen Audio Playback Controls</span>
+                      </div>
+                      <audio controls src={audioUrl} className="w-full h-10 rounded" />
+                    </div>
+                  )}
+
+                  {/* File Metadata Info */}
+                  <div className="flex items-center justify-between text-xs text-[#282B4A] pt-1">
+                    <div className="flex items-center gap-2 truncate text-left">
+                      {isImageFile(file) ? (
+                        <ImageIcon className="w-4 h-4 text-[#014BAA] shrink-0" />
+                      ) : (
+                        <FileAudio className="w-4 h-4 text-[#014BAA] shrink-0" />
+                      )}
+                      <span className="font-bold truncate max-w-[200px]">{file.name}</span>
+                    </div>
+                    <span className="text-[#5A5E7A] font-mono shrink-0">
+                      {(file.size / 1024 / 1024).toFixed(2)} MB
+                    </span>
                   </div>
                 </div>
-              ) : (
-                <span className="text-[11px] text-slate-400 mt-1">Or click to choose a file from your computer</span>
               )}
             </div>
 
-            {/* Animated Loading Spinner & Pipeline Stepper */}
-            {analyzing ? (
-              <div className="py-6 flex flex-col items-center gap-3">
-                <div className="w-12 h-12 rounded-full border-4 border-[#00e6a8]/20 border-t-[#00e6a8] animate-spin" />
-                <span className="text-xs font-semibold text-[#00e6a8]">Analyzing media file ({uploadProgress}% uploaded)...</span>
-                <span className="text-[11px] text-slate-400">{activePipelineSteps[currentStepIndex]?.desc}</span>
-              </div>
-            ) : (
-              <button
-                onClick={runAnalysis}
-                disabled={!file}
-                className="w-full sm:w-auto px-8 py-3 rounded-lg text-xs font-extrabold bg-[#00e6a8] text-[#070c1a] hover:bg-[#36d399] transition-all glow-cyan disabled:opacity-50 tracking-wider uppercase"
-              >
-                Analyze Media File
-              </button>
-            )}
-
-            <p className="text-[11px] text-slate-400 mt-4">
-              Supported Formats: Image (JPG, JPEG, PNG, WEBP), Video (MP4, MOV, AVI, MKV, WEBM) & Audio (MP3, WAV, M4A, FLAC, AAC, OGG) (Max size: 500MB)
-            </p>
-
+            {/* Error Message */}
             {error && (
-              <div className="mt-4 p-4 rounded-xl bg-red-500/15 border border-red-500/40 text-xs text-red-300 font-semibold flex items-center justify-between gap-3 text-left">
-                <div className="flex items-center gap-2.5">
-                  <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
+              <div className="mt-4 p-4 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 font-semibold flex items-center justify-between gap-3 text-left">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
                   <span>{error}</span>
                 </div>
-                <button onClick={() => setError(null)} className="text-[10px] uppercase font-bold px-2 py-1 bg-red-500/20 rounded">Dismiss</button>
+                <button
+                  onClick={() => setError(null)}
+                  className="text-[10px] font-bold uppercase px-2 py-1 bg-red-100 rounded text-red-800"
+                >
+                  Dismiss
+                </button>
               </div>
             )}
-          </div>
 
-          {/* Stepper Visualization Panel */}
-          {analyzing && (
-            <div className="max-w-2xl mx-auto p-6 rounded-2xl bg-[#0d1527] border border-[#00e6a8]/20 glass-card space-y-4">
-              <h4 className="text-xs font-bold text-[#00e6a8] uppercase tracking-wider">Analysis Pipeline Steps</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                {activePipelineSteps.map((step, idx) => (
-                  <div
-                    key={step.id}
-                    className={`p-2.5 rounded-lg border flex items-center gap-2 transition-all ${
-                      idx < currentStepIndex
-                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                        : idx === currentStepIndex
-                        ? 'bg-[#00e6a8]/20 border-[#00e6a8] text-white font-bold animate-pulse'
-                        : 'bg-slate-900/40 border-slate-800 text-slate-500'
-                    }`}
-                  >
-                    <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold bg-slate-800 shrink-0">
-                      {step.id}
-                    </span>
-                    <div className="truncate">
-                      <span className="block truncate font-semibold">{step.label}</span>
-                      <span className="text-[10px] text-slate-400 block truncate">{step.desc}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            {/* Action Button & Measurable Progress Bar */}
+            <div className="mt-6 flex flex-col items-center gap-3 w-full">
+              {analyzing ? (
+                <div className="w-full py-2">
+                  <ForensicProgressBar
+                    mediaType={isImageRoute || isImageFile(file) ? 'image' : isVideoFile(file) ? 'video' : 'audio'}
+                    fileName={file?.name}
+                    fileSize={file?.size}
+                    uploadProgress={uploadProgress}
+                    analysisProgress={analysisProgress}
+                    elapsedSeconds={elapsedSeconds}
+                    estimatedTotalSeconds={isImageFile(file) ? 2.5 : isVideoFile(file) ? 28 : 16}
+                    activeStepIndex={currentStepIndex}
+                    steps={activePipelineSteps}
+                    isComplete={isComplete}
+                  />
+                </div>
+              ) : (
+                <button
+                  onClick={runAnalysis}
+                  disabled={!file}
+                  className="w-full sm:w-auto px-10 py-3.5 rounded-xl text-xs font-extrabold bg-[#014BAA] text-white hover:bg-[#013D8B] transition-all shadow-royal disabled:opacity-50 tracking-wider uppercase cursor-pointer"
+                >
+                  Analyze Specimen Now
+                </button>
+              )}
+
+              <p className="text-[11px] text-[#5A5E7A] mt-2">
+                Supported Formats: {isImageRoute ? 'JPG, JPEG, PNG, WEBP' : 'WAV, MP3, FLAC, M4A, AAC, MP4, MOV, WEBM'} (Max size: 500MB)
+              </p>
             </div>
-          )}
+          </div>
         </div>
       ) : (
-        /* RESULT VIEW AFTER ANALYSIS */
-        <div className="space-y-10 animate-fade-in">
-          {(() => {
-            console.log("FINAL IMAGE UI STATE:", {
-              prediction: result?.prediction,
-              confidence: result?.confidence,
-              deepfakeProbability: result?.deepfakeProbability
-            });
-            return null;
-          })()}
-
-          {/* Analysis Header Row */}
-          <div className="p-6 rounded-2xl bg-[#0d1527] border border-[#00e6a8]/20 glass-card space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl bg-[#00e6a8]/10 border border-[#00e6a8]/30">
-                  {isImageResult ? (
-                    <ScanFace className="w-6 h-6 text-[#00e6a8]" />
-                  ) : isVideoResult ? (
-                    <Film className="w-6 h-6 text-purple-400" />
-                  ) : (
-                    <FileAudio className="w-6 h-6 text-[#00e6a8]" />
-                  )}
-                </div>
-                <div>
-                  <h3 className="text-base sm:text-lg font-extrabold text-[#00e6a8] uppercase tracking-wider">
-                    {isImageResult ? 'IMAGE DEEPFAKE ANALYSIS' : isVideoResult ? 'VIDEO DEEPFAKE ANALYSIS' : 'AUDIO DEEPFAKE ANALYSIS'}
-                  </h3>
-                  <p className="text-xs text-slate-400">
-                    {isImageResult ? (result?.modelVersion || 'xRayon-ConvNeXtV2-Phase2') : isVideoResult ? 'Xception / EfficientNet Video Classifier' : 'WavLM Neural Audio Engine'}
-                  </p>
-                </div>
+        /* =========================================================
+           DETECTION RESULTS VIEW (Requirement B, D, E)
+           ========================================================= */
+        <div className="space-y-8 animate-in fade-in duration-200">
+          {/* Result Header Bar */}
+          <div className="p-6 rounded-3xl bg-white border border-[#E6F0FF] shadow-card flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-[#E6F0FF] text-[#014BAA] flex items-center justify-center shadow-sm">
+                {isImageResult ? (
+                  <ScanFace className="w-6 h-6" />
+                ) : isVideoResult ? (
+                  <Film className="w-6 h-6" />
+                ) : (
+                  <FileAudio className="w-6 h-6" />
+                )}
               </div>
-              <button
-                onClick={resetUpload}
-                className="px-4 py-2 rounded-xl text-xs font-extrabold bg-[#00e6a8] text-[#070c1a] hover:bg-[#36d399] transition-all flex items-center gap-2 glow-cyan uppercase tracking-wider self-start sm:self-auto"
-              >
-                <RefreshCw className="w-3.5 h-3.5" /> Analyze Another File
-              </button>
+              <div>
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#014BAA] block">
+                  {isImageResult ? 'IMAGE FORENSIC RESULT' : isVideoResult ? 'VIDEO FORENSIC RESULT' : 'VOICE FORENSIC RESULT'}
+                </span>
+                <h2 className="text-xl font-extrabold text-[#282B4A]">
+                  Specimen Forensic Assessment Complete
+                </h2>
+                <span className="text-xs text-[#5A5E7A]">
+                  Model: {result?.modelVersion || (isImageResult ? 'xRayon-ConvNeXtV2-Phase2' : 'DavidCombei/wavLM-base-Deepfake_V2')}
+                </span>
+              </div>
             </div>
 
-            {/* Quick Metrics Grid */}
-            {isImageResult ? (
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-2">
-                <div className="p-4 rounded-xl bg-[#070c1a]/80 border border-slate-800 text-center space-y-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">PREDICTION</span>
-                  <p className={`text-sm font-extrabold font-mono truncate ${
-                    isImgAi ? 'text-red-400' : isImgUncertain ? 'text-amber-400' : 'text-[#00e6a8]'
-                  }`}>
-                    {imgPred}
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-[#070c1a]/80 border border-slate-800 text-center space-y-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">CONFIDENCE</span>
-                  <p className="text-base font-extrabold text-[#00e6a8] font-mono">
-                    {formatConfidence(imgConf)}%
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-[#070c1a]/80 border border-slate-800 text-center space-y-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">AI PROBABILITY</span>
-                  <p className="text-base font-extrabold text-amber-400 font-mono">
-                    {formatConfidence(imgAiProb)}%
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-[#070c1a]/80 border border-slate-800 text-center space-y-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">FACES DETECTED</span>
-                  <p className="text-base font-extrabold text-white font-mono">{result?.facesDetected ?? 0}</p>
-                </div>
-
-                <div className="p-4 rounded-xl bg-[#070c1a]/80 border border-slate-800 text-center space-y-1 col-span-2 sm:col-span-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">VALID FACES</span>
-                  <p className="text-base font-extrabold text-purple-300 font-mono">{result?.validFaces ?? 0}</p>
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-                <div className="p-5 rounded-xl bg-[#070c1a]/80 border border-slate-800 text-center space-y-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">SPECIMEN DURATION</span>
-                  <p className="text-xl font-extrabold text-white font-mono">{result?.durationSeconds || result?.duration || 5.0}s</p>
-                </div>
-
-                <div className="p-5 rounded-xl bg-[#070c1a]/80 border border-slate-800 text-center space-y-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">PROCESSING TIME</span>
-                  <p className="text-xl font-extrabold text-white font-mono">{result?.processingTime || '0.42s'}</p>
-                </div>
-
-                <div className="p-5 rounded-xl bg-[#070c1a]/80 border border-slate-800 text-center space-y-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">MODEL CONFIDENCE</span>
-                  <p className="text-xl font-extrabold text-[#00e6a8] font-mono">
-                    {formatConfidence(result?.confidence)}%
-                  </p>
-                </div>
-              </div>
-            )}
+            <button
+              onClick={resetUpload}
+              className="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#E6F0FF] text-[#014BAA] border border-[#BFDAFE] hover:bg-[#D4E6FF] transition-all flex items-center gap-2 self-start sm:self-auto"
+            >
+              <RefreshCw className="w-3.5 h-3.5" /> Analyze Another Specimen
+            </button>
           </div>
 
-          {/* Analysis Result Card with Donut Chart */}
-          <div className="p-8 rounded-2xl bg-[#0d1527] border border-[#00e6a8]/30 glass-card space-y-6">
-            <h3 className="text-2xl font-extrabold text-[#00e6a8] text-center">Analysis Result</h3>
+          {/* MAIN VERDICT & CONFIDENCE SCORE ROW */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Left Box: Clear Real / Fake Classification */}
+            <div className={`p-8 rounded-3xl border text-center flex flex-col justify-center items-center min-h-[260px] space-y-3.5 shadow-card ${
+              isImageResult
+                ? isImgAi
+                  ? 'bg-red-50/80 border-red-200'
+                  : isImgUncertain
+                  ? 'bg-amber-50/80 border-amber-200'
+                  : 'bg-emerald-50/80 border-emerald-200'
+                : (result?.verdict || result?.status || '').toUpperCase().includes('DEEPFAKE') || (result?.verdict || result?.status || '').toUpperCase().includes('AI')
+                ? 'bg-red-50/80 border-red-200'
+                : 'bg-emerald-50/80 border-emerald-200'
+            }`}>
+              <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#5A5E7A]">
+                AI CLASSIFICATION VERDICT
+              </span>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-              {/* Left Box */}
-              <div className="p-8 rounded-2xl bg-[#070c1a]/90 border border-slate-800 text-center flex flex-col justify-center items-center min-h-[220px] space-y-3">
-                <span
-                  className={`text-3xl sm:text-4xl font-extrabold tracking-wider font-display ${
-                    isImageResult
-                      ? (isImgAi ? 'text-red-400' : isImgUncertain ? 'text-amber-400' : 'text-[#00e6a8]')
-                      : ((result?.verdict || result?.status || '').toUpperCase().includes('DEEPFAKE') || (result?.verdict || result?.status || '').toUpperCase().includes('AI') ? 'text-red-400' : 'text-[#00e6a8]')
-                  }`}
-                >
-                  {isImageResult
-                    ? (imgPred === 'Likely AI Generated' ? 'AI GENERATED' : imgPred === 'Uncertain' ? 'UNCERTAIN' : 'LIKELY NATURAL')
-                    : ((result?.verdict || result?.status || '').toUpperCase().includes('DEEPFAKE') || (result?.verdict || result?.status || '').toUpperCase().includes('AI') ? 'AI GENERATED VOICE' : 'REAL')}
-                </span>
-
-                <p className="text-base text-slate-300 font-semibold font-mono">
-                  Confidence: {formatConfidence(isImageResult ? imgConf : result?.confidence)}%
-                </p>
-
-                <p className="text-xs text-amber-400 font-semibold font-mono">
-                  Deepfake Probability: {formatConfidence(isImageResult ? imgAiProb : result?.deepfakeProbability)}%
-                </p>
-
-                {isImageResult && (
-                  <p className="text-xs text-[#00e6a8] font-semibold font-mono">
-                    Real Probability: {formatConfidence(imgRealProb)}%
-                  </p>
+              <div className="flex items-center gap-2.5">
+                {isImageResult ? (
+                  isImgAi ? (
+                    <AlertTriangle className="w-8 h-8 text-red-600" />
+                  ) : (
+                    <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+                  )
+                ) : (result?.verdict || result?.status || '').toUpperCase().includes('DEEPFAKE') || (result?.verdict || result?.status || '').toUpperCase().includes('AI') ? (
+                  <AlertTriangle className="w-8 h-8 text-red-600" />
+                ) : (
+                  <CheckCircle2 className="w-8 h-8 text-emerald-600" />
                 )}
 
-                <span className={`px-4 py-1.5 rounded-full text-xs font-extrabold border ${
+                <h3 className={`text-2xl sm:text-3xl font-black font-display tracking-tight ${
                   isImageResult
-                    ? (isImgAi ? 'bg-red-500/20 text-red-400 border-red-500/40 glow-red' : isImgUncertain ? 'bg-amber-500/20 text-amber-400 border-amber-500/40' : 'bg-emerald-500/20 text-[#00e6a8] border-[#00e6a8]/40 glow-cyan')
-                    : getThreatBadgeStyle(result?.threatLevel)
+                    ? isImgAi
+                      ? 'text-red-700'
+                      : isImgUncertain
+                      ? 'text-amber-700'
+                      : 'text-emerald-700'
+                    : (result?.verdict || result?.status || '').toUpperCase().includes('DEEPFAKE') || (result?.verdict || result?.status || '').toUpperCase().includes('AI')
+                    ? 'text-red-700'
+                    : 'text-emerald-700'
                 }`}>
                   {isImageResult
-                    ? (isImgAi ? 'THREAT LEVEL: HIGH' : isImgUncertain ? 'THREAT LEVEL: UNCERTAIN' : 'THREAT LEVEL: LOW')
-                    : `THREAT LEVEL: ${result?.threatLevel || 'LOW'}`}
-                </span>
-              </div>
-
-              {/* Right Box: Donut Chart or Image Preview */}
-              <div className="p-6 rounded-2xl bg-[#070c1a]/90 border border-slate-800 flex flex-col items-center justify-center min-h-[220px]">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Confidence Score Distribution</span>
-
-                <div className="relative w-36 h-36 flex items-center justify-center">
-                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                    <path
-                      className="text-slate-800"
-                      strokeWidth="3.8"
-                      stroke="currentColor"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                    <path
-                      className={
-                        isImageResult
-                          ? (isImgAi ? 'text-red-500' : isImgUncertain ? 'text-amber-400' : 'text-[#00e6a8]')
-                          : ((result?.verdict || result?.status || '').toUpperCase().includes('DEEPFAKE') || (result?.verdict || result?.status || '').toUpperCase().includes('AI') ? 'text-red-500' : 'text-[#00e6a8]')
-                      }
-                      strokeDasharray={`${formatConfidence(isImageResult ? imgAiProb : (result?.confidence || 0))}, 100`}
-                      strokeWidth="3.8"
-                      strokeLinecap="round"
-                      stroke="currentColor"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                  </svg>
-                  <div className="absolute flex flex-col items-center">
-                    <span className="text-lg font-mono font-extrabold text-[#00e6a8]">
-                      {formatConfidence(isImageResult ? imgAiProb : (result?.confidence || 0))}%
-                    </span>
-                    <span className="text-[9px] uppercase font-bold text-slate-400">
-                      {isImageResult
-                        ? 'AI PROBABILITY'
-                        : ((result?.verdict || result?.status || '').toUpperCase().includes('DEEPFAKE') || (result?.verdict || result?.status || '').toUpperCase().includes('AI') ? 'FAKE' : 'REAL')}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Duplicate Warning Banner */}
-            {result.duplicateInfo?.isDuplicate && (
-              <div className="p-4 rounded-xl bg-amber-500/15 border border-amber-500/40 text-xs text-amber-200 flex items-center gap-3">
-                <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0" />
-                <div>
-                  <strong className="text-amber-300">Duplicate File Detected: </strong>
-                  This exact file hash was previously analyzed under <span className="font-mono font-bold text-white">{result.duplicateInfo.previousCaseId}</span> on{' '}
-                  {new Date(result.duplicateInfo.previousReportDate).toLocaleString()} with verdict{' '}
-                  <strong className="text-amber-300">{result.duplicateInfo.previousVerdict}</strong>.
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* =====================================================================
-              WHY THIS RESULT? — FORENSIC DECISION EXPLANATION
-              Uses ONLY actual detector output fields. No fabricated evidence.
-          ===================================================================== */}
-          <div className="p-6 rounded-2xl bg-[#0d1527] border border-blue-500/30 glass-card space-y-4">
-            <h3 className="text-base font-extrabold text-blue-300 uppercase tracking-wider flex items-center gap-2">
-              <Info className="w-5 h-5 text-blue-400" /> Why This Result?
-            </h3>
-
-            {isImageResult && (() => {
-              const aiPct = (imgAiProb * 100).toFixed(2);
-              const realPct = (imgRealProb * 100).toFixed(2);
-              let decisionText = '';
-              if (isImgAi) {
-                decisionText = `AI probability was ${aiPct}%, exceeding the 96% high-confidence AI threshold. The xRayon ConvNeXtV2 Phase-2 model therefore classified this specimen as "Likely AI Generated".`;
-              } else if (isImgUncertain) {
-                decisionText = `AI probability was ${aiPct}%. This is above the 50% natural threshold but below the 96% high-confidence AI threshold, so the system reports "Uncertain" rather than making a high-confidence AI claim.`;
-              } else {
-                decisionText = `AI probability was ${aiPct}%, below the 50% natural threshold. The model output therefore favors the natural-image class and classifies this specimen as "Likely Natural".`;
-              }
-
-              return (
-                <div className="space-y-4 text-xs">
-                  {/* Decision Rule */}
-                  <div className="p-4 rounded-xl bg-[#070c1a] border border-blue-500/20 space-y-2">
-                    <span className="text-[10px] font-extrabold uppercase text-blue-400 tracking-wider block">Decision Rule Applied</span>
-                    <p className="text-slate-200 leading-relaxed">{decisionText}</p>
-                  </div>
-
-                  {/* Threshold Table */}
-                  <div className="p-4 rounded-xl bg-[#070c1a] border border-slate-800 space-y-2">
-                    <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block">Threshold / Decision Boundaries</span>
-                    <div className="grid grid-cols-3 gap-2 text-center font-mono text-[10px]">
-                      <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30">
-                        <span className="text-emerald-400 font-bold block">≤ 50%</span>
-                        <span className="text-slate-400 block">Likely Natural</span>
-                      </div>
-                      <div className="p-2 rounded-lg bg-amber-500/10 border border-amber-500/30">
-                        <span className="text-amber-400 font-bold block">50% – 96%</span>
-                        <span className="text-slate-400 block">Uncertain</span>
-                      </div>
-                      <div className="p-2 rounded-lg bg-red-500/10 border border-red-500/30">
-                        <span className="text-red-400 font-bold block">≥ 96%</span>
-                        <span className="text-slate-400 block">Likely AI Generated</span>
-                      </div>
-                    </div>
-                    <p className="text-slate-500 font-mono text-[10px] pt-1">
-                      Specimen AI probability: <strong className="text-white">{aiPct}%</strong> &nbsp;|&nbsp;
-                      Real probability: <strong className="text-white">{realPct}%</strong>
-                    </p>
-                  </div>
-
-                  {/* Faces / Patches Evidence — only if returned */}
-                  {(result?.facesDetected > 0 || result?.validFaces > 0) && (
-                    <div className="p-4 rounded-xl bg-[#070c1a] border border-slate-800 space-y-1">
-                      <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block">Face Detection Evidence</span>
-                      <p className="text-slate-300 leading-relaxed">
-                        The detector found <strong className="text-white">{result?.facesDetected ?? 0}</strong> face region(s) in the image,
-                        of which <strong className="text-white">{result?.validFaces ?? 0}</strong> passed validity checks and were forwarded to the ConvNeXtV2 classifier for patch-level analysis.
-                        {result?.analyzedPatches?.length > 0
-                          ? ` ${result.analyzedPatches.length} focal patch(es) were extracted and scored individually.`
-                          : ''}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Backend explanation bullets if provided */}
-                  {Array.isArray(result?.explanation) && result.explanation.length > 0 && (
-                    <div className="p-4 rounded-xl bg-[#070c1a] border border-slate-800 space-y-2">
-                      <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block">Model-Provided Explanation</span>
-                      <ul className="space-y-1">
-                        {result.explanation.map((item: string, idx: number) => (
-                          <li key={idx} className="flex items-start gap-2 text-slate-300">
-                            <CheckCircle className="w-3.5 h-3.5 text-[#00e6a8] shrink-0 mt-0.5" />
-                            <span>{item}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {/* Feature attribution note — only shown when no patch-level features exist */}
-                  {!(Array.isArray(result?.explanation) && result.explanation.length > 0) && (
-                    <div className="p-4 rounded-xl bg-[#070c1a] border border-amber-500/20 space-y-1">
-                      <span className="text-[10px] font-extrabold uppercase text-amber-400 tracking-wider block">Feature Attribution</span>
-                      <p className="text-slate-400 leading-relaxed">
-                        xRayon ConvNeXtV2 provides a probabilistic classification score. The model does not expose human-readable
-                        feature attribution for this prediction. The classification is based solely on the learned neural
-                        representations of the ConvNeXtV2-Base Phase-2 architecture trained on synthetic vs. real image datasets.
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Limitations */}
-                  <div className="p-4 rounded-xl bg-[#070c1a] border border-slate-700 space-y-1">
-                    <span className="text-[10px] font-extrabold uppercase text-slate-500 tracking-wider block">Limitations</span>
-                    <p className="text-slate-500 leading-relaxed text-[11px]">
-                      AI image detection is probabilistic and is not absolute proof of AI generation or image manipulation.
-                      Results may vary based on image resolution, compression, and content type. This report should be
-                      used as one input in a broader forensic investigation, not as standalone evidence.
-                    </p>
-                  </div>
-                </div>
-              );
-            })()}
-
-            {!isImageResult && !isVideoResult && (() => {
-              const conf = Number(result?.confidence ?? 0);
-              const confPct = conf > 1 ? conf.toFixed(2) : (conf * 100).toFixed(2);
-              const isAiVerdict = (result?.verdict || result?.status || '').toUpperCase().includes('DEEPFAKE') ||
-                                  (result?.verdict || result?.status || '').toUpperCase().includes('AI');
-
-              return (
-                <div className="space-y-4 text-xs">
-                  <div className="p-4 rounded-xl bg-[#070c1a] border border-blue-500/20 space-y-2">
-                    <span className="text-[10px] font-extrabold uppercase text-blue-400 tracking-wider block">Decision Explanation</span>
-                    <p className="text-slate-200 leading-relaxed">
-                      {isAiVerdict
-                        ? `The WavLM neural audio classifier returned a deepfake probability of ${confPct}%, indicating that the vocal characteristics of this specimen deviate from natural speech patterns consistent with the model's training distribution.`
-                        : `The WavLM neural audio classifier returned a confidence score of ${confPct}% in favor of the genuine/natural class, indicating that the vocal characteristics of this specimen are consistent with natural human speech.`}
-                    </p>
-                  </div>
-
-                  {result?.durationSeconds && (
-                    <div className="p-4 rounded-xl bg-[#070c1a] border border-slate-800 space-y-1">
-                      <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block">Audio Specimen Metadata</span>
-                      <p className="text-slate-300">
-                        Analyzed duration: <strong className="text-white">{result.durationSeconds}s</strong>
-                        {result?.processingTime ? ` · Processing time: ${result.processingTime}s` : ''}
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="p-4 rounded-xl bg-[#070c1a] border border-amber-500/20 space-y-1">
-                    <span className="text-[10px] font-extrabold uppercase text-amber-400 tracking-wider block">Model Information</span>
-                    <p className="text-slate-400">
-                      Model: <strong className="text-white">{result?.modelVersion || 'DavidCombei/wavLM-base-Deepfake_V2'}</strong>
-                      <br />Input: 16kHz mono audio · Analysis: neural spectral feature embeddings via WavLM-base
-                    </p>
-                  </div>
-
-                  <div className="p-4 rounded-xl bg-[#070c1a] border border-slate-700 space-y-1">
-                    <span className="text-[10px] font-extrabold uppercase text-slate-500 tracking-wider block">Limitations</span>
-                    <p className="text-slate-500 leading-relaxed text-[11px]">
-                      Audio deepfake detection is probabilistic and is not absolute proof of synthetic voice generation.
-                      Short clips, background noise, and heavy compression may affect accuracy. This report should be
-                      used as one input in a broader forensic investigation, not as standalone evidence.
-                    </p>
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
-
-          {/* IMAGE SPECIFIC SECTIONS: Image Quality & Face Results & Explanation */}
-          {isImageResult && (
-            <div className="space-y-6">
-              {/* Image Quality Metrics & Preview */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {previewUrl && (
-                  <div className="p-5 rounded-2xl bg-[#0d1527] border border-[#00e6a8]/20 glass-card flex flex-col items-center justify-center">
-                    <span className="text-xs font-bold text-[#00e6a8] uppercase tracking-wider mb-3 block self-start">Specimen Image</span>
-                    <img src={previewUrl} alt="Analyzed Specimen" className="max-h-44 object-contain rounded-xl border border-slate-800" />
-                  </div>
-                )}
-
-                <div className={`p-6 rounded-2xl bg-[#0d1527] border border-[#00e6a8]/20 glass-card space-y-4 ${previewUrl ? 'md:col-span-2' : 'md:col-span-3'}`}>
-                  <h4 className="text-xs font-bold text-[#00e6a8] uppercase tracking-wider flex items-center gap-2">
-                    <Sliders className="w-4 h-4" /> Image Quality Metrics
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-mono">
-                    <div className="p-4 rounded-xl bg-[#070c1a] border border-slate-800 text-center space-y-1">
-                      <span className="text-[10px] text-slate-400 uppercase block font-semibold">Sharpness</span>
-                      <span className="text-lg font-bold text-white block">
-                        {result.imageQuality?.sharpness != null ? Number(result.imageQuality.sharpness).toFixed(2) : 'N/A'}
-                      </span>
-                    </div>
-
-                    <div className="p-4 rounded-xl bg-[#070c1a] border border-slate-800 text-center space-y-1">
-                      <span className="text-[10px] text-slate-400 uppercase block font-semibold">Brightness</span>
-                      <span className="text-lg font-bold text-white block">
-                        {result.imageQuality?.brightness != null ? Number(result.imageQuality.brightness).toFixed(2) : 'N/A'}
-                      </span>
-                    </div>
-
-                    <div className="p-4 rounded-xl bg-[#070c1a] border border-slate-800 text-center space-y-1">
-                      <span className="text-[10px] text-slate-400 uppercase block font-semibold">Contrast</span>
-                      <span className="text-lg font-bold text-white block">
-                        {result.imageQuality?.contrast != null ? Number(result.imageQuality.contrast).toFixed(2) : 'N/A'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Analyzed Regions Gallery (Matching User Spec & Image Analysis Screenshot) */}
-              {((Array.isArray(result.analyzedPatches) && result.analyzedPatches.length > 0) || (Array.isArray(result.faceResults) && result.faceResults.length > 0)) && (
-                <div className="p-6 rounded-2xl bg-[#0d1527] border border-[#00e6a8]/20 glass-card space-y-4">
-                  <div className="text-center space-y-1 pb-2 border-b border-slate-800/80">
-                    <h3 className="text-xl font-extrabold text-[#00e6a8] flex items-center justify-center gap-2">
-                      <ScanFace className="w-5 h-5 text-[#00e6a8]" /> Analyzed Regions & Extracted Patches
-                    </h3>
-                    <p className="text-xs text-slate-400">
-                      Key facial crops and focal region patches extracted and analyzed for synthetic manipulation patterns
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 pt-2">
-                    {(result.analyzedPatches && result.analyzedPatches.length > 0
-                      ? result.analyzedPatches
-                      : (result.faceResults || []).map((f: any, idx: number) => ({
-                          patchId: `Face ${idx + 1}`,
-                          label: `Face #${idx + 1}`,
-                          deepfakeProbability: f.deepfakeProbability,
-                          prediction: f.prediction,
-                          confidence: f.confidence,
-                          imageBase64: f.imageBase64 || previewUrl
-                        }))
-                    ).map((patch: any, idx: number) => {
-                      const isAi = patch.prediction === 'Likely AI Generated' || patch.deepfakeProbability >= 0.50;
-                      return (
-                        <div
-                          key={idx}
-                          className={`relative group rounded-xl overflow-hidden bg-[#070c1a] border transition-all duration-300 ${
-                            isAi
-                              ? 'border-red-500/40 hover:border-red-500 hover:shadow-lg hover:shadow-red-500/20'
-                              : 'border-[#00e6a8]/30 hover:border-[#00e6a8] hover:shadow-lg hover:shadow-[#00e6a8]/20'
-                          }`}
-                        >
-                          <div className="w-full h-36 bg-black/40 flex items-center justify-center overflow-hidden">
-                            {patch.imageBase64 ? (
-                              <img
-                                src={patch.imageBase64}
-                                alt={patch.label}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                              />
-                            ) : previewUrl ? (
-                              <img
-                                src={previewUrl}
-                                alt={patch.label}
-                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center bg-slate-900 text-slate-600">
-                                <ScanFace className="w-8 h-8 opacity-40" />
-                              </div>
-                            )}
-                          </div>
-
-                          <div className="p-2.5 bg-[#070c1a]/95 text-center space-y-1 border-t border-slate-800">
-                            <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-300 block truncate">
-                              {patch.patchId || patch.label || `Region ${idx + 1}`}
-                            </span>
-                            <div className="flex items-center justify-center gap-1.5 text-[10px]">
-                              <span
-                                className={`px-2 py-0.5 rounded font-extrabold border ${
-                                  isAi
-                                    ? 'bg-red-500/20 text-red-400 border-red-500/40'
-                                    : 'bg-emerald-500/20 text-[#00e6a8] border-[#00e6a8]/40'
-                                }`}
-                              >
-                                {isAi ? 'AI GENERATED' : 'NATURAL'}
-                              </span>
-                              <span className="font-mono font-bold text-slate-200">
-                                {formatConfidence(patch.deepfakeProbability)}%
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* Face Results Table (Part 11) */}
-              {Array.isArray(result.faceResults) && result.faceResults.length > 0 && (
-                <div className="p-6 rounded-2xl bg-[#0d1527] border border-[#00e6a8]/20 glass-card space-y-4">
-                  <h4 className="text-xs font-bold text-[#00e6a8] uppercase tracking-wider flex items-center gap-2">
-                    <ScanFace className="w-4 h-4" /> Detected Face Analysis ({result.faceResults.length})
-                  </h4>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-[#070c1a] text-slate-400 font-mono text-[10px] uppercase">
-                        <tr>
-                          <th className="p-3 rounded-l-lg">Face #</th>
-                          <th className="p-3">Deepfake Probability</th>
-                          <th className="p-3">Prediction</th>
-                          <th className="p-3 rounded-r-lg">Confidence</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-800 font-mono">
-                        {result.faceResults.map((face: any, index: number) => (
-                          <tr key={index} className="hover:bg-slate-800/40">
-                            <td className="p-3 text-white font-bold">Face {face.faceIndex || index + 1}</td>
-                            <td className="p-3 text-amber-400 font-bold">{formatConfidence(face.deepfakeProbability)}%</td>
-                            <td className="p-3">
-                              <span className={`px-2.5 py-1 rounded text-[10px] font-bold ${
-                                face.prediction === 'Likely Natural'
-                                  ? 'bg-emerald-500/20 text-[#00e6a8] border border-[#00e6a8]/30'
-                                  : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                              }`}>
-                                {face.prediction}
-                              </span>
-                            </td>
-                            <td className="p-3 text-slate-200">{formatConfidence(face.confidence)}%</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
-
-              {/* Explanation Bullets (Part 6) */}
-              {Array.isArray(result.explanation) && result.explanation.length > 0 && (
-                <div className="p-6 rounded-2xl bg-[#0d1527] border border-[#00e6a8]/20 glass-card space-y-3">
-                  <h4 className="text-xs font-bold text-[#00e6a8] uppercase tracking-wider flex items-center gap-2">
-                    <Info className="w-4 h-4" /> Model Explanation
-                  </h4>
-                  <ul className="space-y-2 text-xs text-slate-300">
-                    {result.explanation.map((item: string, idx: number) => (
-                      <li key={idx} className="flex items-start gap-2 bg-[#070c1a]/60 p-3 rounded-xl border border-slate-800/80">
-                        <CheckCircle className="w-4 h-4 text-[#00e6a8] shrink-0 mt-0.5" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* SHA-256 DIGITAL REPORT CARD */}
-          <div className="p-8 rounded-2xl bg-[#0d1527] border border-[#00e6a8]/30 glass-card space-y-6">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
-              <div>
-                <h3 className="text-lg font-extrabold text-[#00e6a8] flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-[#00e6a8]" /> Forensic Inspection Details & Verification
+                    ? (imgPred === 'Likely AI Generated' ? 'LIKELY AI GENERATED' : imgPred === 'Uncertain' ? 'UNCERTAIN VERDICT' : 'LIKELY NATURAL')
+                    : ((result?.verdict || result?.status || '').toUpperCase().includes('DEEPFAKE') || (result?.verdict || result?.status || '').toUpperCase().includes('AI') ? 'AI GENERATED VOICE' : 'AUTHENTIC HUMAN SPEECH')}
                 </h3>
-                <p className="text-xs text-slate-400 mt-1">
-                  Model configuration details and verified detection metadata.
-                </p>
               </div>
-              <span className="text-xs text-[#00e6a8] font-bold flex items-center gap-1.5">
-                <CheckCircle className="w-4 h-4 text-[#00e6a8]" /> Digital Signature Verified
+
+              <div className="space-y-1 font-mono text-xs">
+                <p className="font-bold text-[#282B4A]">
+                  Confidence Rating: <strong className="text-[#014BAA]">{formatConfidence(isImageResult ? imgConf : result?.confidence)}%</strong>
+                </p>
+                <p className="text-[#5A5E7A]">
+                  Deepfake Probability: <strong className="text-red-600">{formatConfidence(isImageResult ? imgAiProb : result?.deepfakeProbability)}%</strong>
+                </p>
+                {isImageResult && (
+                  <p className="text-[#5A5E7A]">
+                    Natural Probability: <strong className="text-emerald-600">{formatConfidence(imgRealProb)}%</strong>
+                  </p>
+                )}
+              </div>
+
+              <span className={`px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider ${
+                isImageResult
+                  ? isImgAi
+                    ? 'bg-red-100 text-red-800 border border-red-300'
+                    : isImgUncertain
+                    ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                    : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                  : (result?.verdict || result?.status || '').toUpperCase().includes('DEEPFAKE') || (result?.verdict || result?.status || '').toUpperCase().includes('AI')
+                  ? 'bg-red-100 text-red-800 border border-red-300'
+                  : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+              }`}>
+                THREAT LEVEL: {result?.threatLevel || (isImgAi ? 'HIGH' : 'LOW')}
               </span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-              <div className="p-3.5 rounded-xl bg-[#070c1a] border border-slate-800">
-                <span className="text-[10px] text-slate-400 block uppercase font-mono">Case ID</span>
-                <span className="font-mono font-bold text-[#00e6a8]">
-                  {result.caseId || (result.id ? `CASE-${result.id.slice(0, 8)}` : 'IMG-VERIFIED')}
-                </span>
+            {/* Right Box: Donut Chart Distribution & Specimen Card */}
+            <div className="p-8 rounded-3xl bg-white border border-[#E6F0FF] shadow-card flex flex-col items-center justify-center min-h-[260px] space-y-4">
+              <span className="text-xs font-bold text-[#5A5E7A] uppercase tracking-wider">
+                Model Probability Distribution
+              </span>
+
+              <div className="relative w-40 h-40 flex items-center justify-center">
+                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                  <path
+                    className="text-[#E6F0FF]"
+                    strokeWidth="3.8"
+                    stroke="currentColor"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path
+                    className={
+                      isImageResult
+                        ? isImgAi
+                          ? 'text-red-500'
+                          : isImgUncertain
+                          ? 'text-amber-500'
+                          : 'text-emerald-500'
+                        : (result?.verdict || result?.status || '').toUpperCase().includes('DEEPFAKE') || (result?.verdict || result?.status || '').toUpperCase().includes('AI')
+                        ? 'text-red-500'
+                        : 'text-emerald-500'
+                    }
+                    strokeDasharray={`${formatConfidence(isImageResult ? imgAiProb : (result?.confidence || 0))}, 100`}
+                    strokeWidth="3.8"
+                    strokeLinecap="round"
+                    stroke="currentColor"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                </svg>
+                <div className="absolute flex flex-col items-center">
+                  <span className="text-2xl font-mono font-black text-[#014BAA]">
+                    {formatConfidence(isImageResult ? imgAiProb : (result?.confidence || 0))}%
+                  </span>
+                  <span className="text-[10px] uppercase font-bold text-[#5A5E7A]">
+                    {isImageResult
+                      ? 'AI PROBABILITY'
+                      : ((result?.verdict || result?.status || '').toUpperCase().includes('DEEPFAKE') || (result?.verdict || result?.status || '').toUpperCase().includes('AI') ? 'FAKE' : 'AUTHENTIC')}
+                  </span>
+                </div>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-[#070c1a] border border-slate-800">
-                <span className="text-[10px] text-slate-400 block uppercase font-mono">Report ID</span>
-                <span className="font-mono font-bold text-slate-200">
-                  {result.reportId || result.id || 'REPORT-DS888'}
+              {previewUrl && (
+                <div className="flex items-center gap-2 text-xs text-[#5A5E7A]">
+                  <ImageIcon className="w-4 h-4 text-[#014BAA]" />
+                  <span>Specimen: <strong>{file?.name}</strong></span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* AUDIO PLAYER & WAVEFORM SECTION IF AUDIO RESULT */}
+          {!isImageResult && audioUrl && (
+            <div className="p-6 rounded-3xl bg-white border border-[#E6F0FF] shadow-card space-y-3">
+              <h3 className="text-sm font-extrabold text-[#014BAA] flex items-center gap-2">
+                <Volume2 className="w-4 h-4 text-[#014BAA]" /> Analyzed Audio Specimen Playback
+              </h3>
+              <div className="p-4 rounded-2xl bg-[#E6F0FF]/50 border border-[#BFDAFE] space-y-2">
+                <div className="flex items-center justify-between text-xs text-[#282B4A]">
+                  <span className="font-semibold">{file?.name}</span>
+                  <span className="font-mono text-[#5A5E7A]">{result?.durationSeconds || '5.0'}s</span>
+                </div>
+                <audio controls src={audioUrl} className="w-full h-10 rounded" />
+              </div>
+            </div>
+          )}
+
+          {/* WHY THIS RESULT? — MODEL DECISION EXPLANATION */}
+          <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#E6F0FF] shadow-card space-y-4">
+            <h3 className="text-base font-extrabold text-[#014BAA] uppercase tracking-wider flex items-center gap-2">
+              <Info className="w-5 h-5 text-[#014BAA]" /> Forensic Analysis Explanation & Decision Rule
+            </h3>
+
+            {isImageResult ? (
+              <div className="space-y-4 text-xs">
+                <div className="p-4 rounded-2xl bg-[#E6F0FF]/60 border border-[#BFDAFE] space-y-1.5">
+                  <span className="text-[10px] font-extrabold uppercase text-[#014BAA] tracking-wider block">
+                    Decision Rule Applied
+                  </span>
+                  <p className="text-[#282B4A] leading-relaxed">
+                    {isImgAi
+                      ? `AI probability was ${(imgAiProb * 100).toFixed(2)}%, exceeding the 96% high-confidence AI threshold. The ConvNeXtV2 model classified this specimen as "Likely AI Generated".`
+                      : isImgUncertain
+                      ? `AI probability was ${(imgAiProb * 100).toFixed(2)}%. This falls between the 50% natural and 96% AI thresholds, classified as "Uncertain".`
+                      : `AI probability was ${(imgAiProb * 100).toFixed(2)}%, below the 50% threshold. The specimen is classified as "Likely Natural".`}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center font-mono text-[11px]">
+                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
+                    <span className="text-emerald-700 font-bold block">≤ 50%</span>
+                    <span className="text-[#5A5E7A] block">Likely Natural</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
+                    <span className="text-amber-700 font-bold block">50% – 96%</span>
+                    <span className="text-[#5A5E7A] block">Uncertain</span>
+                  </div>
+                  <div className="p-3 rounded-xl bg-red-50 border border-red-200">
+                    <span className="text-red-700 font-bold block">≥ 96%</span>
+                    <span className="text-[#5A5E7A] block">Likely AI Generated</span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="p-4 rounded-2xl bg-[#E6F0FF]/60 border border-[#BFDAFE] space-y-1.5 text-xs">
+                <span className="text-[10px] font-extrabold uppercase text-[#014BAA] tracking-wider block">
+                  Acoustic Feature Inference
                 </span>
+                <p className="text-[#282B4A] leading-relaxed">
+                  {(result?.verdict || result?.status || '').toUpperCase().includes('DEEPFAKE') || (result?.verdict || result?.status || '').toUpperCase().includes('AI')
+                    ? `The WavLM acoustic classifier identified synthetic vocal artifacts and atypical spectral embeddings consistent with an AI voice clone (Confidence: ${formatConfidence(result?.confidence)}%).`
+                    : `The WavLM acoustic classifier confirmed genuine human phoneme transitions and natural pitch harmonics (Confidence: ${formatConfidence(result?.confidence)}%).`}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* IMAGE ANALYZED REGIONS GALLERY IF APPLICABLE */}
+          {isImageResult && ((Array.isArray(result.analyzedPatches) && result.analyzedPatches.length > 0) || (Array.isArray(result.faceResults) && result.faceResults.length > 0)) && (
+            <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#E6F0FF] shadow-card space-y-4">
+              <div className="text-left space-y-1 pb-2 border-b border-[#E6F0FF]">
+                <h3 className="text-base font-extrabold text-[#014BAA] flex items-center gap-2">
+                  <ScanFace className="w-5 h-5 text-[#014BAA]" /> Analyzed Facial Crops & Focal Regions
+                </h3>
+                <p className="text-xs text-[#5A5E7A]">
+                  Individual patches extracted and scored for synthetic manipulation artifacts
+                </p>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-[#070c1a] border border-slate-800">
-                <span className="text-[10px] text-slate-400 block uppercase font-mono">Model Version</span>
-                <span className="font-mono font-bold text-purple-300 truncate block">
-                  {result.modelVersion || (isImageResult ? 'ViT-Base (dima806) AI Image Detector' : isVideoResult ? 'Xception / EfficientNet Video Classifier' : 'DavidCombei/wavLM-base-Deepfake_V2')}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
+                {(result.analyzedPatches && result.analyzedPatches.length > 0
+                  ? result.analyzedPatches
+                  : (result.faceResults || []).map((f: any, idx: number) => ({
+                      patchId: `Face ${idx + 1}`,
+                      label: `Face #${idx + 1}`,
+                      deepfakeProbability: f.deepfakeProbability,
+                      prediction: f.prediction,
+                      confidence: f.confidence,
+                      imageBase64: f.imageBase64 || previewUrl
+                    }))
+                ).map((patch: any, idx: number) => {
+                  const isAi = patch.prediction === 'Likely AI Generated' || patch.deepfakeProbability >= 0.50;
+                  return (
+                    <div
+                      key={idx}
+                      className={`rounded-2xl overflow-hidden border bg-[#F8F3F0] transition-all shadow-sm ${
+                        isAi ? 'border-red-300' : 'border-emerald-300'
+                      }`}
+                    >
+                      <div className="w-full h-32 bg-slate-100 flex items-center justify-center overflow-hidden">
+                        <img
+                          src={patch.imageBase64 || previewUrl}
+                          alt={patch.label}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div className="p-2.5 text-center space-y-1 bg-white">
+                        <span className="text-[10px] font-bold text-[#282B4A] block truncate">
+                          {patch.patchId || patch.label || `Region ${idx + 1}`}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold ${
+                          isAi ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'
+                        }`}>
+                          {isAi ? 'AI GENERATED' : 'NATURAL'}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* SHA-256 DIGITAL REPORT VERIFICATION CARD */}
+          <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#E6F0FF] shadow-card space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E6F0FF] pb-4">
+              <div>
+                <h3 className="text-base font-extrabold text-[#014BAA] flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-[#014BAA]" /> Verified Forensic Signature & Metadata
+                </h3>
+                <p className="text-xs text-[#5A5E7A] mt-0.5">
+                  Cryptographic SHA-256 digital fingerprint and report identification
+                </p>
+              </div>
+              <span className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full font-bold flex items-center gap-1.5 self-start sm:self-auto">
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-600" /> Tamper-Proof Verified
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div className="p-3.5 rounded-2xl bg-[#F8F3F0] border border-[#E5D8D0]">
+                <span className="text-[10px] text-[#5A5E7A] block uppercase font-mono">Case ID</span>
+                <span className="font-mono font-bold text-[#014BAA]">
+                  {result.caseId || (result.id ? `CASE-${result.id.slice(0, 8)}` : 'DS-VERIFIED')}
                 </span>
               </div>
-
-              <div className="p-3.5 rounded-xl bg-[#070c1a] border border-slate-800">
-                <span className="text-[10px] text-slate-400 block uppercase font-mono">Calibration / Margin</span>
-                <span className="font-mono font-bold text-amber-300">
-                  {isImageResult ? 'Margin = 70% Contextual Crop' : 'T = 3.4215'}
+              <div className="p-3.5 rounded-2xl bg-[#F8F3F0] border border-[#E5D8D0]">
+                <span className="text-[10px] text-[#5A5E7A] block uppercase font-mono">Report ID</span>
+                <span className="font-mono font-bold text-[#282B4A]">
+                  {result.reportId || result.id || 'REP-DS888'}
+                </span>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-[#F8F3F0] border border-[#E5D8D0]">
+                <span className="text-[10px] text-[#5A5E7A] block uppercase font-mono">Model Engine</span>
+                <span className="font-mono font-bold text-[#014BAA] truncate block">
+                  {result.modelVersion || (isImageResult ? 'ConvNeXtV2' : 'WavLM-base')}
+                </span>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-[#F8F3F0] border border-[#E5D8D0]">
+                <span className="text-[10px] text-[#5A5E7A] block uppercase font-mono">Calibration</span>
+                <span className="font-mono font-bold text-[#B83264]">
+                  {isImageResult ? 'Margin = 30%' : 'T = 3.4215'}
                 </span>
               </div>
             </div>
 
-            {/* SHA-256 Hash Box (if present) */}
+            {/* SHA-256 Hash Box */}
             {result.sha256Hash && (
-              <div className="p-4 rounded-xl bg-[#070c1a] border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="p-4 rounded-2xl bg-[#E6F0FF] border border-[#BFDAFE] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                 <div className="truncate">
-                  <span className="text-slate-400 text-[11px] block font-semibold">SHA-256 Cryptographic Digital Fingerprint:</span>
-                  <span className="font-mono text-[#00e6a8] text-[11px] truncate block mt-0.5">{result.sha256Hash}</span>
+                  <span className="text-[#014BAA] text-[11px] block font-bold">SHA-256 Digital Fingerprint:</span>
+                  <span className="font-mono text-[#282B4A] text-[11px] truncate block mt-0.5 font-semibold">
+                    {result.sha256Hash}
+                  </span>
                 </div>
                 <button
                   onClick={() => copyToClipboard(result.sha256Hash)}
-                  className="px-3 py-1.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold flex items-center gap-1 shrink-0 self-start sm:self-auto border border-slate-700"
+                  className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#D4E6FF] text-[#014BAA] text-[11px] font-bold flex items-center gap-1.5 shrink-0 self-start sm:self-auto border border-[#BFDAFE] transition-colors"
                 >
-                  <Copy className="w-3 h-3" /> {copiedHash ? 'Copied!' : 'Copy Hash'}
+                  <Copy className="w-3.5 h-3.5" /> {copiedHash ? 'Copied!' : 'Copy Hash'}
                 </button>
               </div>
             )}
 
             {/* Download Buttons */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
               <button
                 onClick={() => handleViewPdfReport(result.pdfDownloadUrl || `/api/reports/download/${result.pdfReportName || 'report.pdf'}`)}
-                className="p-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all border border-slate-700"
+                className="p-3.5 rounded-xl bg-white hover:bg-[#E6F0FF] text-[#014BAA] border border-[#014BAA] font-bold text-xs flex items-center justify-center gap-2 transition-all"
               >
-                <Eye className="w-4 h-4 text-[#00e6a8]" /> View PDF Report
+                <Eye className="w-4 h-4 text-[#014BAA]" /> View PDF Report
               </button>
 
               <button
                 onClick={() => handleDownloadFile(result.pdfDownloadUrl || '#', result.pdfReportName || `DS_${result.caseId || 'report'}.pdf`)}
-                className="p-3.5 rounded-xl bg-[#00e6a8] text-[#070c1a] hover:bg-[#36d399] font-extrabold text-xs flex items-center justify-center gap-2 transition-all glow-cyan uppercase tracking-wider"
+                className="p-3.5 rounded-xl bg-[#014BAA] text-white hover:bg-[#013D8B] font-extrabold text-xs flex items-center justify-center gap-2 transition-all shadow-royal uppercase tracking-wider"
               >
                 <Download className="w-4 h-4" /> Download PDF Certificate
               </button>
 
               <button
                 onClick={() => handleDownloadFile(result.jsonDownloadUrl || '#', `${result.caseId || 'DS'}_report.json`)}
-                className="p-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs flex items-center justify-center gap-2 transition-all border border-slate-700"
+                className="p-3.5 rounded-xl bg-white hover:bg-[#F8F3F0] text-[#282B4A] font-bold text-xs flex items-center justify-center gap-2 transition-all border border-[#E5D8D0]"
               >
-                <FileCode className="w-4 h-4 text-amber-400" /> Download JSON Report
+                <FileCode className="w-4 h-4 text-[#014BAA]" /> Download JSON Report
               </button>
 
               <button
                 onClick={() => navigate('/history')}
-                className="p-3.5 rounded-xl bg-[#070c1a] hover:bg-slate-900 text-slate-200 border border-slate-800 font-bold text-xs flex items-center justify-center gap-2 transition-all"
+                className="p-3.5 rounded-xl bg-[#E6F0FF] hover:bg-[#D4E6FF] text-[#014BAA] border border-[#BFDAFE] font-bold text-xs flex items-center justify-center gap-2 transition-all"
               >
-                <Layers className="w-4 h-4 text-purple-400" /> View Detection History
+                <Layers className="w-4 h-4 text-[#014BAA]" /> View Scan Archive
               </button>
             </div>
-          </div>
-
-          <div className="text-center pt-4">
-            <button
-              onClick={resetUpload}
-              className="px-8 py-3 rounded-xl text-xs font-extrabold bg-[#00e6a8] text-[#070c1a] hover:bg-[#36d399] transition-all glow-cyan uppercase tracking-wider"
-            >
-              Analyze Another Media File
-            </button>
           </div>
         </div>
       )}

@@ -1,16 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { Shield, Bell, Moon, Sun, Search, User as UserIcon, LogOut, ShieldCheck } from 'lucide-react';
+import { Shield, Bell, Search, User as UserIcon, LogOut, ShieldCheck, Menu, X, CheckCircle, Sparkles, Sun, Moon } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
-export const Navbar: React.FC = () => {
-  const { user, theme, toggleTheme, logout } = useAuth();
+interface NavbarProps {
+  onToggleMobileMenu?: () => void;
+  isMobileMenuOpen?: boolean;
+}
+
+export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, isMobileMenuOpen }) => {
+  const { user, logout, theme, toggleTheme } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
-  const isLight = theme === 'light';
 
   // Close menus when clicking outside
   useEffect(() => {
@@ -42,112 +46,133 @@ export const Navbar: React.FC = () => {
   };
 
   return (
-    <header
-      className={`h-16 border-b sticky top-0 z-40 px-6 flex items-center justify-between transition-colors duration-200 ${
-        isLight
-          ? 'bg-white/95 border-slate-200 text-slate-900 shadow-sm backdrop-blur-md'
-          : 'bg-[#0b1120] border-[#1e2a44] text-white backdrop-blur-md'
-      }`}
-    >
-      <div className="flex items-center gap-4">
+    <header className="h-16 bg-[#014BAA] text-white border-b border-[#013D8B] sticky top-0 z-40 px-4 sm:px-6 flex items-center justify-between shadow-md select-none transition-all">
+      {/* Left: Mobile Hamburger + Brand Logo */}
+      <div className="flex items-center gap-3 sm:gap-4">
+        {/* Mobile Hamburger Menu Toggle */}
+        <button
+          onClick={onToggleMobileMenu}
+          className="md:hidden p-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white transition-all focus:outline-none focus:ring-2 focus:ring-[#F4B6CC]"
+          aria-label="Toggle navigation menu"
+          title="Toggle Navigation Menu"
+        >
+          {isMobileMenuOpen ? <X className="w-5 h-5 text-[#F4B6CC]" /> : <Menu className="w-5 h-5 text-white" />}
+        </button>
+
+        {/* Brand Logo & Name */}
         <Link to="/dashboard" className="flex items-center gap-2.5 group">
-          <div
-            className={`w-9 h-9 rounded-lg flex items-center justify-center transition-all ${
-              isLight
-                ? 'bg-[#5b63f6]/10 border border-[#5b63f6]/30 text-[#5b63f6] group-hover:bg-[#5b63f6] group-hover:text-white shadow-sm'
-                : 'bg-[#5b63f6]/20 border border-[#5b63f6]/40 text-[#5b63f6] group-hover:bg-[#5b63f6] group-hover:text-white shadow-md shadow-[#5b63f6]/20'
-            }`}
-          >
-            <Shield className="w-5 h-5" />
+          <div className="w-9 h-9 rounded-xl bg-white text-[#014BAA] flex items-center justify-center font-black shadow-sm group-hover:scale-105 transition-transform">
+            <Shield className="w-5 h-5 fill-[#014BAA]" />
           </div>
           <div>
-            <span className="font-display font-extrabold text-lg text-[#5b63f6] tracking-tight">TRUEVISION</span>
-            <span className={`text-[10px] uppercase tracking-widest font-extrabold block -mt-1 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
-              DEEPSHIELD ENTERPRISE
+            <div className="flex items-center gap-1.5">
+              <span className="font-display font-extrabold text-base sm:text-lg tracking-tight text-white leading-tight">
+                TRUEVISION
+              </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#F4B6CC]" title="Deepfake Defense Active" />
+            </div>
+            <span className="text-[9px] sm:text-[10px] uppercase tracking-widest font-extrabold block -mt-0.5 text-[#E6F0FF]/90">
+              DEEPSHIELD AI DEFENSE
             </span>
           </div>
         </Link>
 
-        {/* Model Active Badge */}
-        <div
-          className={`hidden md:flex items-center gap-2 px-3 py-1 rounded-full text-xs border font-medium ${
-            isLight
-              ? 'bg-slate-100 border-slate-200 text-slate-800'
-              : 'bg-[#0f172a] border-[#1e2a44] text-slate-200'
-          }`}
-        >
-          <span className="w-2 h-2 rounded-full bg-[#5b63f6] animate-pulse" />
+        {/* Engine Status Badge (Desktop & Tablet) */}
+        <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-[#013D8B]/80 border border-white/15 text-[#E6F0FF] font-medium ml-2">
+          <span className="w-2 h-2 rounded-full bg-[#F4B6CC] animate-ping" />
           <span>
-            Engine: <strong className={isLight ? 'text-slate-900 font-bold' : 'text-white'}>DeepShield Multi-Modal Engine</strong>
+            Engine: <strong className="text-white font-bold">Image • Video • Voice Multi-Modal AI</strong>
           </span>
         </div>
       </div>
 
-      {/* Global Search & User Actions */}
-      <div className="flex items-center gap-4">
-        <div className="relative hidden lg:block w-64">
-          <Search className={`w-4 h-4 absolute left-3 top-2.5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`} />
+      {/* Center/Right: Search Bar & User Actions */}
+      <div className="flex items-center gap-2 sm:gap-4">
+        {/* Search Bar (Visible on lg screens) */}
+        <div className="relative hidden xl:block w-64">
+          <Search className="w-4 h-4 absolute left-3 top-2.5 text-[#E6F0FF]/70" />
           <input
             type="text"
-            placeholder="Search audio scans, hashes..."
-            className={`w-full pl-9 pr-4 py-1.5 rounded-lg text-xs font-semibold transition-colors focus:outline-none focus:border-[#5b63f6] ${
-              isLight
-                ? 'bg-slate-100 border border-slate-200 text-slate-900 placeholder-slate-500'
-                : 'bg-[#0f172a] border border-[#1e2a44] text-slate-100 placeholder-slate-400'
-            }`}
+            placeholder="Search specimen hash, case..."
+            className="w-full pl-9 pr-4 py-1.5 rounded-xl text-xs font-semibold bg-white/10 text-white placeholder-[#E6F0FF]/60 border border-white/20 transition-all focus:bg-white focus:text-[#282B4A] focus:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[#F4B6CC]"
           />
         </div>
 
-        {/* Theme Toggle Button */}
+        {/* Quick Detection Mode Link (Pill Badge) */}
+        <div className="hidden sm:flex items-center gap-1.5 bg-white/10 p-1 rounded-xl border border-white/15 text-[11px] font-bold">
+          <Link
+            to="/image-detection"
+            className="px-2.5 py-1 rounded-lg text-white hover:bg-white hover:text-[#014BAA] transition-all"
+          >
+            Image
+          </Link>
+          <Link
+            to="/video-detection"
+            className="px-2.5 py-1 rounded-lg text-white hover:bg-white hover:text-[#014BAA] transition-all"
+          >
+            Video
+          </Link>
+          <Link
+            to="/upload"
+            className="px-2.5 py-1 rounded-lg text-white hover:bg-white hover:text-[#014BAA] transition-all"
+          >
+            Voice
+          </Link>
+        </div>
+
+        {/* Theme Toggle Button (Royal Blue Light Cream vs Dark Cyber Mode) */}
         <button
           onClick={toggleTheme}
-          className={`p-2 rounded-lg border transition-colors ${
-            isLight
-              ? 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
-              : 'bg-[#0f172a] border-[#1e2a44] text-slate-300 hover:text-white'
-          }`}
-          title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+          className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all active:scale-95 focus:outline-none flex items-center justify-center cursor-pointer"
+          title={theme === 'dark' ? 'Switch to Royal Blue + Light Cream Theme' : 'Switch to Dark Cyber Mode'}
+          aria-label="Toggle Platform Theme"
         >
-          {theme === 'dark' ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-[#5b63f6]" />}
+          {theme === 'dark' ? (
+            <Sun className="w-4 h-4 text-[#F4B6CC] hover:rotate-45 transition-transform" />
+          ) : (
+            <Moon className="w-4 h-4 text-white hover:scale-110 transition-transform" />
+          )}
         </button>
 
         {/* Notifications Dropdown Toggle */}
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className={`p-2 rounded-lg border relative transition-colors ${
-              isLight
-                ? 'bg-slate-100 border-slate-200 text-slate-700 hover:bg-slate-200'
-                : 'bg-[#0f172a] border-[#1e2a44] text-slate-300 hover:text-white'
-            }`}
+            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white relative transition-all active:scale-95 focus:outline-none"
+            title="System Security Alerts"
+            aria-label="Notifications"
           >
-            <Bell className="w-4 h-4" />
-            <span className="w-2 h-2 rounded-full bg-red-500 absolute top-1.5 right-1.5" />
+            <Bell className="w-4 h-4 text-white" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[#F4B6CC] absolute top-1 right-1 border-2 border-[#014BAA]" />
           </button>
 
           {showNotifications && (
-            <div
-              className={`absolute right-0 mt-2 w-80 rounded-xl border shadow-2xl p-4 z-50 text-xs animate-in fade-in slide-in-from-top-2 duration-150 ${
-                isLight ? 'bg-white border-slate-200 text-slate-900 shadow-slate-300/50' : 'bg-[#0f172a] border-[#1e2a44] text-slate-100'
-              }`}
-            >
-              <div className={`flex items-center justify-between pb-2 border-b mb-3 ${isLight ? 'border-slate-200' : 'border-[#1e2a44]'}`}>
-                <span className={`font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>System Security Notifications</span>
-                <span className="text-[10px] text-[#5b63f6] hover:underline cursor-pointer font-bold">
-                  Mark all read
+            <div className="absolute right-0 mt-3 w-80 rounded-2xl bg-white border border-[#E6F0FF] shadow-xl p-4 z-50 text-xs animate-in fade-in slide-in-from-top-2 duration-150 text-[#282B4A]">
+              <div className="flex items-center justify-between pb-2 border-b border-[#E6F0FF] mb-3">
+                <span className="font-bold text-[#014BAA] text-sm flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-[#014BAA]" /> Security Telemetry Alerts
+                </span>
+                <span className="text-[10px] text-[#014BAA] hover:underline cursor-pointer font-bold bg-[#E6F0FF] px-2 py-0.5 rounded-full">
+                  All Active
                 </span>
               </div>
               <div className="flex flex-col gap-2.5">
-                <div className={`p-2.5 rounded-lg border ${isLight ? 'bg-red-50 border-red-200 text-slate-800' : 'bg-red-500/10 border-red-500/20 text-slate-200'}`}>
-                  <div className="font-semibold text-red-500">Critical Deepfake Alert</div>
-                  <p className={`text-[11px] mt-0.5 ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
-                    ceo_voice_call_verification.wav scored 94% threat likelihood.
+                <div className="p-3 rounded-xl bg-[#FDF1F5] border border-[#F4B6CC]/60 text-[#282B4A]">
+                  <div className="font-bold text-[#B83264] flex items-center justify-between">
+                    <span>Critical Anomaly Flagged</span>
+                    <span className="text-[10px] bg-[#F4B6CC] text-[#282B4A] px-1.5 py-0.2 rounded font-extrabold">HIGH</span>
+                  </div>
+                  <p className="text-[11px] mt-1 text-[#5A5E7A]">
+                    Deepfake audio and facial manipulation detection active on all specimens.
                   </p>
                 </div>
-                <div className={`p-2.5 rounded-lg border ${isLight ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-[#050816] border-[#1e2a44] text-slate-200'}`}>
-                  <div className="font-semibold text-[#5b63f6]">Prisma Database Ready</div>
-                  <p className={`text-[11px] mt-0.5 ${isLight ? 'text-slate-700' : 'text-slate-300'}`}>
-                    MySQL 8 database tables synchronized successfully.
+                <div className="p-3 rounded-xl bg-[#E6F0FF] border border-[#BFDAFE] text-[#282B4A]">
+                  <div className="font-bold text-[#014BAA] flex items-center gap-1">
+                    <CheckCircle className="w-3.5 h-3.5 text-[#014BAA]" />
+                    <span>Neural Models Calibrated</span>
+                  </div>
+                  <p className="text-[11px] mt-1 text-[#5A5E7A]">
+                    WavLM-base, ConvNeXtV2 & XceptionNet weights verified.
                   </p>
                 </div>
               </div>
@@ -159,55 +184,46 @@ export const Navbar: React.FC = () => {
         <div className="relative" ref={userMenuRef}>
           <button
             onClick={() => setShowUserMenu(!showUserMenu)}
-            className={`flex items-center gap-2.5 pl-3 border-l group hover:opacity-90 transition-opacity ${
-              isLight ? 'border-slate-200' : 'border-[#1e2a44]'
-            }`}
+            className="flex items-center gap-2.5 pl-2 sm:pl-3 border-l border-white/20 group hover:opacity-95 transition-opacity focus:outline-none"
+            aria-label="User Account Menu"
           >
-            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#5b63f6] to-indigo-700 text-white flex items-center justify-center font-bold text-xs shadow-md shadow-[#5b63f6]/30">
+            <div className="w-8 h-8 rounded-xl bg-white text-[#014BAA] font-extrabold text-xs flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform border border-white/50">
               {getInitials(user?.fullName)}
             </div>
             <div className="hidden sm:flex flex-col text-left">
-              <span className={`text-xs font-bold leading-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                {user?.fullName || 'Authenticated User'}
+              <span className="text-xs font-bold leading-tight text-white truncate max-w-[120px]">
+                {user?.fullName || 'Security Analyst'}
               </span>
-              <span className={`text-[10px] flex items-center gap-1 ${isLight ? 'text-slate-600 font-medium' : 'text-slate-300'}`}>
-                <span className={`px-1.5 py-0.2 rounded font-mono text-[9px] font-bold ${
-                  isLight ? 'bg-slate-200 text-slate-800' : 'bg-[#1e2a44] text-[#818cf8]'
-                }`}>
+              <span className="text-[10px] flex items-center gap-1 text-[#E6F0FF]/90 font-medium">
+                <span className="bg-[#013D8B] text-white px-1.5 py-0.2 rounded text-[9px] font-bold">
                   {user?.role || 'ANALYST'}
                 </span>
                 <span>•</span>
-                <span className="truncate max-w-[100px] font-semibold">{user?.organizationName || 'Enterprise Corp'}</span>
+                <span className="truncate max-w-[90px] font-semibold">{user?.organizationName || 'Enterprise'}</span>
               </span>
             </div>
           </button>
 
           {showUserMenu && (
-            <div
-              className={`absolute right-0 mt-2 w-64 rounded-xl border shadow-2xl p-2 z-50 text-xs animate-in fade-in slide-in-from-top-2 duration-150 ${
-                isLight ? 'bg-white border-slate-200 text-slate-900 shadow-slate-300/50' : 'bg-[#0f172a] border-[#1e2a44] text-slate-100'
-              }`}
-            >
-              <div className={`p-2.5 border-b mb-1 space-y-0.5 rounded-lg ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#050816] border-[#1e2a44]'}`}>
-                <div className={`font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>{user?.fullName}</div>
-                <div className={`text-[11px] truncate font-medium ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>{user?.email}</div>
-                <div className="text-[10px] text-[#5b63f6] pt-1 flex items-center gap-1 font-mono font-bold">
-                  <ShieldCheck className="w-3 h-3" />
-                  <span>Role: {user?.role}</span>
+            <div className="absolute right-0 mt-3 w-64 rounded-2xl bg-white border border-[#E6F0FF] shadow-2xl p-2 z-50 text-xs animate-in fade-in slide-in-from-top-2 duration-150 text-[#282B4A]">
+              <div className="p-3 border-b border-[#E6F0FF] mb-1 space-y-1 rounded-xl bg-[#F8F3F0]">
+                <div className="font-bold text-[#014BAA] text-sm">{user?.fullName || 'Security Analyst'}</div>
+                <div className="text-[11px] truncate font-medium text-[#5A5E7A]">{user?.email || 'analyst@deepshield.ai'}</div>
+                <div className="text-[10px] text-[#014BAA] pt-1 flex items-center gap-1 font-mono font-bold">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#014BAA]" />
+                  <span>Role: {user?.role || 'ANALYST'}</span>
                 </div>
               </div>
               <Link
                 to="/settings"
                 onClick={() => setShowUserMenu(false)}
-                className={`flex items-center gap-2 p-2 rounded-lg font-semibold transition-colors ${
-                  isLight ? 'hover:bg-slate-100 text-slate-800' : 'hover:bg-[#1e2a44] text-slate-200'
-                }`}
+                className="flex items-center gap-2 p-2.5 rounded-xl font-semibold text-[#282B4A] hover:bg-[#E6F0FF] hover:text-[#014BAA] transition-colors"
               >
-                <UserIcon className="w-4 h-4" /> Account Settings
+                <UserIcon className="w-4 h-4 text-[#014BAA]" /> Account Settings
               </Link>
               <button
                 onClick={handleLogout}
-                className="w-full flex items-center gap-2 p-2 rounded-lg hover:bg-red-500/10 text-red-500 font-semibold transition-colors mt-1"
+                className="w-full flex items-center gap-2 p-2.5 rounded-xl text-red-600 hover:bg-red-50 font-semibold transition-colors mt-0.5"
               >
                 <LogOut className="w-4 h-4" /> Sign Out
               </button>

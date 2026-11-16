@@ -1,0 +1,51 @@
+services:
+  # 1. FastAPI AI Inference Microservice (PyTorch Models)
+  - type: web
+    name: deepshield-ai-service
+    runtime: python
+    rootDir: ai-service
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app:app --host 0.0.0.0 --port $PORT
+    plan: standard
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+
+  # 2. Express Node.js Backend API Server
+  - type: web
+    name: deepshield-backend
+    runtime: node
+    rootDir: server
+    buildCommand: npm install && npx prisma generate && npm run build
+    startCommand: npm start
+    plan: starter
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: CLIENT_URL
+        sync: false
+      - key: AI_SERVICE_URL
+        sync: false
+
+  # 3. React Vite Dashboard Frontend (Single Page App)
+  - type: web
+    name: deepshield-frontend
+    runtime: static
+    rootDir: client
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        sync: false

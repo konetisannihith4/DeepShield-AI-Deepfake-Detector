@@ -4,165 +4,269 @@
 
 @layer base {
   :root {
-    --background: 224 50% 5%;
-    --foreground: 213 31% 93%;
-    --card: 224 45% 8%;
-    --card-foreground: 213 31% 93%;
-    --primary: 239 84% 67%;
+    /* Royal Blue + Light Cream Core Theme Tokens */
+    --background: 28 35% 96%; /* #F8F3F0 Light Cream */
+    --foreground: 236 30% 23%; /* #282B4A Dark Text */
+    --card: 0 0% 100%; /* #FFFFFF White */
+    --card-foreground: 236 30% 23%;
+    --primary: 215 99% 33%; /* #014BAA Primary Royal Blue */
     --primary-foreground: 0 0% 100%;
-    --secondary: 222 47% 11%;
-    --secondary-foreground: 213 31% 91%;
-    --muted: 223 47% 10%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 239 84% 67%;
-    --accent-foreground: 0 0% 100%;
-    --border: 217 33% 15%;
+    --secondary: 215 100% 95%; /* #E6F0FF Light Blue */
+    --secondary-foreground: 215 99% 33%;
+    --muted: 28 25% 92%;
+    --muted-foreground: 234 15% 42%;
+    --accent: 339 74% 84%; /* #F4B6CC Soft Pink Accent */
+    --accent-foreground: 236 30% 23%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 216 34% 91%;
   }
+}
 
-  .light, [data-theme="light"] {
-    --background: 210 40% 98%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --primary: 239 84% 67%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 214 32% 93%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 214 32% 93%;
-    --accent-foreground: 222 47% 11%;
-    --border: 214.3 31.8% 91.4%;
-  }
+/* Global Base */
+html {
+  background-color: #F8F3F0;
+  color: #282B4A;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
 }
 
 body {
-  background-color: #050816;
-  background-image: 
-    radial-gradient(at 10% 10%, rgba(91, 99, 246, 0.08) 0px, transparent 50%),
-    radial-gradient(at 90% 10%, rgba(79, 70, 229, 0.08) 0px, transparent 50%),
-    radial-gradient(at 50% 90%, rgba(59, 130, 246, 0.05) 0px, transparent 50%);
-  background-attachment: fixed;
-  color: #f8fafc;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  background-color: #F8F3F0;
+  color: #282B4A;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
 }
 
-html.light body, body.light, [data-theme="light"] body {
-  background-color: #f8fafc;
-  background-image: none;
-  color: #0f172a;
+/* Typography Headings */
+h1, h2, h3, h4, h5, h6 {
+  color: #282B4A;
+  font-family: 'Outfit', 'Inter', sans-serif;
+  letter-spacing: -0.02em;
 }
 
-/* Glassmorphism Dynamic Cards */
+/* =========================================================
+   ROYAL BLUE + LIGHT CREAM PREMIUM CARDS & CONTAINERS
+   ========================================================= */
+
+.card-white,
 .glass-card {
-  background: #0f172a;
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid #1e2a44;
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.35);
-  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  background: #FFFFFF;
+  border: 1px solid #E6EEFA;
+  box-shadow: 0 2px 8px -1px rgba(40, 43, 74, 0.05), 0 1px 3px rgba(40, 43, 74, 0.03);
+  border-radius: 1rem;
+  color: #282B4A;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-html.light .glass-card, body.light .glass-card, [data-theme="light"] .glass-card {
-  background: #ffffff;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
-}
-
-.glass-card-hover {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.glass-card-hover:hover {
-  border-color: rgba(91, 99, 246, 0.5);
-  box-shadow: 0 0 25px rgba(91, 99, 246, 0.2), 0 8px 32px 0 rgba(0, 0, 0, 0.55);
-  transform: translateY(-3px);
-}
-
-html.light .glass-card-hover:hover {
-  border-color: #cbd5e1;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+.glass-card-hover:hover,
+.card-hover:hover {
+  border-color: #C2DBFE;
+  box-shadow: 0 12px 28px -4px rgba(1, 75, 170, 0.12), 0 4px 12px -2px rgba(40, 43, 74, 0.05);
   transform: translateY(-2px);
 }
 
-/* Blue Primary Button */
-.btn-cyan, .btn-blue {
-  background-color: #5b63f6;
-  color: #ffffff;
-  font-weight: 800;
-  box-shadow: 0 0 20px rgba(91, 99, 246, 0.35);
+/* Light Blue Section Backgrounds */
+.bg-light-blue-section {
+  background-color: #E6F0FF;
+  border: 1px solid #CDE1FF;
+}
+
+/* =========================================================
+   BUTTON STYLES
+   ========================================================= */
+
+/* Primary Royal Blue Button */
+.btn-royal,
+.btn-blue,
+.btn-cyan {
+  background-color: #014BAA;
+  color: #FFFFFF !important;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 14px -2px rgba(1, 75, 170, 0.28);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-royal:hover,
+.btn-blue:hover,
+.btn-cyan:hover {
+  background-color: #013D8B;
+  box-shadow: 0 6px 20px -2px rgba(1, 75, 170, 0.4);
+  transform: translateY(-1px);
+}
+
+.btn-royal:active,
+.btn-blue:active,
+.btn-cyan:active {
+  transform: translateY(0);
+}
+
+/* Royal Outline Button */
+.btn-royal-outline {
+  background-color: #FFFFFF;
+  color: #014BAA !important;
+  border: 1.5px solid #014BAA;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-royal-outline:hover {
+  background-color: #E6F0FF;
+  border-color: #013D8B;
+  color: #013D8B !important;
+}
+
+/* Light Blue Secondary Button */
+.btn-light-blue {
+  background-color: #E6F0FF;
+  color: #014BAA !important;
+  border: 1px solid #BFDAFE;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-light-blue:hover {
+  background-color: #D6E8FF;
+  border-color: #94BEFC;
+}
+
+/* Soft Pink Accent Button / Badge */
+.btn-pink-soft {
+  background-color: #F4B6CC;
+  color: #282B4A;
+  font-weight: 700;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 14px -2px rgba(244, 182, 204, 0.45);
   transition: all 0.2s ease;
 }
 
-.btn-cyan:hover, .btn-blue:hover {
-  background-color: #4f46e5;
-  box-shadow: 0 0 30px rgba(91, 99, 246, 0.6);
-  transform: scale(1.02);
+.btn-pink-soft:hover {
+  background-color: #EEA0BC;
 }
 
-/* Cyber Glow Utilities */
-.glow-cyan, .glow-blue {
-  box-shadow: 0 0 20px rgba(91, 99, 246, 0.4);
+/* =========================================================
+   BADGES & PILLS
+   ========================================================= */
+
+.badge-royal {
+  background-color: #E6F0FF;
+  color: #014BAA;
+  border: 1px solid #BFDAFE;
+  font-weight: 700;
 }
 
-.glow-emerald {
-  box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+.badge-pink {
+  background-color: #FDF1F5;
+  color: #B83264;
+  border: 1px solid #F4B6CC;
+  font-weight: 700;
 }
 
-.glow-red {
-  box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+.badge-cream {
+  background-color: #F8F3F0;
+  color: #282B4A;
+  border: 1px solid #E5D8D0;
+  font-weight: 600;
 }
 
-/* Custom Cyber Scrollbar */
+.badge-real {
+  background-color: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
+  font-weight: 800;
+}
+
+.badge-fake {
+  background-color: #FEF2F2;
+  color: #991B1B;
+  border: 1px solid #FECACA;
+  font-weight: 800;
+}
+
+/* =========================================================
+   FORM CONTROLS (INPUTS, SELECTS, TEXTAREAS)
+   ========================================================= */
+
+input,
+select,
+textarea {
+  background-color: #FFFFFF !important;
+  color: #282B4A !important;
+  border: 1.5px solid #D9E2EC !important;
+  border-radius: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none !important;
+  border-color: #014BAA !important;
+  box-shadow: 0 0 0 3px rgba(1, 75, 170, 0.15) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #888DAA !important;
+}
+
+/* =========================================================
+   CUSTOM SCROLLBAR (ROYAL BLUE + LIGHT CREAM)
+   ========================================================= */
+
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 7px;
+  height: 7px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #050816;
-}
-
-html.light ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #F8F3F0;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(91, 99, 246, 0.4);
-  border-radius: 4px;
-}
-
-html.light ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #BFD3F2;
+  border-radius: 6px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(91, 99, 246, 0.8);
+  background: #014BAA;
 }
 
-html.light ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
-}
+/* =========================================================
+   ANIMATIONS & RADAR
+   ========================================================= */
 
-/* Pulse animation for mic / live stream indicator */
 @keyframes pulse-ring {
   0% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    box-shadow: 0 0 0 0 rgba(1, 75, 170, 0.6);
   }
   70% {
     transform: scale(1);
-    box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+    box-shadow: 0 0 0 10px rgba(1, 75, 170, 0);
   }
   100% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    box-shadow: 0 0 0 0 rgba(1, 75, 170, 0);
   }
 }
 
-.pulse-mic {
+.pulse-royal {
   animation: pulse-ring 2s infinite;
 }
 
@@ -177,4 +281,176 @@ html.light ::-webkit-scrollbar-thumb:hover {
 
 .animate-scanline {
   animation: scanline 4s linear infinite;
+}
+
+@keyframes progress-shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: progress-shimmer 2s infinite linear;
+}
+
+/* =========================================================
+   DARK CYBER MODE THEME OVERRIDES
+   ========================================================= */
+
+html.dark,
+[data-theme='dark'] {
+  background-color: #070c1a !important;
+  color: #f1f5f9 !important;
+}
+
+html.dark body,
+[data-theme='dark'] body {
+  background-color: #070c1a !important;
+  background-image: 
+    radial-gradient(at 10% 10%, rgba(1, 75, 170, 0.20) 0px, transparent 50%),
+    radial-gradient(at 90% 10%, rgba(244, 182, 204, 0.08) 0px, transparent 50%),
+    radial-gradient(at 50% 90%, rgba(29, 114, 237, 0.12) 0px, transparent 50%) !important;
+  background-attachment: fixed !important;
+  color: #f1f5f9 !important;
+}
+
+html.dark h1,
+html.dark h2,
+html.dark h3,
+html.dark h4,
+html.dark h5,
+html.dark h6 {
+  color: #f8fafc !important;
+}
+
+/* Dark Cards & Surfaces */
+html.dark .bg-white,
+html.dark .card-white,
+html.dark .glass-card {
+  background-color: #0e1626 !important;
+  border-color: #1e293b !important;
+  color: #f1f5f9 !important;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.6) !important;
+}
+
+html.dark .bg-\[\#F8F3F0\] {
+  background-color: #0a0f1d !important;
+  border-color: #1a253c !important;
+}
+
+html.dark .bg-\[\#F8F3F0\]\/60 {
+  background-color: rgba(10, 15, 29, 0.6) !important;
+  border-color: #1a253c !important;
+}
+
+html.dark .bg-\[\#E6F0FF\] {
+  background-color: #13203c !important;
+  color: #93c5fd !important;
+  border-color: #1e3a6d !important;
+}
+
+html.dark .bg-\[\#E6F0FF\]\/60,
+html.dark .bg-\[\#E6F0FF\]\/40 {
+  background-color: rgba(19, 32, 60, 0.5) !important;
+  border-color: #1e3a6d !important;
+}
+
+html.dark .bg-\[\#FDF1F5\] {
+  background-color: #241424 !important;
+  border-color: #4a2238 !important;
+}
+
+/* Dark Mode Typography */
+html.dark .text-\[\#282B4A\],
+html.dark .text-dark {
+  color: #f1f5f9 !important;
+}
+
+html.dark .text-\[\#5A5E7A\],
+html.dark .text-dark-muted {
+  color: #94a3b8 !important;
+}
+
+html.dark .text-\[\#888DAA\],
+html.dark .text-dark-subtle {
+  color: #64748b !important;
+}
+
+html.dark .text-\[\#014BAA\] {
+  color: #60a5fa !important;
+}
+
+html.dark .text-\[\#B83264\] {
+  color: #f472b6 !important;
+}
+
+/* Dark Mode Borders */
+html.dark .border-\[\#E6F0FF\],
+html.dark .border-\[\#BFDAFE\],
+html.dark .border-\[\#E5D8D0\],
+html.dark .border-\[\#D9DCE8\],
+html.dark .border-\[\#D9E2EC\] {
+  border-color: #1e293b !important;
+}
+
+html.dark .border-\[\#F4B6CC\] {
+  border-color: #831843 !important;
+}
+
+/* Dark Mode Form Inputs */
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: #0b1120 !important;
+  color: #f1f5f9 !important;
+  border-color: #1e293b !important;
+}
+
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus {
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: #64748b !important;
+}
+
+/* Dark Mode Sidebar */
+html.dark aside {
+  background-color: #090e1d !important;
+  border-color: #1e293b !important;
+}
+
+/* Dark Mode Tables */
+html.dark table thead th {
+  background-color: #0a0f1d !important;
+  color: #94a3b8 !important;
+  border-color: #1e293b !important;
+}
+
+html.dark table tbody tr {
+  border-color: #1e293b !important;
+}
+
+html.dark table tbody tr:hover {
+  background-color: rgba(19, 32, 60, 0.4) !important;
+}
+
+/* Custom Scrollbar in Dark Cyber Mode */
+html.dark ::-webkit-scrollbar-track {
+  background: #070c1a;
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: #1e3a6d;
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #3b82f6;
 }

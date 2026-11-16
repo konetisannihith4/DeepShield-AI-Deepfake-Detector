@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { apiClient } from '../services/apiClient';
-import { Settings as SettingsIcon, Save, Sliders, Database, Shield, Moon, Sun } from 'lucide-react';
+import { Settings as SettingsIcon, Save, Sliders, Database, Shield, Moon, Sun, CheckCircle, Palette } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export const SettingsPage: React.FC = () => {
@@ -12,7 +12,6 @@ export const SettingsPage: React.FC = () => {
     AUDIT_LOG_RETENTION_DAYS: '90',
   });
   const [saved, setSaved] = useState(false);
-  const isLight = theme === 'light';
 
   useEffect(() => {
     fetchSettings();
@@ -39,140 +38,136 @@ export const SettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="p-8 space-y-8 max-w-7xl mx-auto">
-      <div>
-        <h1 className={`text-2xl font-extrabold font-display ${isLight ? 'text-slate-900' : 'text-white'}`}>
-          Settings & Preferences
+    <div className="p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto font-sans text-[#282B4A]">
+      <div className="rounded-3xl bg-white border border-[#E6F0FF] p-6 sm:p-8 shadow-card">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#E6F0FF] text-[#014BAA] border border-[#BFDAFE] inline-flex items-center gap-1.5">
+            <Sliders className="w-3.5 h-3.5 text-[#014BAA]" />
+            Configuration
+          </span>
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-[#014BAA] tracking-tight">
+          System Settings & Platform Preferences
         </h1>
-        <p className={`text-xs mt-1 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-          Configure theme appearance, AI threshold sensitivity, database retention, and real-time streaming policies
+        <p className="text-xs sm:text-sm text-[#5A5E7A] mt-1.5 max-w-2xl leading-relaxed">
+          Configure platform appearance, AI threshold sensitivity, database retention policies, and security logging.
         </p>
       </div>
 
-      <div className="max-w-2xl space-y-6">
+      <div className="max-w-3xl space-y-6">
         {/* Appearance & Theme Selector */}
-        <div
-          className={`p-6 rounded-2xl border transition-colors ${
-            isLight ? 'bg-white border-slate-200 shadow-sm text-slate-900' : 'bg-[#0f172a] border-[#1e2a44] text-white glass-card'
-          }`}
-        >
-          <div className={`flex items-center justify-between pb-3 border-b ${isLight ? 'border-slate-200' : 'border-[#1e2a44]'}`}>
+        <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#E6F0FF] shadow-card space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#E6F0FF]">
             <div>
-              <h3 className="text-sm font-bold flex items-center gap-2">
-                <Sun className="w-4 h-4 text-amber-400" /> Platform Appearance
+              <h3 className="text-base font-extrabold text-[#014BAA] flex items-center gap-2">
+                <Palette className="w-5 h-5 text-[#014BAA]" /> Platform Color Theme
               </h3>
-              <p className={`text-xs mt-0.5 ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-                Choose your preferred user interface color theme for DeepShield.
+              <p className="text-xs text-[#5A5E7A] mt-0.5">
+                Primary cybersecurity interface theme for TrueVision DeepShield.
               </p>
             </div>
+            <span className="text-xs font-bold bg-[#E6F0FF] text-[#014BAA] border border-[#BFDAFE] px-3 py-1 rounded-full">
+              Royal Blue + Light Cream
+            </span>
           </div>
 
-          <div className="flex items-center gap-4 pt-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
             <button
               type="button"
-              onClick={() => setTheme('dark')}
-              className={`px-5 py-3 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all border ${
-                theme === 'dark'
-                  ? 'bg-[#5b63f6] text-white border-[#5b63f6] shadow-lg shadow-[#5b63f6]/20'
-                  : isLight
-                  ? 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
-                  : 'bg-[#050816] text-slate-300 border-[#1e2a44] hover:text-white'
+              onClick={() => setTheme('light')}
+              className={`p-4 rounded-2xl border text-left flex items-start gap-3 transition-all ${
+                theme === 'light'
+                  ? 'border-[#014BAA] bg-[#E6F0FF]/40 shadow-royal ring-2 ring-[#014BAA]/20'
+                  : 'border-[#E6F0FF] bg-white hover:bg-[#F8F3F0]'
               }`}
             >
-              <Moon className="w-4 h-4" /> Dark 🌙 (Default)
+              <div className="w-8 h-8 rounded-xl bg-[#014BAA] text-white flex items-center justify-center font-bold shrink-0">
+                <Sun className="w-4 h-4 text-white" />
+              </div>
+              <div>
+                <span className="text-xs font-bold text-[#014BAA] block">Royal Blue + Light Cream (Active)</span>
+                <span className="text-[11px] text-[#5A5E7A] block mt-0.5">
+                  High-contrast modern cybersecurity theme with Light Cream backdrop (#F8F3F0) and Royal Blue (#014BAA).
+                </span>
+              </div>
             </button>
 
             <button
               type="button"
-              onClick={() => setTheme('light')}
-              className={`px-5 py-3 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all border ${
-                theme === 'light'
-                  ? 'bg-[#5b63f6] text-white border-[#5b63f6] shadow-lg shadow-[#5b63f6]/20'
-                  : isLight
-                  ? 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
-                  : 'bg-slate-950 text-slate-400 border-slate-800 hover:text-white'
+              onClick={() => setTheme('dark')}
+              className={`p-4 rounded-2xl border text-left flex items-start gap-3 transition-all ${
+                theme === 'dark'
+                  ? 'border-[#014BAA] bg-[#E6F0FF]/40 shadow-royal ring-2 ring-[#014BAA]/20'
+                  : 'border-[#E6F0FF] bg-white hover:bg-[#F8F3F0]'
               }`}
             >
-              <Sun className="w-4 h-4 text-amber-500" /> Light ☀️
+              <div className="w-8 h-8 rounded-xl bg-[#012E6B] text-white flex items-center justify-center font-bold shrink-0">
+                <Moon className="w-4 h-4 text-[#F4B6CC]" />
+              </div>
+              <div>
+                <span className="text-xs font-bold text-[#282B4A] block">Dark Cyber Mode</span>
+                <span className="text-[11px] text-[#5A5E7A] block mt-0.5">
+                  Deep dark-mode console theme for low-light cybersecurity operations centers.
+                </span>
+              </div>
             </button>
           </div>
         </div>
 
-        {/* AI System Configuration Form */}
-        <form
-          onSubmit={handleSave}
-          className={`p-6 rounded-2xl border transition-colors space-y-6 ${
-            isLight ? 'bg-white border-slate-200 shadow-sm text-slate-900' : 'bg-[#0f172a] border-[#1e2a44] text-white glass-card'
-          }`}
-        >
-          <div className="space-y-4">
-            <h3 className={`text-sm font-bold flex items-center gap-2 border-b pb-3 ${isLight ? 'border-slate-200' : 'border-[#1e2a44]'}`}>
-              <Sliders className="w-4 h-4 text-[#5b63f6]" /> AI Engine Thresholds & Data Retention
+        {/* AI Thresholds Form */}
+        <form onSubmit={handleSave} className="p-6 sm:p-8 rounded-3xl bg-white border border-[#E6F0FF] shadow-card space-y-6">
+          <div className="border-b border-[#E6F0FF] pb-3">
+            <h3 className="text-base font-extrabold text-[#014BAA] flex items-center gap-2">
+              <Sliders className="w-5 h-5 text-[#014BAA]" /> Neural Detection Sensitivity Thresholds
             </h3>
+            <p className="text-xs text-[#5A5E7A] mt-0.5">
+              Fine-tune classification boundary probabilities and automated PDF certificate generation
+            </p>
+          </div>
 
+          <div className="space-y-4 text-xs">
             <div>
-              <label className={`text-xs font-semibold block mb-1 ${isLight ? 'text-slate-700' : 'text-slate-200'}`}>
-                AI Deepfake Sensitivity Threshold (0.1 - 0.95)
+              <label className="font-bold text-[#282B4A] block mb-1.5">
+                AI Detection Sensitivity Threshold (0.10 – 0.99)
               </label>
               <input
                 type="number"
                 step="0.05"
                 min="0.1"
-                max="0.95"
+                max="0.99"
                 value={settings.AI_SENSITIVITY_THRESHOLD || '0.75'}
                 onChange={(e) => setSettings({ ...settings, AI_SENSITIVITY_THRESHOLD: e.target.value })}
-                className={`w-full px-3 py-2 rounded-xl text-xs border ${
-                  isLight
-                    ? 'bg-slate-50 border-slate-200 text-slate-900'
-                    : 'bg-[#050816] border-[#1e2a44] text-white'
-                }`}
+                className="w-full p-3 rounded-xl bg-white border border-[#E6F0FF] font-mono text-xs focus:border-[#014BAA]"
               />
-              <span className={`text-[10px] mt-1 block ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-                Higher values require stronger spectral anomalies before triggering CRITICAL risk alerts.
-              </span>
             </div>
 
             <div>
-              <label className={`text-xs font-semibold block mb-1 ${isLight ? 'text-slate-700' : 'text-slate-200'}`}>
-                Audit Log Retention Period (Days)
+              <label className="font-bold text-[#282B4A] block mb-1.5">
+                Audit Log Retention Window (Days)
               </label>
               <input
                 type="number"
+                min="7"
+                max="365"
                 value={settings.AUDIT_LOG_RETENTION_DAYS || '90'}
                 onChange={(e) => setSettings({ ...settings, AUDIT_LOG_RETENTION_DAYS: e.target.value })}
-                className={`w-full px-3 py-2 rounded-xl text-xs border ${
-                  isLight
-                    ? 'bg-slate-50 border-slate-200 text-slate-900'
-                    : 'bg-slate-950 border-slate-800 text-white'
-                }`}
-              />
-            </div>
-
-            <div className={`pt-2 flex items-center justify-between border-t ${isLight ? 'border-slate-200' : 'border-slate-800'}`}>
-              <div>
-                <span className={`text-xs font-semibold block ${isLight ? 'text-slate-800' : 'text-slate-200'}`}>
-                  Enable Realtime Microphone Socket Streaming
-                </span>
-                <span className={`text-[10px] ${isLight ? 'text-slate-500' : 'text-slate-400'}`}>
-                  Allow client WebAudio API packets via Socket.IO
-                </span>
-              </div>
-              <input
-                type="checkbox"
-                checked={settings.ENABLE_REALTIME_MIC_STREAMING === 'true'}
-                onChange={(e) => setSettings({ ...settings, ENABLE_REALTIME_MIC_STREAMING: String(e.target.checked) })}
-                className="w-4 h-4"
+                className="w-full p-3 rounded-xl bg-white border border-[#E6F0FF] font-mono text-xs focus:border-[#014BAA]"
               />
             </div>
           </div>
 
-          <div className={`flex items-center justify-between pt-4 border-t ${isLight ? 'border-slate-200' : 'border-slate-800'}`}>
-            {saved && <span className="text-xs text-emerald-500 font-semibold">Settings saved to MySQL DB!</span>}
+          <div className="flex items-center justify-between pt-2">
+            {saved ? (
+              <span className="text-xs font-bold text-emerald-700 flex items-center gap-1.5">
+                <CheckCircle className="w-4 h-4 text-emerald-600" /> Settings Saved Successfully
+              </span>
+            ) : <span />}
+
             <button
               type="submit"
-              className="ml-auto px-6 py-2.5 rounded-xl text-xs font-bold bg-[#5b63f6] hover:bg-[#4f46e5] text-white shadow-lg flex items-center gap-2"
+              className="px-6 py-3 rounded-xl bg-[#014BAA] hover:bg-[#013D8B] text-white font-extrabold text-xs shadow-royal transition-all flex items-center gap-2 uppercase tracking-wider"
             >
-              <Save className="w-4 h-4" /> Save System Settings
+              <Save className="w-4 h-4" /> Save Configuration
             </button>
           </div>
         </form>

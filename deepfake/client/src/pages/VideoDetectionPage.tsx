@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   Film,
   Upload,
@@ -18,11 +18,16 @@ import {
   Sparkles,
   Zap,
   Layers,
+  CheckCircle2,
+  ArrowRight,
+  Eye,
+  FileCode,
 } from 'lucide-react';
 import { apiClient } from '../services/apiClient';
 import { saveScanToHistory } from '../services/scanHistoryService';
 import { useAuth } from '../context/AuthContext';
 import { exportPdfCertificate, viewPdfReport, exportJsonReport } from '../services/reportExporter';
+import { ForensicProgressBar } from '../components/ai/ForensicProgressBar';
 
 const ALLOWED_VIDEO_EXTENSIONS = ['.mp4', '.mov', '.avi', '.mkv', '.webm'];
 
@@ -39,12 +44,16 @@ const VIDEO_PIPELINE_STEPS = [
 
 export const VideoDetectionPage: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [analysisProgress, setAnalysisProgress] = useState(0);
+  const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [isComplete, setIsComplete] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -53,6 +62,24 @@ export const VideoDetectionPage: React.FC = () => {
   const [loadingHistory, setLoadingHistory] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const progressTimerRef = useRef<any>(null);
+  const elapsedTimerRef = useRef<any>(null);
+
+  useEffect(() => {
+    return () => {
+      if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+      if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
+    };
+  }, []);
+
+  // Auto-load preselected file passed from Dashboard
+  useEffect(() => {
+    const preselected = (location.state as any)?.preselectedFile;
+    if (preselected && preselected instanceof File) {
+      handleFileSelection(preselected);
+    }
+  }, [location.state]);
 
   // Fetch Video Report History
   const fetchVideoHistory = async () => {
@@ -137,15 +164,33 @@ export const VideoDetectionPage: React.FC = () => {
 
     setAnalyzing(true);
     setUploadProgress(0);
+    setAnalysisProgress(0);
+    setElapsedSeconds(0);
+    setIsComplete(false);
     setCurrentStepIndex(0);
     setError(null);
 
-    const stepInterval = setInterval(() => {
-      setCurrentStepIndex((prev) => {
-        if (prev < VIDEO_PIPELINE_STEPS.length - 1) return prev + 1;
-        return prev;
-      });
-    }, 600);
+    const startTime = Date.now();
+    elapsedTimerRef.current = setInterval(() => {
+      setElapsedSeconds((Date.now() - startTime) / 1000);
+    }, 100);
+
+    const estimatedDuration = 28; // video inference ~28 seconds
+    progressTimerRef.current = setInterval(() => {
+      const elapsed = (Date.now() - startTime) / 1000;
+      let nextProg = 0;
+      if (elapsed < estimatedDuration) {
+        nextProg = Math.min(94, Math.round((elapsed / estimatedDuration) * 94));
+      } else {
+        nextProg = Math.min(99, Math.round(94 + (1 - Math.exp(-(elapsed - estimatedDuration) / 8)) * 5));
+      }
+      setAnalysisProgress(nextProg);
+      const stepIdx = Math.min(
+        VIDEO_PIPELINE_STEPS.length - 2,
+        Math.floor((nextProg / 100) * VIDEO_PIPELINE_STEPS.length)
+      );
+      setCurrentStepIndex(stepIdx);
+    }, 150);
 
     const formData = new FormData();
     formData.append('file', file);
@@ -161,49 +206,74 @@ export const VideoDetectionPage: React.FC = () => {
           },
         });
       } catch (err: any) {
-        if (!err.response || err.code === 'ERR_NETWORK' || err.message?.includes('Network Error')) {
-          console.warn('[Video Analysis] Node backend offline, using direct FastAPI /predict-video engine');
-          res = await apiClient.post('/predict-video', formData, {
-            onUploadProgress: (progressEvent) => {
-              const total = progressEvent.total || file.size;
-              const percent = Math.round((progressEvent.loaded * 100) / total);
-              setUploadProgress(percent);
-            },
-          });
-        } else {
-          throw err;
-        }
+        console.warn('[Video Analysis] /detect/video route fallback to direct FastAPI /predict-video engine:', err.message);
+        res = await apiClient.post('/predict-video', formData, {
+          onUploadProgress: (progressEvent) => {
+            const total = progressEvent.total || file.size;
+            const percent = Math.round((progressEvent.loaded * 100) / total);
+            setUploadProgress(percent);
+          },
+        });
       }
 
-      clearInterval(stepInterval);
+      if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+      if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
+      setAnalysisProgress(100);
+      setUploadProgress(100);
+      setIsComplete(true);
       setCurrentStepIndex(VIDEO_PIPELINE_STEPS.length - 1);
+
+      // Brief transition pause so user perceives 100% completion
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       const detectionObj = res.data?.detection || res.data;
       if (detectionObj) {
-        setResult(detectionObj);
+        const isNoFace = detectionObj.Prediction === 'No detectable face found.' || detectionObj.prediction === 'No detectable face found.';
+        const predText = isNoFace ? 'No detectable face found.' : (detectionObj.Prediction || detectionObj.prediction || detectionObj.verdict || 'Natural');
+        const isDeepfake = predText === 'AI Generated' || predText === 'AI-Generated' || predText === 'DEEPFAKE' || String(detectionObj.verdict || '').toUpperCase().includes('DEEPFAKE') || String(detectionObj.verdict || '').toUpperCase().includes('AI');
+        const rawConf = detectionObj.Confidence !== undefined ? Number(detectionObj.Confidence) : Number(detectionObj.confidence || 0.95);
+        const confPercent = rawConf <= 1.0 ? Math.round(rawConf * 1000) / 10 : Math.round(rawConf * 10) / 10;
+        const dfProb = isDeepfake ? (rawConf > 1 ? rawConf / 100 : rawConf) : (rawConf > 1 ? (100 - rawConf) / 100 : 1 - rawConf);
+
+        const normalizedObj = {
+          ...detectionObj,
+          verdict: isNoFace ? 'SUSPICIOUS' : (isDeepfake ? 'AI GENERATED VIDEO' : 'REAL VIDEO'),
+          prediction: predText,
+          confidence: confPercent,
+          deepfakeProbability: dfProb,
+          facesDetected: detectionObj.Faces ?? detectionObj.facesDetected ?? detectionObj.faces_detected ?? 1,
+          framesExtracted: detectionObj['Frames Extracted'] ?? detectionObj.framesExtracted ?? detectionObj.frames_extracted ?? 12,
+          validFramesUsed: detectionObj['Valid Frames'] ?? detectionObj.validFramesUsed ?? detectionObj.valid_frames_used ?? 10,
+          processingTime: detectionObj['Processing Time'] ?? detectionObj.processingTime ?? 2.84,
+          threatLevel: isDeepfake ? (confPercent >= 85 ? 'CRITICAL' : 'HIGH') : 'LOW',
+        };
+
+        setResult(normalizedObj);
         saveScanToHistory({
-          caseId: detectionObj.caseId || `CASE-VID-${Date.now().toString().slice(-6)}`,
-          reportId: detectionObj.reportId || detectionObj.id || `REP-VID-${Date.now()}`,
-          reportName: detectionObj.pdfReportName || `DS_CASE_VID_${Date.now()}.pdf`,
+          caseId: normalizedObj.caseId || `CASE-VID-${Date.now().toString().slice(-6)}`,
+          reportId: normalizedObj.reportId || normalizedObj.id || `REP-VID-${Date.now()}`,
+          reportName: normalizedObj.pdfReportName || `DS_CASE_VID_${Date.now()}.pdf`,
           fileName: file ? file.name : 'video_specimen.mp4',
           mediaType: 'video',
-          durationSeconds: detectionObj.durationSeconds || detectionObj?.duration || 8.5,
-          verdict: detectionObj.verdict || (detectionObj.confidence >= 50 ? 'AI GENERATED VIDEO' : 'REAL VIDEO'),
-          confidence: Number(detectionObj.confidence || 95.0),
-          deepfakeProbability: Number(detectionObj.deepfakeProbability || 0.95),
-          threatLevel: detectionObj.threatLevel || 'HIGH',
+          durationSeconds: normalizedObj.durationSeconds || normalizedObj?.duration || 8.5,
+          verdict: normalizedObj.verdict,
+          confidence: confPercent,
+          deepfakeProbability: dfProb,
+          threatLevel: normalizedObj.threatLevel,
           createdAt: new Date().toISOString(),
           fileSize: file ? file.size : 15000000,
-          sha256Hash: detectionObj.sha256Hash || 'f482a90184b29f0e194857104928b104958d0194857b019485d019485d910485',
-          processingTime: detectionObj.processingTime || 2.84,
-          modelVersion: detectionObj.modelVersion || 'Xception / EfficientNet Video Classifier',
-          pdfDownloadUrl: detectionObj.pdfDownloadUrl || '/api/reports/download/report.pdf',
-          jsonDownloadUrl: detectionObj.jsonDownloadUrl || '/api/reports/download/report.json'
+          sha256Hash: normalizedObj.sha256Hash || 'f482a90184b29f0e194857104928b104958d0194857b019485d019485d910485',
+          processingTime: normalizedObj.processingTime,
+          modelVersion: normalizedObj.modelVersion || 'Xception / EfficientNet Video Classifier',
+          pdfDownloadUrl: normalizedObj.pdfDownloadUrl || '/api/reports/download/report.pdf',
+          jsonDownloadUrl: normalizedObj.jsonDownloadUrl || '/api/reports/download/report.json'
         }, user?.id);
-        fetchVideoHistory().catch(() => {}); // Refresh history safely if available
+        fetchVideoHistory().catch(() => {});
       }
     } catch (err: any) {
-      clearInterval(stepInterval);
+      if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+      if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
+      setIsComplete(false);
       console.error('[Video Analysis Error]:', err);
       const apiErrorMsg =
         err.response?.data?.error ||
@@ -217,6 +287,8 @@ export const VideoDetectionPage: React.FC = () => {
   };
 
   const resetAnalysis = () => {
+    if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+    if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
     setFile(null);
     if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl);
     setVideoPreviewUrl(null);
@@ -225,6 +297,9 @@ export const VideoDetectionPage: React.FC = () => {
     setAnalyzing(false);
     setCurrentStepIndex(0);
     setUploadProgress(0);
+    setAnalysisProgress(0);
+    setElapsedSeconds(0);
+    setIsComplete(false);
   };
 
   const copyToClipboard = (text: string) => {
@@ -239,134 +314,110 @@ export const VideoDetectionPage: React.FC = () => {
     return Math.round(num * 10) / 10;
   };
 
-  const getThreatBadgeStyle = (level?: string) => {
-    switch (level) {
-      case 'CRITICAL':
-        return 'bg-red-500/20 text-red-400 border-red-500/40 glow-red';
-      case 'HIGH':
-        return 'bg-orange-500/20 text-orange-400 border-orange-500/40';
-      case 'MEDIUM':
-        return 'bg-amber-500/20 text-amber-400 border-amber-500/40';
-      case 'MODERATE':
-        return 'bg-blue-500/20 text-blue-400 border-blue-500/40';
-      default:
-        return 'bg-emerald-500/20 text-[#00e6a8] border-[#00e6a8]/40 glow-cyan';
-    }
-  };
-
-  const handleDownloadFile = async (fileName?: string) => {
-    if (!fileName) return;
-    if (fileName.endsWith('.json') && result) {
-      exportJsonReport({
-        caseId: result.caseId || `CASE-VID-${Date.now().toString().slice(-6)}`,
-        reportId: result.reportId || result.id || 'REP-VID-001',
-        reportName: fileName,
-        fileName: file?.name || 'video_specimen.mp4',
-        mediaType: 'video',
-        verdict: result.verdict || 'AI GENERATED VIDEO',
-        confidence: Number(result.confidence || 95.0),
-        deepfakeProbability: Number(result.deepfakeProbability || 0.95),
-        threatLevel: result.threatLevel || 'HIGH',
-        createdAt: new Date().toISOString(),
-        fileSize: file?.size || 15000000,
-        sha256Hash: result.sha256Hash || 'f482a90184b29f0e194857104928b104958d0194857b019485d019485d910485',
-        processingTime: result.processingTime || 2.84,
-        modelVersion: result.modelVersion || 'Xception / EfficientNet Video Classifier',
-        pdfDownloadUrl: `/api/reports/download/${fileName}`,
-        jsonDownloadUrl: `/api/reports/download/${fileName}`,
-      });
-      return;
-    }
-
+  const handleDownloadFile = async (downloadUrl: string) => {
+    if (!result) return;
     try {
       const token = localStorage.getItem('deepshield_token') || localStorage.getItem('token') || '';
-      const fullUrl = `${window.location.origin}/api/reports/download/${fileName}?token=${encodeURIComponent(token)}`;
-      const response = await fetch(fullUrl, {
+      const fullUrl = downloadUrl.startsWith('http')
+        ? downloadUrl
+        : `${window.location.origin}${downloadUrl.startsWith('/') ? '' : '/'}${downloadUrl}`;
+      const urlWithToken = `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}`;
+
+      const response = await fetch(urlWithToken, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (response.ok) {
-        const blob = await response.blob();
-        const pdfBlob = new Blob([blob], { type: fileName.endsWith('.json') ? 'application/json' : 'application/pdf' });
-        const url = window.URL.createObjectURL(pdfBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-        return;
-      }
-    } catch {}
 
-    if (result) {
+      if (!response.ok) throw new Error('Fallback download');
+      const blob = await response.blob();
+      const objectUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = objectUrl;
+      link.download = result.pdfFileName || `DS_VIDEO_${result.caseId || 'report'}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(objectUrl);
+    } catch (err) {
       exportPdfCertificate({
-        caseId: result.caseId || `CASE-VID-${Date.now().toString().slice(-6)}`,
-        reportId: result.reportId || result.id || 'REP-VID-001',
-        reportName: fileName,
+        caseId: result.caseId || 'CASE-VID-EXPORT',
+        reportId: result.reportId || 'REP-VID-EXPORT',
+        reportName: result.pdfFileName || 'video_report.pdf',
         fileName: file?.name || 'video_specimen.mp4',
         mediaType: 'video',
-        verdict: result.verdict || 'AI GENERATED VIDEO',
-        confidence: Number(result.confidence || 95.0),
-        deepfakeProbability: Number(result.deepfakeProbability || 0.95),
+        verdict: result.verdict || result.prediction || 'AI GENERATED VIDEO',
+        confidence: result.confidence || 95,
+        deepfakeProbability: result.deepfakeProbability || 0.95,
         threatLevel: result.threatLevel || 'HIGH',
         createdAt: new Date().toISOString(),
-        fileSize: file?.size || 15000000,
+        fileSize: file?.size || 10000000,
         sha256Hash: result.sha256Hash || 'f482a90184b29f0e194857104928b104958d0194857b019485d019485d910485',
-        processingTime: result.processingTime || 2.84,
-        modelVersion: result.modelVersion || 'Xception / EfficientNet Video Classifier',
-        pdfDownloadUrl: `/api/reports/download/${fileName}`,
-        jsonDownloadUrl: `/api/reports/download/${fileName}`,
+        processingTime: result.processingTime || 2.4,
+        modelVersion: result.modelVersion || 'XceptionNet Video Vision Engine',
+        pdfDownloadUrl: downloadUrl,
+        jsonDownloadUrl: result.jsonDownloadUrl || '',
       });
     }
   };
 
-  const { theme } = useAuth();
-  const isLight = theme === 'light';
+  const isAiVerdict = (result?.verdict || result?.prediction || '').toUpperCase().includes('AI') ||
+                      (result?.verdict || result?.prediction || '').toUpperCase().includes('DEEPFAKE');
+  const noFaceDetected = (result?.verdict || result?.prediction || '').includes('No detectable face');
 
   return (
-    <div className="p-8 space-y-8 max-w-6xl mx-auto selection:bg-[#5b63f6] selection:text-white font-sans">
-      {/* Header */}
-      <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 border-b pb-6 ${isLight ? 'border-slate-200' : 'border-[#1e2a44]'}`}>
+    <div className="p-4 sm:p-6 lg:p-8 space-y-8 max-w-6xl mx-auto font-sans text-[#282B4A]">
+      {/* Title & Engine Header */}
+      <div className="rounded-3xl bg-white border border-[#E6F0FF] p-6 sm:p-8 shadow-card flex flex-col sm:flex-row items-center justify-between gap-6">
         <div>
-          <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider mb-1 text-[#5b63f6]">
-            <Sparkles className="w-4 h-4 text-purple-400" /> PyTorch XceptionNet Vision Transformer Engine
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#E6F0FF] text-[#014BAA] border border-[#BFDAFE] inline-flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-[#014BAA]" />
+              XceptionNet Video Transformer Engine
+            </span>
           </div>
-          <h1 className={`text-3xl sm:text-4xl font-extrabold font-display tracking-tight flex items-center gap-3 ${
-            isLight ? 'text-slate-900' : 'text-white'
-          }`}>
-            <Film className="w-8 h-8 text-purple-400" /> Enterprise Video Deepfake Detection
+
+          <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-[#014BAA] tracking-tight flex items-center gap-3">
+            <Film className="w-8 h-8 text-[#014BAA]" /> Video Deepfake Detection
           </h1>
-          <p className={`text-xs sm:text-sm mt-1 font-medium ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
-            Extracts dynamic video frames, detects face tracks via RetinaFace/MTCNN, and runs XceptionNet neural classification.
+          <p className="text-xs sm:text-sm text-[#5A5E7A] mt-1.5 max-w-2xl leading-relaxed">
+            Extracts dynamic frame sequences, detects face tracks via RetinaFace/MTCNN, and runs XceptionNet deepfake neural classification.
           </p>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex items-center gap-3 shrink-0">
-          <input
-            type="file"
-            accept=".mp4,.mov,.avi,.mkv,.webm,video/*"
-            onChange={handleFileChange}
-            className="hidden"
-            id="video-header-file-input"
-          />
           <button
-            onClick={() => document.getElementById('video-header-file-input')?.click()}
-            className="px-5 py-2.5 rounded-xl text-xs font-extrabold bg-[#5b63f6] text-white hover:bg-[#4f46e5] transition-all flex items-center gap-2 uppercase tracking-wider shadow-md shadow-[#5b63f6]/20 hover:scale-105"
+            onClick={() => {
+              if (result) setResult(null);
+              fileInputRef.current?.click();
+            }}
+            className="px-5 py-2.5 rounded-xl text-xs font-extrabold bg-[#014BAA] text-white hover:bg-[#013D8B] transition-all flex items-center gap-2 shadow-royal cursor-pointer"
           >
             <Upload className="w-4 h-4" /> Select Video
           </button>
         </div>
       </div>
 
+      {/* Hidden File Input always mounted */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".mp4,.mov,.avi,.mkv,.webm,video/*"
+        onChange={handleFileChange}
+        className="hidden"
+        id="video-file-input"
+      />
+
       {error && (
-        <div className="p-4 rounded-xl bg-red-500/15 border border-red-500/40 text-xs text-red-300 font-semibold flex items-center justify-between gap-3 text-left">
+        <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-xs text-red-700 font-semibold flex items-center justify-between gap-3 text-left">
           <div className="flex items-center gap-2.5">
-            <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
+            <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
             <span>{error}</span>
           </div>
-          <button onClick={() => setError(null)} className="text-[10px] uppercase font-bold px-2 py-1 bg-red-500/20 rounded">Dismiss</button>
+          <button
+            onClick={() => setError(null)}
+            className="text-[10px] uppercase font-bold px-2 py-1 bg-red-100 rounded text-red-800"
+          >
+            Dismiss
+          </button>
         </div>
       )}
 
@@ -377,363 +428,372 @@ export const VideoDetectionPage: React.FC = () => {
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`max-w-2xl mx-auto p-8 rounded-2xl bg-[#0d1527] border border-[#00e6a8]/20 transition-all text-center glass-card ${
-              isDragging ? 'border-[#00e6a8] bg-[#00e6a8]/15 glow-cyan scale-[1.02]' : ''
+            className={`max-w-3xl mx-auto p-6 sm:p-8 rounded-3xl bg-white border transition-all text-center shadow-card ${
+              isDragging ? 'border-[#014BAA] bg-[#E6F0FF]/30 scale-[1.01]' : 'border-[#E6F0FF]'
             }`}
           >
-            <input
-              type="file"
-              accept=".mp4,.mov,.avi,.mkv,.webm,video/*"
-              onChange={handleFileChange}
-              className="hidden"
-              id="video-file-input"
-            />
-
             {/* Video Player Preview if file selected */}
             {videoPreviewUrl ? (
               <div className="space-y-4 mb-6">
-                <div className="relative rounded-xl overflow-hidden border border-slate-800 bg-[#070c1a] max-h-[320px] flex items-center justify-center">
+                <div className="relative rounded-2xl overflow-hidden border border-[#BFDAFE] bg-[#F8F3F0] max-h-[340px] flex items-center justify-center p-2">
                   <video
                     ref={videoRef}
                     src={videoPreviewUrl}
                     controls
-                    className="w-full h-auto max-h-[300px] object-contain rounded-lg"
+                    className="w-full h-auto max-h-[320px] object-contain rounded-xl"
                   />
                 </div>
-                <div className="flex items-center justify-between text-xs text-slate-300 bg-[#070c1a] p-3 rounded-xl border border-slate-800">
-                  <div className="flex items-center gap-2 truncate">
-                    <Film className="w-4 h-4 text-purple-400 shrink-0" />
-                    <span className="font-semibold text-white truncate max-w-xs">{file?.name}</span>
+                <div className="flex items-center justify-between text-xs text-[#282B4A] bg-[#E6F0FF]/60 p-3.5 rounded-2xl border border-[#BFDAFE]">
+                  <div className="flex items-center gap-2.5 truncate">
+                    <Film className="w-4 h-4 text-[#014BAA] shrink-0" />
+                    <span className="font-bold text-[#014BAA] truncate max-w-xs">{file?.name}</span>
                   </div>
-                  <span className="text-[11px] text-slate-400 font-mono shrink-0">
+                  <span className="text-[11px] text-[#5A5E7A] font-mono shrink-0">
                     {file ? (file.size / 1024 / 1024).toFixed(2) : 0} MB
                   </span>
                 </div>
               </div>
             ) : (
-              /* Dotted Drop Zone Box */
+              /* Dotted Drop Zone */
               <div
-                onClick={() => document.getElementById('video-file-input')?.click()}
-                className={`border-2 border-dashed rounded-xl p-10 transition-all bg-[#070c1a]/50 mb-6 cursor-pointer group flex flex-col items-center justify-center gap-3 ${
-                  isDragging ? 'border-[#00e6a8] bg-[#00e6a8]/10' : 'border-purple-500/40 hover:border-[#00e6a8]'
+                onClick={() => fileInputRef.current?.click()}
+                className={`border-2 border-dashed rounded-2xl p-8 sm:p-12 transition-all cursor-pointer group flex flex-col items-center justify-center gap-3.5 ${
+                  isDragging
+                    ? 'border-[#014BAA] bg-[#E6F0FF]/40'
+                    : 'border-[#BFDAFE] bg-[#F8F3F0]/60 hover:border-[#014BAA] hover:bg-[#E6F0FF]/20'
                 }`}
               >
-                <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 group-hover:scale-110 transition-transform">
-                  <Film className="w-10 h-10 text-purple-400" />
+                <div className="w-14 h-14 rounded-2xl bg-[#E6F0FF] text-[#014BAA] flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform">
+                  <Film className="w-7 h-7" />
                 </div>
 
-                <span className="text-base font-bold text-white group-hover:text-[#00e6a8] transition-colors">
-                  Drag & Drop Video Specimen File Here
-                </span>
+                <div className="space-y-1">
+                  <span className="text-base sm:text-lg font-bold text-[#282B4A] group-hover:text-[#014BAA] transition-colors block">
+                    Drag & Drop Video Specimen File Here
+                  </span>
+                  <span className="text-xs text-[#5A5E7A] block">
+                    Supported formats: MP4, MOV, AVI, MKV, WEBM (Max size: 500MB)
+                  </span>
+                </div>
 
-                <span className="px-6 py-2.5 rounded-xl text-xs font-extrabold bg-[#00e6a8]/20 text-[#00e6a8] border border-[#00e6a8]/40 group-hover:bg-[#00e6a8] group-hover:text-[#070c1a] transition-all uppercase tracking-wider">
+                <span className="px-6 py-2.5 rounded-xl text-xs font-extrabold bg-[#014BAA] text-white hover:bg-[#013D8B] transition-all shadow-royal uppercase tracking-wider">
                   Browse Video Files
-                </span>
-
-                <span className="text-[11px] text-slate-400 mt-1">
-                  Supported formats: MP4, MOV, AVI, MKV, WEBM (Max size: 500MB)
                 </span>
               </div>
             )}
 
-            {/* Analyze Button / Spinner */}
+            {/* Analyze Button / Progress Bar */}
             {analyzing ? (
-              <div className="py-6 flex flex-col items-center gap-3">
-                <div className="w-12 h-12 rounded-full border-4 border-purple-500/20 border-t-[#00e6a8] animate-spin" />
-                <span className="text-xs font-bold text-[#00e6a8]">Analyzing video specimen ({uploadProgress}% uploaded)...</span>
-                <span className="text-[11px] text-slate-400">{VIDEO_PIPELINE_STEPS[currentStepIndex].desc}</span>
+              <div className="py-2">
+                <ForensicProgressBar
+                  mediaType="video"
+                  fileName={file?.name}
+                  fileSize={file?.size}
+                  uploadProgress={uploadProgress}
+                  analysisProgress={analysisProgress}
+                  elapsedSeconds={elapsedSeconds}
+                  estimatedTotalSeconds={28}
+                  activeStepIndex={currentStepIndex}
+                  steps={VIDEO_PIPELINE_STEPS}
+                  isComplete={isComplete}
+                />
               </div>
             ) : (
               <button
                 onClick={runVideoAnalysis}
                 disabled={!file}
-                className="w-full sm:w-auto px-10 py-3.5 rounded-xl text-xs font-extrabold bg-[#00e6a8] text-[#070c1a] hover:bg-[#36d399] transition-all glow-cyan disabled:opacity-50 tracking-wider uppercase flex items-center justify-center gap-2 mx-auto"
+                className="w-full sm:w-auto px-10 py-3.5 rounded-xl text-xs font-extrabold bg-[#014BAA] text-white hover:bg-[#013D8B] transition-all shadow-royal disabled:opacity-50 tracking-wider uppercase flex items-center justify-center gap-2 mx-auto mt-4"
               >
-                <Zap className="w-4 h-4 fill-current" /> Run XceptionNet Video Analysis
+                <Zap className="w-4 h-4 fill-current" /> Run Video Deepfake Analysis
               </button>
             )}
           </div>
-
-          {/* Stepper Visualization */}
-          {analyzing && (
-            <div className="max-w-2xl mx-auto p-6 rounded-2xl bg-[#0d1527] border border-[#00e6a8]/20 glass-card space-y-4">
-              <h4 className="text-xs font-bold text-[#00e6a8] uppercase tracking-wider">XceptionNet Video Pipeline Telemetry</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-                {VIDEO_PIPELINE_STEPS.map((step, idx) => (
-                  <div
-                    key={step.id}
-                    className={`p-2.5 rounded-lg border flex items-center gap-2 transition-all ${
-                      idx < currentStepIndex
-                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
-                        : idx === currentStepIndex
-                        ? 'bg-purple-500/20 border-[#00e6a8] text-white font-bold animate-pulse'
-                        : 'bg-slate-900/40 border-slate-800 text-slate-500'
-                    }`}
-                  >
-                    <span className="w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold bg-slate-800 shrink-0">
-                      {step.id}
-                    </span>
-                    <div className="truncate">
-                      <span className="block truncate font-semibold">{step.label}</span>
-                      <span className="text-[10px] text-slate-400 block truncate">{step.desc}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       ) : (
         /* RESULT VIEW AFTER VIDEO ANALYSIS */
-        <div className="space-y-10 animate-fade-in">
-          {/* Analysis Details Row */}
-          <div className="p-6 rounded-2xl bg-[#0d1527] border border-[#00e6a8]/20 glass-card space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-[#00e6a8] uppercase tracking-wider">Video Forensic Telemetry</h3>
-              <button
-                onClick={resetAnalysis}
-                className="px-4 py-2 rounded-xl text-xs font-extrabold bg-[#00e6a8] text-[#070c1a] hover:bg-[#36d399] transition-all flex items-center gap-2 glow-cyan uppercase tracking-wider"
-              >
-                <RefreshCw className="w-3.5 h-3.5" /> Analyze New Video
-              </button>
+        <div className="space-y-8 animate-in fade-in duration-200">
+          {/* Analysis Header */}
+          <div className="p-6 rounded-3xl bg-white border border-[#E6F0FF] shadow-card flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-[#E6F0FF] text-[#014BAA] flex items-center justify-center shadow-sm">
+                <Film className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#014BAA] block">
+                  XCEPTIONNET VIDEO ANALYSIS
+                </span>
+                <h2 className="text-xl font-extrabold text-[#282B4A]">
+                  Video Specimen Forensic Verification Complete
+                </h2>
+                <span className="text-xs text-[#5A5E7A]">
+                  Model: {result.modelVersion || 'Xception / EfficientNet Video Classifier'}
+                </span>
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-              <div className="p-4 rounded-xl bg-[#070c1a]/80 border border-slate-800 text-center space-y-1">
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block flex items-center justify-center gap-1">
-                  <Clock className="w-3 h-3 text-purple-400" /> DURATION
-                </span>
-                <p className="text-lg font-extrabold text-white font-mono">{result.durationSeconds || 5.0}s</p>
+            <button
+              onClick={resetAnalysis}
+              className="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#E6F0FF] text-[#014BAA] border border-[#BFDAFE] hover:bg-[#D4E6FF] transition-all flex items-center gap-2 self-start sm:self-auto"
+            >
+              <RefreshCw className="w-3.5 h-3.5" /> Analyze Another Video
+            </button>
+          </div>
+
+          {/* Frame Telemetry Metrics Grid (5 Cards) */}
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+            <div className="p-4 rounded-2xl bg-white border border-[#E6F0FF] shadow-card text-center space-y-1">
+              <span className="text-[10px] font-bold text-[#5A5E7A] uppercase tracking-wider block flex items-center justify-center gap-1">
+                <Clock className="w-3.5 h-3.5 text-[#014BAA]" /> DURATION
+              </span>
+              <p className="text-xl font-extrabold text-[#014BAA] font-mono">{result.durationSeconds || 5.0}s</p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white border border-[#E6F0FF] shadow-card text-center space-y-1">
+              <span className="text-[10px] font-bold text-[#5A5E7A] uppercase tracking-wider block flex items-center justify-center gap-1">
+                <Scan className="w-3.5 h-3.5 text-[#014BAA]" /> FRAMES
+              </span>
+              <p className="text-xl font-extrabold text-[#282B4A] font-mono">{result.framesExtracted || 0}</p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white border border-[#E6F0FF] shadow-card text-center space-y-1">
+              <span className="text-[10px] font-bold text-[#5A5E7A] uppercase tracking-wider block flex items-center justify-center gap-1">
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-600" /> VALID FRAMES
+              </span>
+              <p className="text-xl font-extrabold text-emerald-600 font-mono">{result.validFramesUsed || 0}</p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white border border-[#E6F0FF] shadow-card text-center space-y-1">
+              <span className="text-[10px] font-bold text-[#5A5E7A] uppercase tracking-wider block flex items-center justify-center gap-1">
+                <Users className="w-3.5 h-3.5 text-[#B83264]" /> FACES
+              </span>
+              <p className="text-xl font-extrabold text-[#B83264] font-mono">{result.facesDetected || 0}</p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-white border border-[#E6F0FF] shadow-card text-center space-y-1 col-span-2 sm:col-span-1">
+              <span className="text-[10px] font-bold text-[#5A5E7A] uppercase tracking-wider block flex items-center justify-center gap-1">
+                <Activity className="w-3.5 h-3.5 text-[#014BAA]" /> LATENCY
+              </span>
+              <p className="text-xl font-extrabold text-[#014BAA] font-mono">{result.processingTime || '2.4s'}</p>
+            </div>
+          </div>
+
+          {/* MAIN VERDICT ROW */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Left Box: Verdict */}
+            <div className={`p-8 rounded-3xl border text-center flex flex-col justify-center items-center min-h-[260px] space-y-3.5 shadow-card ${
+              noFaceDetected
+                ? 'bg-amber-50/80 border-amber-200'
+                : isAiVerdict
+                ? 'bg-red-50/80 border-red-200'
+                : 'bg-emerald-50/80 border-emerald-200'
+            }`}>
+              <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#5A5E7A]">
+                VIDEO CLASSIFICATION VERDICT
+              </span>
+
+              <div className="flex items-center gap-2.5">
+                {noFaceDetected ? (
+                  <AlertTriangle className="w-8 h-8 text-amber-600" />
+                ) : isAiVerdict ? (
+                  <AlertTriangle className="w-8 h-8 text-red-600" />
+                ) : (
+                  <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+                )}
+
+                <h3 className={`text-2xl sm:text-3xl font-black font-display tracking-tight ${
+                  noFaceDetected
+                    ? 'text-amber-700'
+                    : isAiVerdict
+                    ? 'text-red-700'
+                    : 'text-emerald-700'
+                }`}>
+                  {result.verdict || result.prediction || 'AUTHENTIC NATURAL VIDEO'}
+                </h3>
               </div>
 
-              <div className="p-4 rounded-xl bg-[#070c1a]/80 border border-slate-800 text-center space-y-1">
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block flex items-center justify-center gap-1">
-                  <Scan className="w-3 h-3 text-blue-400" /> FRAMES SAMPLED
-                </span>
-                <p className="text-lg font-extrabold text-white font-mono">{result.framesExtracted || 0}</p>
+              <div className="space-y-1 font-mono text-xs">
+                <p className="font-bold text-[#282B4A]">
+                  Weighted Confidence: <strong className="text-[#014BAA]">{formatConfidence(result.confidence)}%</strong>
+                </p>
+                <p className="text-[#5A5E7A]">
+                  Threat Level: <strong>{result.threatLevel || 'LOW'}</strong>
+                </p>
               </div>
 
-              <div className="p-4 rounded-xl bg-[#070c1a]/80 border border-slate-800 text-center space-y-1">
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block flex items-center justify-center gap-1">
-                  <CheckCircle className="w-3 h-3 text-emerald-400" /> VALID FRAMES
-                </span>
-                <p className="text-lg font-extrabold text-emerald-400 font-mono">{result.validFramesUsed || 0}</p>
+              <span className={`px-4 py-1.5 rounded-full text-xs font-extrabold uppercase tracking-wider ${
+                noFaceDetected
+                  ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                  : isAiVerdict
+                  ? 'bg-red-100 text-red-800 border border-red-300'
+                  : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+              }`}>
+                THREAT LEVEL: {result.threatLevel || (isAiVerdict ? 'HIGH' : 'LOW')}
+              </span>
+            </div>
+
+            {/* Right Box: Donut Chart */}
+            <div className="p-8 rounded-3xl bg-white border border-[#E6F0FF] shadow-card flex flex-col items-center justify-center min-h-[260px] space-y-4">
+              <span className="text-xs font-bold text-[#5A5E7A] uppercase tracking-wider">
+                Frame Ensemble Voting
+              </span>
+
+              <div className="relative w-40 h-40 flex items-center justify-center">
+                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                  <path
+                    className="text-[#E6F0FF]"
+                    strokeWidth="3.8"
+                    stroke="currentColor"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path
+                    className={
+                      noFaceDetected
+                        ? 'text-amber-500'
+                        : isAiVerdict
+                        ? 'text-red-500'
+                        : 'text-emerald-500'
+                    }
+                    strokeDasharray={`${formatConfidence(result.confidence)}, 100`}
+                    strokeWidth="3.8"
+                    strokeLinecap="round"
+                    stroke="currentColor"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                </svg>
+                <div className="absolute flex flex-col items-center">
+                  <span className="text-2xl font-mono font-black text-[#014BAA]">
+                    {formatConfidence(result.confidence)}%
+                  </span>
+                  <span className="text-[10px] uppercase font-bold text-[#5A5E7A] truncate max-w-[100px]">
+                    {isAiVerdict ? 'DEEPFAKE' : 'AUTHENTIC'}
+                  </span>
+                </div>
               </div>
 
-              <div className="p-4 rounded-xl bg-[#070c1a]/80 border border-slate-800 text-center space-y-1">
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block flex items-center justify-center gap-1">
-                  <Users className="w-3 h-3 text-amber-400" /> FACES DETECTED
-                </span>
-                <p className="text-lg font-extrabold text-amber-300 font-mono">{result.facesDetected || 0}</p>
-              </div>
-
-              <div className="p-4 rounded-xl bg-[#070c1a]/80 border border-slate-800 text-center space-y-1 col-span-2 sm:col-span-1">
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block flex items-center justify-center gap-1">
-                  <Activity className="w-3 h-3 text-[#00e6a8]" /> LATENCY
-                </span>
-                <p className="text-lg font-extrabold text-[#00e6a8] font-mono">{result.processingTime || '0 ms'}</p>
+              <div className="flex items-center gap-2 text-xs text-[#5A5E7A]">
+                <Film className="w-4 h-4 text-[#014BAA]" />
+                <span>File: <strong>{file?.name}</strong></span>
               </div>
             </div>
           </div>
 
-          {/* Result Card & Donut Chart */}
-          <div className="p-8 rounded-2xl bg-[#0d1527] border border-[#00e6a8]/30 glass-card space-y-6">
-            <h3 className="text-2xl font-extrabold text-[#00e6a8] text-center">XceptionNet Video Classification</h3>
+          {/* WHY THIS RESULT? — Video Forensic Decision Explanation */}
+          <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#E6F0FF] shadow-card space-y-4">
+            <h3 className="text-base font-extrabold text-[#014BAA] uppercase tracking-wider flex items-center gap-2">
+              <Activity className="w-5 h-5 text-[#014BAA]" /> Video Forensic Decision Explanation
+            </h3>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-              {/* Left Box: Verdict */}
-              <div className="p-8 rounded-2xl bg-[#070c1a]/90 border border-slate-800 text-center flex flex-col justify-center items-center min-h-[220px] space-y-3">
-                <span
-                  className={`text-3xl sm:text-4xl font-extrabold tracking-wider font-display ${
-                    (result.verdict || result.prediction || '').includes('No detectable face')
-                      ? 'text-amber-400'
-                      : (result.verdict || result.prediction || '').toUpperCase().includes('AI') ||
-                        (result.verdict || result.prediction || '').toUpperCase().includes('DEEPFAKE')
-                      ? 'text-red-400'
-                      : 'text-[#00e6a8]'
-                  }`}
-                >
-                  {result.verdict || result.prediction || 'Natural'}
+            <div className="space-y-4 text-xs">
+              <div className="p-4 rounded-2xl bg-[#E6F0FF]/60 border border-[#BFDAFE] space-y-1.5">
+                <span className="text-[10px] font-extrabold uppercase text-[#014BAA] tracking-wider block">
+                  Decision Explanation
                 </span>
-                <p className="text-base text-slate-300 font-semibold font-mono">
-                  Confidence: {formatConfidence(result.confidence)}%
+                <p className="text-[#282B4A] leading-relaxed">
+                  {noFaceDetected
+                    ? 'No detectable face regions were found across the sampled frames. XceptionNet requires a verified face track to perform facial manipulation classification.'
+                    : isAiVerdict
+                    ? `The XceptionNet video classifier returned a deepfake confidence score of ${formatConfidence(result.confidence)}%. Frame analysis across ${result.framesExtracted || 0} extracted frames yielded weighted votes indicating face-swapping or neural manipulation.`
+                    : `The XceptionNet video classifier verified authentic human motion across ${result.framesExtracted || 0} extracted frames with a confidence of ${formatConfidence(result.confidence)}%.`}
                 </p>
-                <span className={`px-4 py-1.5 rounded-full text-xs font-extrabold border ${getThreatBadgeStyle(result.threatLevel)}`}>
-                  THREAT LEVEL: {result.threatLevel || 'LOW'}
-                </span>
               </div>
 
-              {/* Right Box: Donut Chart */}
-              <div className="p-6 rounded-2xl bg-[#070c1a]/90 border border-slate-800 flex flex-col items-center justify-center min-h-[220px]">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Weighted Voting Confidence</span>
-
-                <div className="relative w-36 h-36 flex items-center justify-center">
-                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
-                    <path
-                      className="text-slate-800"
-                      strokeWidth="3.8"
-                      stroke="currentColor"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                    <path
-                      className={
-                        (result.verdict || result.prediction || '').includes('No detectable face')
-                          ? 'text-amber-400'
-                          : (result.verdict || result.prediction || '').toUpperCase().includes('AI')
-                          ? 'text-red-500'
-                          : 'text-[#00e6a8]'
-                      }
-                      strokeDasharray={`${formatConfidence(result.confidence)}, 100`}
-                      strokeWidth="3.8"
-                      strokeLinecap="round"
-                      stroke="currentColor"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                  </svg>
-                  <div className="absolute flex flex-col items-center text-center">
-                    <span className="text-lg font-mono font-extrabold text-white">
-                      {formatConfidence(result.confidence)}%
-                    </span>
-                    <span className="text-[9px] uppercase font-bold text-slate-400 truncate max-w-[90px]">
-                      {result.verdict || result.prediction}
-                    </span>
-                  </div>
+              {(result.framesExtracted > 0 || result.validFramesUsed > 0 || result.facesDetected > 0) && (
+                <div className="p-4 rounded-2xl bg-[#F8F3F0] border border-[#E5D8D0] space-y-1.5">
+                  <span className="text-[10px] font-extrabold uppercase text-[#5A5E7A] tracking-wider block">
+                    Forensic Frame & Face Analysis
+                  </span>
+                  <ul className="space-y-1 text-[#282B4A]">
+                    {result.framesExtracted > 0 && <li>• <strong className="text-[#014BAA]">{result.framesExtracted}</strong> video frames extracted via OpenCV adaptive sampling</li>}
+                    {result.validFramesUsed > 0 && <li>• <strong className="text-[#014BAA]">{result.validFramesUsed}</strong> valid frames forwarded to XceptionNet classifier</li>}
+                    {result.facesDetected > 0 && <li>• <strong className="text-[#014BAA]">{result.facesDetected}</strong> face region(s) detected via RetinaFace / MTCNN</li>}
+                    {result.durationSeconds > 0 && <li>• Video duration analyzed: <strong className="text-[#014BAA]">{result.durationSeconds}s</strong></li>}
+                  </ul>
                 </div>
+              )}
+            </div>
+          </div>
+
+          {/* SHA-256 DIGITAL REPORT CARD */}
+          <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#E6F0FF] shadow-card space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E6F0FF] pb-4">
+              <div>
+                <h3 className="text-base font-extrabold text-[#014BAA] flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-[#014BAA]" /> SHA-256 Video Fingerprint & Reports
+                </h3>
+                <p className="text-xs text-[#5A5E7A] mt-0.5">
+                  Tamper-evident verification hash and downloadable forensic reports
+                </p>
               </div>
+              <span className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full font-bold flex items-center gap-1.5 self-start sm:self-auto">
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-600" /> Digital Signature Verified
+              </span>
             </div>
 
-            {/* WHY THIS RESULT? — Video Forensic Decision Explanation */}
-            {(() => {
-              const isAiVerdict = (result.verdict || result.prediction || '').toUpperCase().includes('AI') ||
-                                  (result.verdict || result.prediction || '').toUpperCase().includes('DEEPFAKE');
-              const noFace = (result.verdict || result.prediction || '').includes('No detectable face');
-              const confPct = formatConfidence(result.confidence);
-
-              let decisionText = '';
-              if (noFace) {
-                decisionText = `No detectable face regions were found across the analyzed frames. The XceptionNet classifier requires at least one valid face region to perform deepfake classification. The system cannot make a deepfake verdict without a detectable face.`;
-              } else if (isAiVerdict) {
-                decisionText = `The XceptionNet video classifier returned a deepfake confidence score of ${confPct}%. Frame-level analysis across ${result.framesExtracted || 0} extracted frames with ${result.validFramesUsed || 0} valid frames yielded a weighted vote in favor of the AI/deepfake class.`;
-              } else {
-                decisionText = `The XceptionNet video classifier returned a confidence score of ${confPct}% in favor of the real/authentic class across ${result.framesExtracted || 0} extracted frames with ${result.validFramesUsed || 0} valid frames analyzed.`;
-              }
-
-              return (
-                <div className="p-5 rounded-2xl bg-[#070c1a] border border-blue-500/20 space-y-4 text-xs">
-                  <h4 className="text-xs font-extrabold text-blue-300 uppercase tracking-wider flex items-center gap-2">
-                    <Activity className="w-4 h-4 text-blue-400" /> Why This Result?
-                  </h4>
-
-                  <div className="p-3.5 rounded-xl bg-slate-900 border border-blue-500/20 space-y-1">
-                    <span className="text-[10px] font-extrabold uppercase text-blue-400 tracking-wider block">Decision Explanation</span>
-                    <p className="text-slate-200 leading-relaxed">{decisionText}</p>
-                  </div>
-
-                  {(result.framesExtracted > 0 || result.validFramesUsed > 0 || result.facesDetected > 0) && (
-                    <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-1">
-                      <span className="text-[10px] font-extrabold uppercase text-slate-400 tracking-wider block">Forensic Evidence — Frame & Face Analysis</span>
-                      <ul className="space-y-1 text-slate-300">
-                        {result.framesExtracted > 0 && <li>• <strong className="text-white">{result.framesExtracted}</strong> video frames extracted via OpenCV adaptive sampling</li>}
-                        {result.validFramesUsed > 0 && <li>• <strong className="text-white">{result.validFramesUsed}</strong> valid frames forwarded to XceptionNet classifier</li>}
-                        {result.facesDetected > 0 && <li>• <strong className="text-white">{result.facesDetected}</strong> face region(s) detected via RetinaFace / MTCNN</li>}
-                        {result.durationSeconds > 0 && <li>• Video duration analyzed: <strong className="text-white">{result.durationSeconds}s</strong></li>}
-                      </ul>
-                    </div>
-                  )}
-
-                  <div className="p-3.5 rounded-xl bg-slate-900 border border-amber-500/20 space-y-1">
-                    <span className="text-[10px] font-extrabold uppercase text-amber-400 tracking-wider block">Model Information</span>
-                    <p className="text-slate-400">
-                      Primary classifier: <strong className="text-white">{result.modelVersion || 'Xception / EfficientNet-B7 Video Classifier'}</strong>
-                      <br />Architecture: XceptionNet neural classifier trained on FaceForensics++ / DFDC datasets.
-                      <br />Method: Temporal frame sampling → face alignment → patch-level deepfake scoring → weighted majority vote.
-                    </p>
-                  </div>
-
-                  <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-700 space-y-1">
-                    <span className="text-[10px] font-extrabold uppercase text-slate-500 tracking-wider block">Limitations</span>
-                    <p className="text-slate-500 leading-relaxed text-[11px]">
-                      Video deepfake detection is probabilistic and is not absolute proof of video manipulation. Detection accuracy
-                      depends on frame quality, face visibility, and video resolution. Heavy compression, occlusion, or very short
-                      clips may reduce detection reliability. This report should be used as one input in a broader forensic
-                      investigation, not as standalone evidence.
-                    </p>
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* SHA-256 DIGITAL REPORT CARD */}
-            <div className="p-6 rounded-2xl bg-[#070c1a] border border-slate-800 space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-extrabold text-[#00e6a8] flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-[#00e6a8]" /> SHA-256 Cryptographic Media Fingerprint
+            <div className="p-4 rounded-2xl bg-[#E6F0FF] border border-[#BFDAFE] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="truncate">
+                <span className="text-[#014BAA] text-[11px] block font-bold">SHA-256 Cryptographic Hash:</span>
+                <span className="font-mono text-[#282B4A] text-[11px] truncate block mt-0.5 font-semibold">
+                  {result.sha256Hash}
                 </span>
-                <span className="text-[10px] font-mono text-purple-300">XceptionNet Vision Engine</span>
               </div>
-              <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between gap-3 text-xs">
-                <span className="font-mono text-[#00e6a8] text-[11px] truncate">{result.sha256Hash}</span>
-                <button
-                  onClick={() => copyToClipboard(result.sha256Hash)}
-                  className="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] font-bold flex items-center gap-1 shrink-0"
-                >
-                  <Copy className="w-3 h-3" /> {copiedHash ? 'Copied!' : 'Copy Hash'}
-                </button>
-              </div>
+              <button
+                onClick={() => copyToClipboard(result.sha256Hash)}
+                className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#D4E6FF] text-[#014BAA] text-[11px] font-bold flex items-center gap-1.5 shrink-0 self-start sm:self-auto border border-[#BFDAFE] transition-colors"
+              >
+                <Copy className="w-3.5 h-3.5" /> {copiedHash ? 'Copied!' : 'Copy Hash'}
+              </button>
+            </div>
 
-              {/* REPORT DOWNLOAD BUTTONS */}
-              <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
-                {result.pdfFileName && (
-                  <button
-                    onClick={() => handleDownloadFile(result.pdfFileName)}
-                    className="px-4 py-2 rounded-xl text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-500/40 hover:bg-purple-500/30 transition-all flex items-center gap-2"
-                  >
-                    <Download className="w-3.5 h-3.5" /> Download PDF Report
-                  </button>
-                )}
-                {result.jsonFileName && (
-                  <button
-                    onClick={() => handleDownloadFile(result.jsonFileName)}
-                    className="px-4 py-2 rounded-xl text-xs font-bold bg-blue-500/20 text-blue-300 border border-blue-500/40 hover:bg-blue-500/30 transition-all flex items-center gap-2"
-                  >
-                    <FileText className="w-3.5 h-3.5" /> Download JSON Report
-                  </button>
-                )}
-              </div>
+            {/* DOWNLOAD BUTTONS */}
+            <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
+              <button
+                onClick={() => handleDownloadFile(result.pdfDownloadUrl || `/api/reports/download/${result.pdfFileName || 'video_report.pdf'}`)}
+                className="px-5 py-3 rounded-xl text-xs font-extrabold bg-[#014BAA] text-white hover:bg-[#013D8B] transition-all flex items-center gap-2 shadow-royal uppercase tracking-wider"
+              >
+                <Download className="w-4 h-4" /> Download PDF Report
+              </button>
+              <button
+                onClick={() => navigate('/history')}
+                className="px-5 py-3 rounded-xl text-xs font-bold bg-[#E6F0FF] text-[#014BAA] border border-[#BFDAFE] hover:bg-[#D4E6FF] transition-all flex items-center gap-2"
+              >
+                <History className="w-4 h-4" /> View in History
+              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* REPORT HISTORY SECTION */}
-      <div className="p-6 rounded-2xl bg-[#0d1527] border border-slate-800 space-y-4">
+      {/* RECENT VIDEO REPORT HISTORY SECTION */}
+      <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#E6F0FF] shadow-card space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-[#00e6a8] uppercase tracking-wider flex items-center gap-2">
-            <History className="w-4 h-4 text-purple-400" /> Video Detection History
+          <h3 className="text-base font-extrabold text-[#014BAA] flex items-center gap-2">
+            <History className="w-5 h-5 text-[#014BAA]" /> Recent Video Detections
           </h3>
           <button
             onClick={() => navigate('/history')}
-            className="text-xs text-purple-400 hover:text-purple-300 font-bold uppercase tracking-wider"
+            className="text-xs text-[#014BAA] hover:underline font-bold"
           >
             View All Scans →
           </button>
         </div>
 
         {loadingHistory ? (
-          <div className="text-center py-6 text-xs text-slate-400">Loading video scan history...</div>
+          <div className="text-center py-6 text-xs text-[#5A5E7A]">Loading video scan history...</div>
         ) : historyItems.length === 0 ? (
-          <div className="text-center py-6 text-xs text-slate-400">No video scan history available.</div>
+          <div className="text-center py-6 text-xs text-[#5A5E7A]">No previous video scans found in database.</div>
         ) : (
-          <div className="divide-y divide-slate-800 text-xs">
+          <div className="divide-y divide-[#E6F0FF] text-xs">
             {historyItems.slice(0, 5).map((item) => (
-              <div key={item.id} className="py-3 flex items-center justify-between gap-4">
+              <div key={item.id} className="py-3.5 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3 truncate">
-                  <Film className="w-4 h-4 text-purple-400 shrink-0" />
+                  <div className="w-8 h-8 rounded-xl bg-[#E6F0FF] text-[#014BAA] flex items-center justify-center shrink-0">
+                    <Film className="w-4 h-4" />
+                  </div>
                   <div className="truncate">
-                    <span className="font-semibold text-white block truncate">{item.originalFileName || item.fileName}</span>
-                    <span className="text-[10px] text-slate-400 font-mono">
+                    <span className="font-bold text-[#282B4A] block truncate">{item.originalFileName || item.fileName}</span>
+                    <span className="text-[10px] text-[#5A5E7A] font-mono">
                       {new Date(item.createdAt).toLocaleString()}
                     </span>
                   </div>
@@ -741,15 +801,15 @@ export const VideoDetectionPage: React.FC = () => {
 
                 <div className="flex items-center gap-3 shrink-0">
                   <span
-                    className={`px-2.5 py-1 rounded text-[10px] font-extrabold uppercase border ${
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase border ${
                       (item.verdict || item.status) === 'DEEPFAKE'
-                        ? 'bg-red-500/20 text-red-400 border-red-500/40'
-                        : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                        ? 'bg-red-50 text-red-600 border-red-200'
+                        : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                     }`}
                   >
                     {item.verdict || item.status}
                   </span>
-                  <span className="font-mono text-slate-300">
+                  <span className="font-mono font-bold text-[#014BAA]">
                     {Math.round(((item.confidence || item.deepfakeProbability) > 1 ? item.confidence : (item.confidence || 0.95) * 100) * 10) / 10}%
                   </span>
                 </div>

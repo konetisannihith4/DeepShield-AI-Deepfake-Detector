@@ -26,19 +26,20 @@ import { VerifyEmailPage } from './pages/VerifyEmailPage';
 import { VerifyReportPage } from './pages/VerifyReportPage';
 
 const MainLayout: React.FC = () => {
-  const { theme } = useAuth();
-  const isLight = theme === 'light';
+  const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
 
   return (
-    <div className={`min-h-screen flex flex-col font-sans transition-colors duration-200 ${
-      isLight ? 'bg-slate-50 text-slate-900' : 'bg-[#070c1a] text-slate-100'
-    }`}>
-      <Navbar />
+    <div className="min-h-screen flex flex-col font-sans bg-[#F8F3F0] text-[#282B4A] transition-colors duration-200">
+      <Navbar
+        onToggleMobileMenu={() => setMobileMenuOpen((prev) => !prev)}
+        isMobileMenuOpen={mobileMenuOpen}
+      />
       <div className="flex flex-1">
-        <Sidebar />
-        <main className={`flex-1 overflow-y-auto transition-colors duration-200 ${
-          isLight ? 'bg-slate-50' : 'bg-[#050816]'
-        }`}>
+        <Sidebar
+          isMobileMenuOpen={mobileMenuOpen}
+          onCloseMobileMenu={() => setMobileMenuOpen(false)}
+        />
+        <main className="flex-1 overflow-y-auto bg-[#F8F3F0] text-[#282B4A] transition-colors duration-200">
           <Routes>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/upload" element={<UploadPage />} />

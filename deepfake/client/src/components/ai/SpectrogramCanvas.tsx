@@ -68,14 +68,16 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
   }, [spectrogram, height]);
 
   return (
-    <div className="w-full relative rounded-lg overflow-hidden bg-slate-950/80 border border-slate-800 p-3">
+    <div className="w-full relative rounded-2xl overflow-hidden bg-white border border-[#014BAA]/15 shadow-sm p-4">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-semibold text-cyan-400 uppercase tracking-wider">
+        <span className="text-xs font-bold text-[#014BAA] uppercase tracking-wider">
           FFT Spectral Power Density Spectrogram (0-8 kHz)
         </span>
-        <span className="text-[11px] text-slate-400">Heatmap Resolution: 32x16 FFT Bins</span>
+        <span className="text-[11px] font-medium text-[#282B4A]/60">Heatmap Resolution: 32x16 FFT Bins</span>
       </div>
-      <canvas ref={canvasRef} style={{ width: '100%', height: `${height}px` }} />
+      <div className="rounded-xl overflow-hidden border border-[#014BAA]/10">
+        <canvas ref={canvasRef} style={{ width: '100%', height: `${height}px` }} />
+      </div>
     </div>
   );
 };

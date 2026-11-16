@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { apiClient } from '../services/apiClient';
-import { Building2, Key, Copy, Check } from 'lucide-react';
+import { Building2, Key, Copy, Check, Shield } from 'lucide-react';
 
 export const OrganizationsPage: React.FC = () => {
   const [orgs, setOrgs] = useState<any[]>([]);
@@ -15,7 +15,6 @@ export const OrganizationsPage: React.FC = () => {
       const res = await apiClient.get('/organizations');
       if (res.data?.organizations) setOrgs(res.data.organizations);
     } catch (err) {
-      console.warn('Fallback orgs list:', err);
       setOrgs([
         {
           id: 'org-001',
@@ -36,53 +35,62 @@ export const OrganizationsPage: React.FC = () => {
   };
 
   return (
-    <div className="p-8 space-y-8 max-w-7xl mx-auto">
-      <div>
-        <h1 className="text-2xl font-extrabold font-display text-white">Multi-Tenant Organizations</h1>
-        <p className="text-xs text-slate-400 mt-1">Tenant isolation, license scan quotas, and API access keys</p>
+    <div className="p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto font-sans text-[#282B4A]">
+      <div className="rounded-3xl bg-white border border-[#E6F0FF] p-6 sm:p-8 shadow-card">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#E6F0FF] text-[#014BAA] border border-[#BFDAFE] inline-flex items-center gap-1.5">
+            <Building2 className="w-3.5 h-3.5 text-[#014BAA]" />
+            Tenant Management
+          </span>
+        </div>
+        <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-[#014BAA] tracking-tight">
+          Multi-Tenant Organizations & Licenses
+        </h1>
+        <p className="text-xs sm:text-sm text-[#5A5E7A] mt-1.5 max-w-2xl leading-relaxed">
+          Tenant isolation boundaries, monthly quota allocations, and enterprise API access keys.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {orgs.map((org) => (
-          <div key={org.id} className="p-6 rounded-2xl bg-slate-900 border border-slate-800 glass-card space-y-4">
+          <div key={org.id} className="p-6 sm:p-8 rounded-3xl bg-white border border-[#E6F0FF] shadow-card space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-600/15 border border-blue-500/30 text-blue-400 flex items-center justify-center font-bold">
+                <div className="w-10 h-10 rounded-2xl bg-[#E6F0FF] text-[#014BAA] flex items-center justify-center font-bold">
                   <Building2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-white">{org.name}</h3>
-                  <span className="text-[10px] text-blue-400 font-semibold">{org.plan} PLAN</span>
+                  <h3 className="font-bold text-sm text-[#282B4A]">{org.name}</h3>
+                  <span className="text-[10px] text-[#5A5E7A] font-mono">ID: {org.id}</span>
                 </div>
               </div>
-            </div>
-
-            <div className="space-y-2 border-t border-b border-slate-800 py-3 text-xs">
-              <div className="flex justify-between text-slate-300">
-                <span>Monthly Scans Used:</span>
-                <span className="font-mono font-bold text-white">{org.scansUsed} / {org.monthlyScanLimit}</span>
-              </div>
-              <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                <div
-                  className="h-full bg-blue-500 rounded-full"
-                  style={{ width: `${Math.min(100, (org.scansUsed / org.monthlyScanLimit) * 100)}%` }}
-                />
-              </div>
-            </div>
-
-            <div>
-              <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider block mb-1">
-                REST API Authentication Key
+              <span className="px-3 py-1 rounded-full text-[10px] font-extrabold bg-[#E6F0FF] text-[#014BAA] border border-[#BFDAFE] uppercase font-mono">
+                {org.plan}
               </span>
-              <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-slate-300">
-                <Key className="w-3.5 h-3.5 text-blue-400 shrink-0" />
-                <span className="truncate flex-1">{org.apiKey}</span>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-[#F8F3F0] border border-[#E5D8D0] space-y-1">
+              <span className="text-[10px] font-bold text-[#5A5E7A] uppercase block">Enterprise API Key</span>
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="text-[#014BAA] font-semibold truncate max-w-[240px]">{org.apiKey}</span>
                 <button
                   onClick={() => copyToClipboard(org.apiKey)}
-                  className="p-1 rounded bg-slate-800 text-slate-300 hover:text-white"
+                  className="text-[11px] font-bold text-[#014BAA] hover:underline flex items-center gap-1"
                 >
-                  {copiedKey === org.apiKey ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedKey === org.apiKey ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                  <span>{copiedKey === org.apiKey ? 'Copied' : 'Copy'}</span>
                 </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 text-center text-xs font-mono pt-1">
+              <div className="p-3 rounded-2xl bg-white border border-[#E6F0FF]">
+                <span className="text-[10px] text-[#5A5E7A] uppercase block font-semibold">Monthly Quota</span>
+                <span className="text-base font-bold text-[#014BAA]">{org.monthlyScanLimit}</span>
+              </div>
+              <div className="p-3 rounded-2xl bg-white border border-[#E6F0FF]">
+                <span className="text-[10px] text-[#5A5E7A] uppercase block font-semibold">Scans Used</span>
+                <span className="text-base font-bold text-[#282B4A]">{org.scansUsed}</span>
               </div>
             </div>
           </div>

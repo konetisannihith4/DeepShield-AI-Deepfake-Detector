@@ -16,7 +16,8 @@ import {
   Eye,
   FileAudio,
   Lock,
-  Award
+  Award,
+  Sparkles,
 } from 'lucide-react';
 import { apiClient } from '../services/apiClient';
 import { useAuth } from '../context/AuthContext';
@@ -48,8 +49,6 @@ interface ReportStats {
 }
 
 export const ReportsPage: React.FC = () => {
-  const { theme } = useAuth();
-  const isLight = theme === 'light';
   const [reports, setReports] = useState<ForensicReportItem[]>([]);
   const [stats, setStats] = useState<ReportStats>({
     reportsGenerated: 0,
@@ -98,13 +97,8 @@ export const ReportsPage: React.FC = () => {
     try {
       await apiClient.delete(`/reports/${reportName}`);
       setReports((prev) => prev.filter((r) => r.reportName !== reportName));
-      setStats((prev) => ({
-        ...prev,
-        storageUsedCount: Math.max(0, prev.storageUsedCount - 1),
-      }));
     } catch (err: any) {
-      console.error('[Delete Error]:', err);
-      setError('Failed to delete report file.');
+      alert('Failed to delete report.');
     }
   };
 
@@ -116,28 +110,23 @@ export const ReportsPage: React.FC = () => {
         : `${window.location.origin}${downloadUrl.startsWith('/') ? '' : '/'}${downloadUrl}`;
       const urlWithToken = `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}token=${encodeURIComponent(token)}`;
       const response = await fetch(urlWithToken, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (!response.ok) {
-        throw new Error('Unable to download report file.');
+        throw new Error('Server download failed, generating client-side certificate');
       }
 
       const blob = await response.blob();
-      const mimeType = fileName.endsWith('.json') ? 'application/json' : 'application/pdf';
-      const pdfBlob = new Blob([blob], { type: mimeType });
-      const url = window.URL.createObjectURL(pdfBlob);
+      const objectUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
-      link.href = url;
+      link.href = objectUrl;
       link.download = fileName;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      window.URL.revokeObjectURL(objectUrl);
     } catch (err: any) {
-      console.error('[Download Error]:', err);
       if (item && fileName.endsWith('.pdf')) {
         exportPdfCertificate({
           caseId: item.caseId,
@@ -157,8 +146,6 @@ export const ReportsPage: React.FC = () => {
           pdfDownloadUrl: item.pdfDownloadUrl,
           jsonDownloadUrl: item.jsonDownloadUrl,
         });
-      } else {
-        setError('Unable to download report file.');
       }
     }
   };
@@ -185,31 +172,7 @@ export const ReportsPage: React.FC = () => {
       });
       return;
     }
-    try {
-      const token = localStorage.getItem('deepshield_token') || localStorage.getItem('token') || '';
-      const fullUrl = downloadUrl.startsWith('http')
-        ? downloadUrl
-        : `${window.location.origin}${downloadUrl.startsWith('/') ? '' : '/'}${downloadUrl}`;
-      const urlWithToken = `${fullUrl}${fullUrl.includes('?') ? '&' : '?'}inline=true&token=${encodeURIComponent(token)}`;
-      const response = await fetch(urlWithToken, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!response.ok) {
-        throw new Error('Unable to view report PDF.');
-      }
-
-      const blob = await response.blob();
-      const pdfBlob = new Blob([blob], { type: 'application/pdf' });
-      const objectUrl = window.URL.createObjectURL(pdfBlob);
-      window.open(objectUrl, '_blank');
-    } catch (err: any) {
-      console.error('[View PDF Error]:', err);
-      setError('Unable to open PDF report file.');
-    }
   };
-
-  const latestReport = reports.length > 0 ? reports[0] : null;
 
   const filteredReports = reports.filter((item) => {
     const matchesSearch =
@@ -221,305 +184,212 @@ export const ReportsPage: React.FC = () => {
     return matchesSearch && matchesThreat;
   });
 
-  const getThreatBadgeStyle = (level: string) => {
-    switch (level) {
-      case 'CRITICAL':
-        return 'bg-red-500/20 text-red-400 border-red-500/40 glow-red';
-      case 'HIGH':
-        return 'bg-orange-500/20 text-orange-400 border-orange-500/40';
-      case 'MEDIUM':
-        return 'bg-amber-500/20 text-amber-400 border-amber-500/40';
-      case 'MODERATE':
-        return 'bg-blue-500/20 text-blue-400 border-blue-500/40';
-      default:
-        return isLight ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40';
-    }
-  };
-
   return (
-    <div className="p-8 space-y-8 max-w-6xl mx-auto selection:bg-[#5b63f6] selection:text-white font-sans">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto font-sans text-[#282B4A]">
+      {/* Title Header */}
+      <div className="rounded-3xl bg-white border border-[#E6F0FF] p-6 sm:p-8 shadow-card flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className={`text-3xl font-extrabold font-display flex items-center gap-3 ${isLight ? 'text-slate-900' : 'text-white'}`}>
-            <Shield className="w-8 h-8 text-[#5b63f6]" /> Detection History & SHA-256 Digital Reports
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#E6F0FF] text-[#014BAA] border border-[#BFDAFE] inline-flex items-center gap-1.5">
+              <Shield className="w-3.5 h-3.5 text-[#014BAA]" />
+              Digital Evidence Archive
+            </span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-[#014BAA] tracking-tight flex items-center gap-3">
+            <FileText className="w-8 h-8 text-[#014BAA]" /> Detection History & Forensic PDF Reports
           </h1>
-          <p className={`text-xs mt-1 font-medium ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
-            Searchable forensic report archive with cryptographic SHA-256 hash verification & PDF certificates.
+          <p className="text-xs sm:text-sm text-[#5A5E7A] mt-1.5 max-w-2xl leading-relaxed">
+            Searchable forensic report archive with cryptographic SHA-256 hash verification & downloadable PDF certificates.
           </p>
         </div>
         <button
           onClick={fetchReportsData}
-          className={`px-4 py-2 rounded-lg text-xs font-bold flex items-center gap-2 self-start md:self-auto transition-all ${
-            isLight
-              ? 'bg-white hover:bg-slate-100 text-[#5b63f6] border border-slate-200 shadow-sm'
-              : 'bg-[#0f172a] hover:bg-[#131d32] text-[#5b63f6] border border-[#1e2a44]'
-          }`}
+          className="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#E6F0FF] text-[#014BAA] border border-[#BFDAFE] hover:bg-[#D4E6FF] transition-all flex items-center gap-2 self-start md:self-auto shadow-sm"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> Refresh Archive
         </button>
       </div>
 
-      {/* Error Alert */}
       {error && (
-        <div className="p-4 rounded-xl bg-red-500/15 border border-red-500/40 text-xs text-red-300 font-semibold flex items-center justify-between">
+        <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-xs text-red-700 font-semibold flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <AlertTriangle className="w-5 h-5 text-red-400 shrink-0" />
+            <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
             <span>{error}</span>
           </div>
-          <button onClick={() => setError(null)} className="text-[10px] font-bold uppercase px-2 py-1 bg-red-500/20 rounded">Dismiss</button>
+          <button onClick={() => setError(null)} className="text-[10px] font-bold uppercase px-2 py-1 bg-red-100 rounded text-red-800">
+            Dismiss
+          </button>
         </div>
       )}
 
-      {/* 5 Top Statistics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <div className="p-5 rounded-2xl bg-[#0d1527] border border-[#00e6a8]/20 glass-card space-y-2">
+      {/* 5 Statistics Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div className="p-5 rounded-2xl bg-white border border-[#E6F0FF] shadow-card space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400">Reports Generated</span>
-            <FileText className="w-4 h-4 text-[#00e6a8]" />
+            <span className="text-xs font-bold text-[#5A5E7A]">Reports Total</span>
+            <FileText className="w-4 h-4 text-[#014BAA]" />
           </div>
-          <p className="text-2xl font-extrabold text-white font-mono">{stats.reportsGenerated}</p>
-          <span className="text-[10px] text-slate-500 block">Total Forensic Certificates</span>
+          <p className="text-2xl font-extrabold font-mono text-[#014BAA]">{stats.reportsGenerated}</p>
+          <span className="text-[10px] text-[#5A5E7A] block">Verified Certificates</span>
         </div>
 
-        <div className="p-5 rounded-2xl bg-[#0d1527] border border-[#00e6a8]/20 glass-card space-y-2">
+        <div className="p-5 rounded-2xl bg-white border border-[#E6F0FF] shadow-card space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400">Authentic Voices</span>
-            <CheckCircle className="w-4 h-4 text-[#00e6a8]" />
+            <span className="text-xs font-bold text-[#5A5E7A]">Authentic Files</span>
+            <CheckCircle className="w-4 h-4 text-emerald-600" />
           </div>
-          <p className="text-2xl font-extrabold text-[#00e6a8] font-mono">{stats.authenticFiles}</p>
-          <span className="text-[10px] text-slate-500 block">Human Vocal Verified</span>
+          <p className="text-2xl font-extrabold font-mono text-emerald-600">{stats.authenticFiles}</p>
+          <span className="text-[10px] text-emerald-700 block">Natural Specimens</span>
         </div>
 
-        <div className="p-5 rounded-2xl bg-[#0d1527] border border-[#00e6a8]/20 glass-card space-y-2">
+        <div className="p-5 rounded-2xl bg-white border border-[#E6F0FF] shadow-card space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400">AI Voices</span>
-            <AlertTriangle className="w-4 h-4 text-amber-400" />
+            <span className="text-xs font-bold text-[#5A5E7A]">AI Clones</span>
+            <AlertTriangle className="w-4 h-4 text-red-600" />
           </div>
-          <p className="text-2xl font-extrabold text-amber-400 font-mono">{stats.deepfakeFiles}</p>
-          <span className="text-[10px] text-slate-500 block">Synthetic Voice Clones</span>
+          <p className="text-2xl font-extrabold font-mono text-red-600">{stats.deepfakeFiles}</p>
+          <span className="text-[10px] text-red-700 block">Flagged Deepfakes</span>
         </div>
 
-        <div className="p-5 rounded-2xl bg-[#0d1527] border border-[#00e6a8]/20 glass-card space-y-2">
+        <div className="p-5 rounded-2xl bg-white border border-[#E6F0FF] shadow-card space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400">Critical Threats</span>
-            <AlertOctagon className="w-4 h-4 text-red-400" />
+            <span className="text-xs font-bold text-[#5A5E7A]">Critical Threats</span>
+            <AlertOctagon className="w-4 h-4 text-[#B83264]" />
           </div>
-          <p className="text-2xl font-extrabold text-red-400 font-mono">{stats.criticalThreats}</p>
-          <span className="text-[10px] text-slate-500 block">High Risk Intercepts</span>
+          <p className="text-2xl font-extrabold font-mono text-[#B83264]">{stats.criticalThreats}</p>
+          <span className="text-[10px] text-[#5A5E7A] block">High Anomaly Ratio</span>
         </div>
 
-        <div className="p-5 rounded-2xl bg-[#0d1527] border border-[#00e6a8]/20 glass-card space-y-2">
+        <div className="p-5 rounded-2xl bg-white border border-[#E6F0FF] shadow-card space-y-1.5 col-span-2 sm:col-span-1">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400">Storage Used</span>
-            <HardDrive className="w-4 h-4 text-purple-400" />
+            <span className="text-xs font-bold text-[#5A5E7A]">Storage Vault</span>
+            <HardDrive className="w-4 h-4 text-[#014BAA]" />
           </div>
-          <p className="text-xl font-extrabold text-purple-400 font-mono">
-            {stats.storageUsedCount} / {stats.maxStorageLimit} <span className="text-xs text-slate-400 font-normal">Reports</span>
-          </p>
-          <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-            <div
-              className={`h-full transition-all duration-500 ${
-                stats.storageUsedCount >= 14 ? 'bg-red-500' : stats.storageUsedCount >= 10 ? 'bg-amber-500' : 'bg-[#00e6a8]'
-              }`}
-              style={{ width: `${(stats.storageUsedCount / stats.maxStorageLimit) * 100}%` }}
-            />
-          </div>
-          <span className="text-[10px] text-slate-500 block">Automated FIFO Pruning</span>
+          <p className="text-2xl font-extrabold font-mono text-[#282B4A]">{stats.storageUsedCount} / {stats.maxStorageLimit}</p>
+          <span className="text-[10px] text-[#014BAA] block">Retained Reports</span>
         </div>
       </div>
 
-      {/* Latest Report Card */}
-      {latestReport && (
-        <div className="p-6 rounded-2xl bg-[#0d1527] border border-[#00e6a8]/40 glass-card space-y-4 glow-cyan">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-[#00e6a8]/20 border border-[#00e6a8]/40 text-[#00e6a8] flex items-center justify-center shrink-0">
-                <FileAudio className="w-6 h-6" />
-              </div>
-              <div>
-                <span className="text-[10px] uppercase tracking-wider text-[#00e6a8] font-bold block">LATEST SHA-256 DIGITAL REPORT</span>
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  {latestReport.reportName}
-                </h3>
-                <p className="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
-                  <span>Case ID: <span className="font-mono text-slate-200">{latestReport.caseId}</span></span>
-                  <span>•</span>
-                  <span>Specimen: <span className="text-slate-200">{latestReport.fileName}</span></span>
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <span className={`px-3 py-1 rounded-full text-xs font-bold border ${getThreatBadgeStyle(latestReport.threatLevel)}`}>
-                THREAT: {latestReport.threatLevel}
-              </span>
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-bold border ${
-                  latestReport.verdict.toUpperCase().includes('DEEPFAKE') || latestReport.verdict.toUpperCase().includes('AI')
-                    ? 'bg-red-500/20 text-red-400 border-red-500/40'
-                    : 'bg-emerald-500/20 text-[#00e6a8] border-[#00e6a8]/40'
-                }`}
-              >
-                {latestReport.verdict.toUpperCase().includes('DEEPFAKE') || latestReport.verdict.toUpperCase().includes('AI') ? 'AI GENERATED' : 'GENUINE VOICE'} ({latestReport.deepfakeProbability}%)
-              </span>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-xl bg-[#070c1a] border border-slate-800 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-            <div>
-              <span className="text-slate-400 text-[11px] block font-semibold">Cryptographic SHA-256 Verification Hash:</span>
-              <p className="font-mono text-[11px] text-[#00e6a8] break-all mt-0.5">{latestReport.sha256Hash}</p>
-            </div>
-            <div>
-              <span className="text-slate-400 text-[11px] block font-semibold">Timestamp:</span>
-              <p className="text-slate-200 mt-0.5">{new Date(latestReport.createdAt).toLocaleString()}</p>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-2 border-t border-slate-800">
-            <span className="text-xs text-[#00e6a8] font-semibold flex items-center gap-1.5">
-              <CheckCircle className="w-4 h-4 text-[#00e6a8]" /> Digital Certificate Verified & Signed
-            </span>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => handleViewPdfReport(latestReport.pdfDownloadUrl)}
-                className="px-4 py-2 rounded-lg text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all flex items-center gap-2"
-              >
-                <Eye className="w-4 h-4 text-[#00e6a8]" /> View PDF Report
-              </button>
-              <button
-                onClick={() => handleDownloadFile(latestReport.pdfDownloadUrl, latestReport.reportName)}
-                className="px-5 py-2 rounded-lg text-xs font-extrabold bg-[#00e6a8] text-[#070c1a] hover:bg-[#36d399] transition-all flex items-center gap-2 glow-cyan uppercase tracking-wider"
-              >
-                <Download className="w-4 h-4" /> Download PDF Certificate
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Detection History Table Section */}
-      <div className="p-6 rounded-2xl bg-[#0d1527] border border-[#00e6a8]/20 glass-card space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h3 className="text-lg font-extrabold text-white flex items-center gap-2">
-              <Layers className="w-5 h-5 text-[#00e6a8]" /> Detection History Archive
-            </h3>
-            <p className="text-xs text-slate-400 mt-0.5">Searchable history table with SHA-256 fingerprint verification</p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search Case ID, Filename, SHA-256..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-9 pr-4 py-2 bg-[#070c1a] border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-[#00e6a8] w-64"
-              />
-            </div>
-
-            <select
-              value={threatFilter}
-              onChange={(e) => setThreatFilter(e.target.value)}
-              className="px-3 py-2 bg-[#070c1a] border border-slate-800 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-[#00e6a8]"
-            >
-              <option value="ALL">All Threat Levels</option>
-              <option value="CRITICAL">Critical</option>
-              <option value="HIGH">High</option>
-              <option value="MEDIUM">Medium</option>
-              <option value="MODERATE">Moderate</option>
-              <option value="LOW">Low</option>
-            </select>
-          </div>
+      {/* Search & Filter */}
+      <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+        <div className="relative w-full sm:w-96">
+          <Search className="w-4 h-4 absolute left-3.5 top-3 text-[#5A5E7A]" />
+          <input
+            type="text"
+            placeholder="Search report name, case ID, filename..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl text-xs font-semibold bg-white border border-[#E6F0FF] text-[#282B4A] placeholder-[#888DAA] focus:border-[#014BAA] shadow-card transition-all"
+          />
         </div>
 
-        {/* Table */}
+        <select
+          value={threatFilter}
+          onChange={(e) => setThreatFilter(e.target.value)}
+          className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs font-bold bg-white border border-[#E6F0FF] text-[#282B4A] focus:border-[#014BAA] shadow-card transition-all"
+        >
+          <option value="ALL">All Threat Levels</option>
+          <option value="CRITICAL">Critical Threats</option>
+          <option value="HIGH">High Threats</option>
+          <option value="MEDIUM">Medium Threats</option>
+          <option value="LOW">Low Threats</option>
+        </select>
+      </div>
+
+      {/* Reports Table */}
+      <div className="rounded-3xl bg-white border border-[#E6F0FF] shadow-card overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-slate-800 text-slate-400 uppercase tracking-wider text-[10px]">
-                <th className="py-3 px-4">Case ID</th>
-                <th className="py-3 px-4">Filename</th>
-                <th className="py-3 px-4">Verdict</th>
-                <th className="py-3 px-4">Threat</th>
-                <th className="py-3 px-4">Confidence</th>
-                <th className="py-3 px-4">Date</th>
-                <th className="py-3 px-4">SHA-256 Hash</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+              <tr className="bg-[#E6F0FF] text-[#014BAA] font-extrabold uppercase tracking-wider text-[11px] border-b border-[#BFDAFE]">
+                <th className="py-3.5 px-4">Case ID</th>
+                <th className="py-3.5 px-4">File Specimen</th>
+                <th className="py-3.5 px-4">Verdict</th>
+                <th className="py-3.5 px-4">Threat</th>
+                <th className="py-3.5 px-4">Confidence</th>
+                <th className="py-3.5 px-4">Generated Date</th>
+                <th className="py-3.5 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
-              {filteredReports.length === 0 ? (
+            <tbody className="divide-y divide-[#E6F0FF]">
+              {loading ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-slate-500 text-xs">
-                    No detection history records found.
+                  <td colSpan={7} className="py-12 text-center text-[#5A5E7A] text-xs">
+                    <div className="flex items-center justify-center gap-2">
+                      <RefreshCw className="w-5 h-5 animate-spin text-[#014BAA]" />
+                      <span>Loading forensic reports...</span>
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredReports.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-12 text-center text-[#5A5E7A] text-xs">
+                    No reports match your search query.
                   </td>
                 </tr>
               ) : (
-                filteredReports.map((item) => (
-                  <tr key={item.reportName} className="hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3 px-4 font-mono font-bold text-[#00e6a8]">{item.caseId}</td>
-                    <td className="py-3 px-4 font-medium text-white max-w-xs truncate">{item.fileName}</td>
-                    <td className="py-3 px-4">
-                      <span
-                        className={`px-2.5 py-0.5 rounded text-[10px] font-bold ${
-                          item.verdict.toUpperCase().includes('DEEPFAKE') || item.verdict.toUpperCase().includes('AI')
-                            ? 'bg-red-500/20 text-red-400'
-                            : 'bg-emerald-500/20 text-[#00e6a8]'
-                        }`}
-                      >
-                        {item.verdict.toUpperCase().includes('DEEPFAKE') || item.verdict.toUpperCase().includes('AI') ? 'AI GENERATED' : 'GENUINE'}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4">
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${getThreatBadgeStyle(item.threatLevel)}`}>
-                        {item.threatLevel}
-                      </span>
-                    </td>
-                    <td className="py-3 px-4 font-semibold text-slate-200 font-mono">{item.deepfakeProbability}%</td>
-                    <td className="py-3 px-4 text-slate-400 text-[11px]">
-                      {new Date(item.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="py-3 px-4 font-mono text-[10px] text-[#00e6a8]/80 max-w-[140px] truncate" title={item.sha256Hash}>
-                      {item.sha256Hash.slice(0, 14)}...
-                    </td>
-                    <td className="py-3 px-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => handleViewPdfReport(item.pdfDownloadUrl)}
-                          title="View PDF Report"
-                          className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[#00e6a8] border border-slate-700 transition-all"
+                filteredReports.map((report) => {
+                  const isAi = report.verdict.toUpperCase().includes('AI') || report.verdict.toUpperCase().includes('DEEPFAKE');
+                  return (
+                    <tr key={report.reportId} className="hover:bg-[#F8F3F0] transition-colors">
+                      <td className="py-3.5 px-4 font-mono font-bold text-[#014BAA]">{report.caseId}</td>
+                      <td className="py-3.5 px-4 font-semibold text-[#282B4A] max-w-[200px] truncate" title={report.fileName}>
+                        {report.fileName}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase border ${
+                            isAi
+                              ? 'bg-red-50 text-red-600 border-red-200'
+                              : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          }`}
                         >
-                          <Eye className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDownloadFile(item.pdfDownloadUrl, item.reportName)}
-                          title="Download PDF Forensic Certificate"
-                          className="p-1.5 rounded-lg bg-[#00e6a8]/20 hover:bg-[#00e6a8]/30 text-[#00e6a8] border border-[#00e6a8]/40 transition-all"
-                        >
-                          <Download className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDownloadFile(item.jsonDownloadUrl, `${item.caseId}_report.json`)}
-                          title="Download JSON Report"
-                          className="p-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 border border-amber-500/30 transition-all"
-                        >
-                          <FileCode className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteReport(item.reportName)}
-                          title="Delete Report"
-                          className="p-1.5 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 transition-all"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                          {report.verdict}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase border ${
+                          report.threatLevel === 'CRITICAL' || report.threatLevel === 'HIGH'
+                            ? 'bg-red-50 text-red-700 border-red-200'
+                            : report.threatLevel === 'MEDIUM' || report.threatLevel === 'MODERATE'
+                            ? 'bg-amber-50 text-amber-700 border-amber-200'
+                            : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        }`}>
+                          {report.threatLevel}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-4 font-mono font-bold text-[#282B4A]">{report.confidence}%</td>
+                      <td className="py-3.5 px-4 text-[#5A5E7A] text-[11px] whitespace-nowrap">
+                        {new Date(report.createdAt).toLocaleDateString()}
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => handleViewPdfReport(report.pdfDownloadUrl, report)}
+                            className="p-1.5 rounded-lg bg-[#E6F0FF] text-[#014BAA] hover:bg-[#D4E6FF] transition-all"
+                            title="View PDF Report"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDownloadFile(report.pdfDownloadUrl, report.reportName, report)}
+                            className="p-1.5 rounded-lg bg-[#014BAA] text-white hover:bg-[#013D8B] transition-all shadow-xs"
+                            title="Download PDF Certificate"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteReport(report.reportName)}
+                            className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-all border border-red-100"
+                            title="Delete Report"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

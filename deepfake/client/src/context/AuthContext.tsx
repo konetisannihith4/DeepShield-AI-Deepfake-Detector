@@ -51,7 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [theme, setThemeState] = useState<'dark' | 'light'>(() => {
     const saved = localStorage.getItem('deepshield_theme');
-    return saved === 'light' || saved === 'dark' ? saved : 'dark';
+    return saved === 'dark' ? 'dark' : 'light';
   });
 
   // Synchronize Theme to localStorage & DOM documentElement

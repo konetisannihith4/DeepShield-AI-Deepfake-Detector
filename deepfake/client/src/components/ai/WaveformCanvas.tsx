@@ -28,8 +28,12 @@ export const WaveformCanvas: React.FC<WaveformCanvasProps> = ({
 
     ctx.clearRect(0, 0, width, height);
 
+    // Draw Light Cream Canvas Background
+    ctx.fillStyle = '#F8F3F0';
+    ctx.fillRect(0, 0, width, height);
+
     // Draw Background Grid
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+    ctx.strokeStyle = 'rgba(1, 75, 170, 0.1)';
     ctx.lineWidth = 1;
     for (let x = 0; x < width; x += 40) {
       ctx.beginPath();
@@ -48,7 +52,7 @@ export const WaveformCanvas: React.FC<WaveformCanvasProps> = ({
       const endX = (seg.endTime / durationSeconds) * width;
       const segWidth = Math.max(10, endX - startX);
 
-      ctx.fillStyle = 'rgba(239, 68, 68, 0.25)';
+      ctx.fillStyle = 'rgba(239, 68, 68, 0.2)';
       ctx.fillRect(startX, 0, segWidth, height);
       ctx.strokeStyle = 'rgba(239, 68, 68, 0.8)';
       ctx.lineWidth = 1;
@@ -69,22 +73,24 @@ export const WaveformCanvas: React.FC<WaveformCanvasProps> = ({
         return timeAtBar >= seg.startTime && timeAtBar <= seg.endTime;
       });
 
-      ctx.fillStyle = isAnomaly ? '#ef4444' : '#3b82f6';
+      ctx.fillStyle = isAnomaly ? '#ef4444' : '#014BAA';
       ctx.fillRect(x + 1, centerY - barHeight, Math.max(2, barWidth - 2), barHeight * 2);
     });
   }, [waveform, height, syntheticSegments, durationSeconds]);
 
   return (
-    <div className="w-full relative rounded-lg overflow-hidden bg-slate-950/80 border border-slate-800 p-3">
+    <div className="w-full relative rounded-2xl overflow-hidden bg-white border border-[#014BAA]/15 shadow-sm p-4">
       <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-semibold text-blue-400 uppercase tracking-wider">
+        <span className="text-xs font-bold text-[#014BAA] uppercase tracking-wider">
           Audio Amplitude Waveform (Time Domain)
         </span>
-        <span className="text-[11px] text-slate-400">
+        <span className="text-[11px] font-medium text-[#282B4A]/60">
           Duration: {durationSeconds}s | Samples: {waveform.length}
         </span>
       </div>
-      <canvas ref={canvasRef} style={{ width: '100%', height: `${height}px` }} />
+      <div className="rounded-xl overflow-hidden border border-[#014BAA]/10">
+        <canvas ref={canvasRef} style={{ width: '100%', height: `${height}px` }} />
+      </div>
     </div>
   );
 };

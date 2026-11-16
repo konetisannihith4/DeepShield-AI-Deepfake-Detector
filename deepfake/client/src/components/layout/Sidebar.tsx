@@ -17,20 +17,26 @@ import {
   Sliders,
   Shield,
   FolderCheck,
+  X,
+  Sparkles,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-export const Sidebar: React.FC = () => {
-  const { user, theme } = useAuth();
+interface SidebarProps {
+  isMobileMenuOpen?: boolean;
+  onCloseMobileMenu?: () => void;
+}
+
+export const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen, onCloseMobileMenu }) => {
+  const { user } = useAuth();
   const isAdmin = user?.role === 'ADMIN';
-  const isLight = theme === 'light';
 
   // Standard Analyst / User Navigation Items
-  const standardNavItems: Array<{ label: string; path: string; icon: any }> = [
+  const standardNavItems: Array<{ label: string; path: string; icon: any; badge?: string; badgeColor?: string }> = [
     { label: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { label: 'Audio Detector', path: '/upload', icon: Mic },
-    { label: 'Image Detection', path: '/image-detection', icon: ImageIcon },
-    { label: 'Video Detection', path: '/video-detection', icon: Film },
+    { label: 'Image Detection', path: '/image-detection', icon: ImageIcon, badge: 'AI Vision', badgeColor: 'bg-[#F4B6CC] text-[#282B4A]' },
+    { label: 'Video Detection', path: '/video-detection', icon: Film, badge: 'Xception', badgeColor: 'bg-[#E6F0FF] text-[#014BAA]' },
+    { label: 'Voice Detection', path: '/upload', icon: Mic, badge: 'WavLM', badgeColor: 'bg-[#E6F0FF] text-[#014BAA]' },
     { label: 'Detection Analytics', path: '/detection-analytics', icon: PieChart },
     { label: 'Scan Archive', path: '/history', icon: History },
     { label: 'Forensic PDF Reports', path: '/reports', icon: FileText },
@@ -43,51 +49,75 @@ export const Sidebar: React.FC = () => {
     { label: 'User Directory', path: '/users', icon: Users },
     { label: 'Organizations', path: '/organizations', icon: Building2 },
     { label: 'Audit Log Stream', path: '/audit-logs', icon: ShieldCheck },
-    { label: 'WavLM Model Specs', path: '/model-details', icon: Cpu },
+    { label: 'Model Specs', path: '/model-details', icon: Cpu },
     { label: 'System Settings', path: '/system-settings', icon: Sliders },
   ];
 
-  return (
-    <aside
-      className={`w-64 border-r p-6 flex flex-col justify-between shrink-0 min-h-[calc(100vh-4rem)] select-none transition-colors duration-200 z-10 font-sans ${
-        isLight
-          ? 'bg-white border-slate-200 text-slate-900 shadow-sm'
-          : 'bg-[#0b1120] border-[#1e2a44] text-white'
-      }`}
-    >
-      <div className="flex flex-col gap-6">
-        {/* Brand Header */}
-        <div className="flex items-center gap-3 px-2">
-          <div className="w-9 h-9 rounded-full bg-[#5b63f6] flex items-center justify-center text-white shadow-md shadow-[#5b63f6]/30">
-            <Shield className="w-5 h-5 fill-white text-[#5b63f6]" />
+  const sidebarContent = (
+    <div className="flex flex-col justify-between h-full select-none font-sans">
+      <div className="flex flex-col gap-4">
+        {/* Mobile Header with Close Button */}
+        <div className="flex items-center justify-between md:hidden pb-3 border-b border-[#E6F0FF]">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-[#014BAA] text-white flex items-center justify-center font-bold shadow-sm">
+              <Shield className="w-4 h-4 fill-white" />
+            </div>
+            <div>
+              <span className="font-display font-extrabold text-base tracking-tight text-[#014BAA]">
+                TRUEVISION
+              </span>
+              <span className="text-[9px] uppercase tracking-wider block font-bold text-[#5A5E7A] -mt-0.5">
+                DEEPSHIELD AI
+              </span>
+            </div>
           </div>
-          <span className={`text-xl font-black tracking-tight font-display ${isLight ? 'text-slate-900' : 'text-white'}`}>
-            DeepShield
+          <button
+            onClick={onCloseMobileMenu}
+            className="p-2 rounded-xl bg-[#E6F0FF] text-[#014BAA] hover:bg-[#D4E6FF] transition-all"
+            aria-label="Close navigation menu"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Section Label: Multi-Modal Detection Suite */}
+        <div className="px-2 pt-1">
+          <span className="text-[10px] font-black uppercase tracking-wider text-[#014BAA] bg-[#E6F0FF] px-2.5 py-1 rounded-full inline-block">
+            Detection Modules & Tools
           </span>
         </div>
 
-        {/* Navigation Items */}
-        <div className="flex flex-col gap-1.5 mt-2">
+        {/* Navigation Items List */}
+        <div className="flex flex-col gap-1">
           {standardNavItems.map((item) => {
             const Icon = item.icon;
             return (
               <NavLink
                 key={item.path}
                 to={item.path}
+                onClick={onCloseMobileMenu}
                 className={({ isActive }) =>
-                  `flex items-center gap-3.5 px-4 py-3 rounded-[16px] text-sm font-semibold transition-all duration-200 ${
+                  `flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 min-h-[44px] ${
                     isActive
-                      ? 'bg-[#5b63f6] text-white shadow-lg shadow-[#5b63f6]/25 scale-[1.01]'
-                      : isLight
-                      ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 font-bold'
-                      : 'text-slate-300 hover:text-white hover:bg-[#1e2a44]/60 font-semibold'
+                      ? 'bg-[#014BAA] text-white shadow-md shadow-[#014BAA]/25 scale-[1.01]'
+                      : 'text-[#282B4A] hover:text-[#014BAA] hover:bg-[#E6F0FF] font-medium'
                   }`
                 }
               >
                 {({ isActive }) => (
                   <>
-                    <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-white' : isLight ? 'text-slate-600' : 'text-slate-400'}`} />
-                    <span className="truncate">{item.label}</span>
+                    <div className="flex items-center gap-3 truncate">
+                      <Icon className={`w-4 h-4 sm:w-5 sm:h-5 shrink-0 ${isActive ? 'text-white' : 'text-[#014BAA]'}`} />
+                      <span className="truncate">{item.label}</span>
+                    </div>
+                    {item.badge && !isActive && (
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0 ${item.badgeColor}`}>
+                        {item.badge}
+                      </span>
+                    )}
+                    {isActive && (
+                      <span className="w-2 h-2 rounded-full bg-[#F4B6CC] shrink-0" />
+                    )}
                   </>
                 )}
               </NavLink>
@@ -96,8 +126,8 @@ export const Sidebar: React.FC = () => {
 
           {/* Admin System Section */}
           {isAdmin && (
-            <div className={`flex flex-col gap-1.5 pt-4 mt-2 border-t ${isLight ? 'border-slate-200' : 'border-[#1e2a44]'}`}>
-              <span className={`text-[11px] font-extrabold uppercase tracking-wider px-4 mb-1 ${isLight ? 'text-slate-600' : 'text-slate-400'}`}>
+            <div className="flex flex-col gap-1 pt-3 mt-2 border-t border-[#E6F0FF]">
+              <span className="text-[10px] font-extrabold uppercase tracking-wider px-3 mb-1 text-[#5A5E7A]">
                 Administration
               </span>
               {adminNavItems.map((item) => {
@@ -106,19 +136,18 @@ export const Sidebar: React.FC = () => {
                   <NavLink
                     key={item.path}
                     to={item.path}
+                    onClick={onCloseMobileMenu}
                     className={({ isActive }) =>
-                      `flex items-center gap-3.5 px-4 py-3 rounded-[16px] text-sm font-semibold transition-all duration-200 ${
+                      `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 min-h-[44px] ${
                         isActive
-                          ? 'bg-[#5b63f6] text-white shadow-lg shadow-[#5b63f6]/25 scale-[1.01]'
-                          : isLight
-                          ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-100 font-bold'
-                          : 'text-slate-300 hover:text-white hover:bg-[#1e2a44]/60 font-semibold'
+                          ? 'bg-[#014BAA] text-white shadow-md shadow-[#014BAA]/25 scale-[1.01]'
+                          : 'text-[#282B4A] hover:text-[#014BAA] hover:bg-[#E6F0FF] font-medium'
                       }`
                     }
                   >
                     {({ isActive }) => (
                       <>
-                        <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-white' : isLight ? 'text-slate-600' : 'text-slate-400'}`} />
+                        <Icon className={`w-4 h-4 sm:w-5 sm:h-5 shrink-0 ${isActive ? 'text-white' : 'text-[#014BAA]'}`} />
                         <span className="truncate">{item.label}</span>
                       </>
                     )}
@@ -130,32 +159,49 @@ export const Sidebar: React.FC = () => {
         </div>
       </div>
 
-      {/* Bottom 3D Folder Illustration Widget */}
-      <div
-        className={`relative mt-8 p-4 rounded-2xl flex items-center gap-3 overflow-hidden transition-colors duration-200 border ${
-          isLight
-            ? 'bg-slate-50 border-slate-200 text-slate-900 shadow-sm'
-            : 'bg-[#050816] border-[#1e2a44] text-white'
-        }`}
-      >
-        <div className="relative z-10 flex items-center gap-3">
-          <div className="relative w-12 h-12 shrink-0 flex items-center justify-center">
-            <div className="absolute inset-0 bg-[#5b63f6]/20 rounded-xl transform -rotate-6 scale-95" />
-            <div className="absolute inset-0 bg-[#818cf8] rounded-xl transform rotate-3 scale-95 opacity-80" />
-            <div className="relative w-10 h-10 bg-gradient-to-tr from-[#5b63f6] to-[#818cf8] rounded-xl flex items-center justify-center shadow-md shadow-[#5b63f6]/30 text-white">
-              <FolderCheck className="w-5 h-5" />
-            </div>
+      {/* Bottom Protected Vault Widget */}
+      <div className="mt-6 p-3.5 rounded-2xl bg-[#E6F0FF] border border-[#BFDAFE] flex items-center gap-3 transition-colors">
+        <div className="relative w-10 h-10 shrink-0 flex items-center justify-center">
+          <div className="w-9 h-9 rounded-xl bg-[#014BAA] text-white flex items-center justify-center shadow-sm">
+            <FolderCheck className="w-5 h-5 text-white" />
           </div>
-          <div>
-            <span className={`text-xs font-bold block ${isLight ? 'text-slate-900' : 'text-white'}`}>
-              Protected Vault
-            </span>
-            <span className={`text-[11px] font-semibold block ${isLight ? 'text-slate-600' : 'text-slate-300'}`}>
-              Multi-Modal AI Security
-            </span>
-          </div>
+          <span className="absolute -top-1 -right-1 w-3 h-3 bg-[#F4B6CC] rounded-full border-2 border-white" />
+        </div>
+        <div className="truncate">
+          <span className="text-xs font-bold block text-[#014BAA] truncate">
+            Protected Vault Active
+          </span>
+          <span className="text-[10px] font-semibold block text-[#5A5E7A] truncate">
+            Multi-Modal Defense 2.0
+          </span>
         </div>
       </div>
-    </aside>
+    </div>
+  );
+
+  return (
+    <>
+      {/* Desktop Persistent Sidebar */}
+      <aside className="hidden md:flex flex-col w-64 bg-white border-r border-[#E6F0FF] p-5 shrink-0 min-h-[calc(100vh-4rem)] shadow-card z-10 transition-colors">
+        {sidebarContent}
+      </aside>
+
+      {/* Mobile Backdrop & Drawer */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          {/* Backdrop overlay */}
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+            onClick={onCloseMobileMenu}
+            aria-hidden="true"
+          />
+
+          {/* Slide-out Drawer */}
+          <div className="relative w-72 max-w-[85vw] bg-white h-full p-5 shadow-2xl z-10 flex flex-col overflow-y-auto animate-in slide-in-from-left duration-200">
+            {sidebarContent}
+          </div>
+        </div>
+      )}
+    </>
   );
 };

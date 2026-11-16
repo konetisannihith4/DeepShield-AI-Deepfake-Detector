@@ -34,14 +34,14 @@ export const ConfidenceRiskMeter: React.FC<ConfidenceRiskMeterProps> = ({
   const strokeDashoffset = strokeDasharray - (strokeDasharray * percentage) / 100;
 
   return (
-    <div className="flex flex-col items-center justify-center p-6 rounded-xl bg-slate-900/90 border border-slate-800 glass-card shadow-xl">
+    <div className="flex flex-col items-center justify-center p-6 rounded-2xl bg-white border border-[#014BAA]/15 shadow-sm">
       <div className="relative w-44 h-44 flex items-center justify-center">
         <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
           <circle
             cx="50"
             cy="50"
             r="45"
-            className="text-slate-800"
+            className="text-[#E6F0FF]"
             strokeWidth="8"
             stroke="currentColor"
             fill="transparent"
@@ -61,10 +61,10 @@ export const ConfidenceRiskMeter: React.FC<ConfidenceRiskMeterProps> = ({
         </svg>
 
         <div className="absolute flex flex-col items-center justify-center text-center">
-          <span className="text-4xl font-extrabold font-display text-white tracking-tight">
+          <span className="text-4xl font-extrabold font-display text-[#282B4A] tracking-tight">
             {percentage}%
           </span>
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mt-1">
+          <span className="text-[10px] font-bold text-[#014BAA] uppercase tracking-wider mt-1">
             Deepfake Probability
           </span>
         </div>
@@ -82,10 +82,10 @@ export const ConfidenceRiskMeter: React.FC<ConfidenceRiskMeterProps> = ({
           <span className="text-xs font-bold uppercase tracking-wider">{riskLevel} RISK</span>
         </div>
 
-        <div className="text-xs text-slate-400 flex items-center gap-3 mt-1">
-          <span>Certainty: <strong className="text-slate-200">{confidence}%</strong></span>
+        <div className="text-xs text-[#282B4A]/70 flex items-center gap-3 mt-1">
+          <span>Certainty: <strong className="text-[#282B4A]">{confidence}%</strong></span>
           <span>•</span>
-          <span>Verdict: <strong className="text-slate-200">{status}</strong></span>
+          <span>Verdict: <strong className="text-[#014BAA]">{status}</strong></span>
         </div>
       </div>
     </div>

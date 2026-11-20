@@ -1,0 +1,12 @@
+{
+  "name": "deepshield-ai-detector-root",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build:server": "cd deepfake/server && npm install && npm run build",
+    "start:server": "cd deepfake/server && npm start",
+    "build:client": "cd deepfake/client && npm install && npm run build",
+    "build": "cd deepfake/server && npm install && npm run build",
+    "start": "cd deepfake/server && npm start"
+  }
+}

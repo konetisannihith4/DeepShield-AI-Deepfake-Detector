@@ -42,6 +42,7 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/api', apiRouter);
+app.use(apiRouter);
 
 // Centralized Error Handler
 app.use(errorHandler);

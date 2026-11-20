@@ -156,10 +156,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         organizationName: organizationName?.trim() || undefined,
       });
 
+      const requiresOtp = res.data?.requiresOtp ?? true;
+      if (res.data?.token && res.data?.user) {
+        localStorage.setItem('deepshield_token', res.data.token);
+        if (res.data.refreshToken) {
+          localStorage.setItem('deepshield_refresh_token', res.data.refreshToken);
+        }
+        setToken(res.data.token);
+        setUser(res.data.user);
+      }
+
       return {
-        requiresOtp: true,
+        requiresOtp,
         email: res.data?.email || email,
-        message: res.data?.message || 'Account created. Enter the 6-digit OTP sent to your email.',
+        message: res.data?.message || 'Account created successfully.',
         emailDelivered: res.data?.emailDelivered,
       };
     } catch (err: any) {

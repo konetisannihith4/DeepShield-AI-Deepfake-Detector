@@ -147,7 +147,10 @@ export class AuthController {
       // Hash password securely with bcrypt
       const passwordHash = await bcrypt.hash(data.password, 10);
 
-      // Create unverified user account
+      // Check if SMTP is configured
+      const smtpConfigured = EmailService.isConfigured();
+
+      // Create user account - auto-verified if no SMTP provider configured
       const user = await prisma.user.create({
         data: {
           email: data.email,
@@ -155,9 +158,54 @@ export class AuthController {
           fullName: data.fullName,
           role: Role.ANALYST,
           organizationId: org.id,
-          isEmailVerified: false,
+          isEmailVerified: !smtpConfigured,
         },
       });
+
+      if (!smtpConfigured) {
+        // Issue tokens immediately for instant password access
+        const token = jwt.sign(
+          {
+            id: user.id,
+            email: user.email,
+            fullName: user.fullName,
+            role: user.role,
+            organizationId: user.organizationId,
+          },
+          ENV.JWT_SECRET,
+          { expiresIn: ENV.JWT_EXPIRES_IN as any }
+        );
+
+        const refreshToken = jwt.sign(
+          { id: user.id, jti: `${Date.now()}-${crypto.randomBytes(8).toString('hex')}` },
+          ENV.JWT_REFRESH_SECRET,
+          { expiresIn: ENV.JWT_REFRESH_EXPIRES_IN as any }
+        );
+
+        await prisma.refreshToken.create({
+          data: {
+            token: refreshToken,
+            userId: user.id,
+            expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          },
+        });
+
+        return res.status(201).json({
+          success: true,
+          requiresOtp: false,
+          token,
+          refreshToken,
+          user: {
+            id: user.id,
+            email: user.email,
+            fullName: user.fullName,
+            role: user.role,
+            organizationId: user.organizationId,
+            organizationName: org.name,
+          },
+          message: 'Account created and verified successfully.',
+        });
+      }
 
       // Generate and dispatch 6-digit OTP
       const otpResult = await generateAndSendOtp(user.email, user.fullName, 'SIGNUP');
@@ -344,15 +392,23 @@ export class AuthController {
         throw new AppError('Invalid email or password', 401);
       }
 
-      // If email is not yet verified, send an OTP for verification
+      // If email is not yet verified, check if SMTP is configured
       if (!user.isEmailVerified) {
-        await generateAndSendOtp(user.email, user.fullName, 'SIGNUP');
-        return res.status(403).json({
-          success: false,
-          requiresOtp: true,
-          email: user.email,
-          message: 'Please verify your email address. A 6-digit OTP code has been sent.',
-        });
+        if (!EmailService.isConfigured()) {
+          // Auto-verify on valid credentials when SMTP is unconfigured
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { isEmailVerified: true },
+          });
+        } else {
+          await generateAndSendOtp(user.email, user.fullName, 'SIGNUP');
+          return res.status(403).json({
+            success: false,
+            requiresOtp: true,
+            email: user.email,
+            message: 'Please verify your email address. A 6-digit OTP code has been sent.',
+          });
+        }
       }
 
       // Generate JWT Access & Refresh Tokens
@@ -405,6 +461,13 @@ export class AuthController {
    */
   public static async requestLoginOtp(req: Request, res: Response, next: NextFunction) {
     try {
+      if (!EmailService.isConfigured()) {
+        return res.status(400).json({
+          success: false,
+          error: 'Email OTP is not configured on this cloud instance. Please switch to "Password Sign In".',
+        });
+      }
+
       const data = requestOtpSchema.parse({ ...req.body, purpose: 'LOGIN' });
 
       const user = await prisma.user.findUnique({

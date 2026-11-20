@@ -112,9 +112,7 @@ export const RegisterPage: React.FC = () => {
         setResendCooldown(60);
         setCanResend(false);
       } else {
-        navigate('/login', {
-          state: { message: 'Registration complete! You may now sign in with your credentials.' },
-        });
+        navigate('/dashboard', { replace: true });
       }
     } catch (err: any) {
       setError(err.message || 'Registration failed. Check details and retry.');

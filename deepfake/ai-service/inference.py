@@ -79,7 +79,7 @@ class LocalAudioDeepfakeDetector:
 
         except Exception as e:
             print(f"[AI Service ERROR]: Model initialization failed: {e}")
-            raise RuntimeError(f"Failed to load local model weights: {e}")
+            self.is_ready = False
 
     def predict(self, file_bytes: bytes, filename: str = "user_upload.wav") -> dict:
         if not self.is_ready or self.model is None:

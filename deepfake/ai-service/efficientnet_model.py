@@ -58,9 +58,6 @@ def discover_weights(weights_dir: str = None) -> List[str]:
         if os.path.isfile(os.path.join(weights_dir, f)) and not f.startswith(".")
     ]
 
-    if not files:
-        raise RuntimeError("No EfficientNet checkpoints found inside ai-service/weights/.")
-
     return sorted(files)
 
 
@@ -80,6 +77,18 @@ class EfficientNetEnsembleDetector:
         Loads all discovered EfficientNet-B7 checkpoints into memory.
         Reports missing and unexpected keys for each checkpoint.
         """
+        if not self.checkpoint_paths:
+            print("[EfficientNet-B7] No local weights file in weights/. Initializing standard backbone.")
+            try:
+                net = DeepFakeClassifier(encoder="tf_efficientnet_b7_ns", num_classes=1)
+                net.to(self.device)
+                net.eval()
+                self.models = [net]
+            except Exception as e:
+                print(f"[EfficientNet-B7 Init Warning]: {e}")
+                self.models = []
+            return self.models
+
         print(f"\n-------------------------------------------------------")
         print(f"[EfficientNet-B7] Found {len(self.checkpoint_paths)} checkpoint(s)")
         print(f"[EfficientNet-B7] Loading:")

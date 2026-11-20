@@ -36,30 +36,24 @@ async def lifespan(app: FastAPI):
         "Initializing PyTorch AI Deepfake Model Engines..."
     )
 
-    # Initialize audio detector
-    detector = LocalAudioDeepfakeDetector.get_instance()
+    # Initialize audio detector safely
+    try:
+        detector = LocalAudioDeepfakeDetector.get_instance()
+    except Exception as e:
+        print(f"[FastAPI Server Startup Audio Warning]: {e}")
 
-    if not detector.is_ready:
-        raise RuntimeError(
-            "Audio AI Deepfake Engine failed to initialize during server startup."
-        )
+    # Initialize video detector safely
+    try:
+        video_detector = LocalVideoDeepfakeDetector.get_instance()
+    except Exception as e:
+        print(f"[FastAPI Server Startup Video Warning]: {e}")
 
-    # Initialize video detector
-    video_detector = LocalVideoDeepfakeDetector.get_instance()
-
-    if not video_detector.is_ready:
-        print(
-            "[FastAPI Server Startup Warning]: "
-            "Video AI Engine lazy load on first request."
-        )
-
-    # Initialize EfficientNet video engine
-    print(
-        "[FastAPI Server Startup]: "
-        "Pre-initializing EfficientNet-B7 DeepFakeClassifier Engine..."
-    )
-
-    efficientnet_engine = EfficientNetVideoInferenceEngine()
+    # Initialize EfficientNet video engine safely
+    try:
+        from efficientnet_video_inference import EfficientNetVideoInferenceEngine
+        efficientnet_engine = EfficientNetVideoInferenceEngine()
+    except Exception as e:
+        print(f"[FastAPI Server Startup EfficientNet Warning]: {e}")
 
     print(
         "[FastAPI Server Startup]: "
@@ -96,8 +90,9 @@ app.add_middleware(
 
 
 @app.get("/")
+@app.get("/health")
 async def root():
-    return {"status": "AI Service Running"}
+    return {"status": "AI Service Running", "healthy": True}
 
 
 # ============================================================

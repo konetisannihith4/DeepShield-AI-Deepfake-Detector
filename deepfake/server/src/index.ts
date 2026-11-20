@@ -22,6 +22,25 @@ import path from 'path';
 
 // Mount Static Media Uploads Directory & API Router
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+
+// Root & Health check routes for Cloud monitoring
+app.get('/', (_req, res) => {
+  res.json({
+    status: 'ONLINE',
+    service: 'DeepShield AI Enterprise API Server',
+    version: '2.0.0',
+    documentation: '/api/health',
+  });
+});
+
+app.get('/health', (_req, res) => {
+  res.json({
+    status: 'HEALTHY',
+    service: 'DeepShield AI API Server',
+    timestamp: new Date().toISOString(),
+  });
+});
+
 app.use('/api', apiRouter);
 
 // Centralized Error Handler

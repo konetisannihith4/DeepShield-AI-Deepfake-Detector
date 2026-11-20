@@ -82,8 +82,8 @@ logs/
 **/reports/
 **/debug_wavs/
 **/scratch/
-**/video/
 **/non_existent_empty_dir/
+!deepfake/ai-service/video/
 
 # ------------------------------------------
 # Model Weights & Hugging Face Cache

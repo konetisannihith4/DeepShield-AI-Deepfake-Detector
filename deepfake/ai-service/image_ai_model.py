@@ -62,11 +62,11 @@ class ImageDeepfakeDetectorModel:
 
     def _load_model(self):
         """Loads xRayon ConvNeXtV2-Base Phase-2 classifier."""
-        ckpt_path = self._get_checkpoint_path()
-        print(f"\n[Image Model] Primary Detector: {self.model_version_name}")
-        print(f"[Image Model] Loading Checkpoint: {ckpt_path}")
-
         try:
+            ckpt_path = self._get_checkpoint_path()
+            print(f"\n[Image Model] Primary Detector: {self.model_version_name}")
+            print(f"[Image Model] Loading Checkpoint: {ckpt_path}")
+
             # 1. Build ConvNeXtV2-Base architecture with 2 output classes
             self.model = timm.create_model("convnextv2_base", pretrained=False, num_classes=2)
             

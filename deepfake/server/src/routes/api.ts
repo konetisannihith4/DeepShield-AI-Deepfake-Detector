@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
+import axios from 'axios';
+import FormData from 'form-data';
 import { AuthController } from '../controllers/authController';
 import { DetectionController } from '../controllers/detectionController';
 import { AdminController } from '../controllers/adminController';
@@ -52,6 +54,42 @@ apiRouter.post('/auth/logout', AuthController.logout);
 apiRouter.get('/auth/me', authenticateToken, AuthController.getMe);
 
 // 2. Detection & AI Endpoints
+const getAiBaseUrl = (): string => {
+  const raw = process.env.AI_SERVICE_URL || 'http://127.0.0.1:8000';
+  return raw.replace(/\/predict\/?$/, '').replace(/\/+$/, '');
+};
+
+const proxyToAiService = async (endpoint: string, file: Express.Multer.File | undefined, res: any) => {
+  if (!file) {
+    return res.status(400).json({ error: 'No media file provided for analysis.' });
+  }
+  const formData = new FormData();
+  formData.append('file', file.buffer, {
+    filename: file.originalname,
+    contentType: file.mimetype,
+  });
+  try {
+    const aiBase = getAiBaseUrl();
+    console.log(`[AI Proxy]: Forwarding ${file.originalname} (${file.mimetype}) to ${aiBase}${endpoint}...`);
+    const aiRes = await axios.post(`${aiBase}${endpoint}`, formData, {
+      headers: formData.getHeaders(),
+      timeout: 300000,
+    });
+    return res.json(aiRes.data);
+  } catch (err: any) {
+    console.error(`[AI Proxy Error for ${endpoint}]:`, err.message);
+    const status = err.response?.status || 500;
+    const data = err.response?.data || { error: `AI inference service error: ${err.message}` };
+    return res.status(status).json(data);
+  }
+};
+
+// AI Microservice Direct Proxy Endpoints (Image, Video, Audio)
+apiRouter.post('/predict-image', upload.single('file'), (req, res) => proxyToAiService('/predict-image', req.file, res));
+apiRouter.post('/predict-video', upload.single('file'), (req, res) => proxyToAiService('/predict-video', req.file, res));
+apiRouter.post('/predict-video-efficientnet', upload.single('file'), (req, res) => proxyToAiService('/predict-video-efficientnet', req.file, res));
+apiRouter.post('/predict', upload.single('file'), (req, res) => proxyToAiService('/predict', req.file, res));
+
 apiRouter.use('/detect/video', videoDetectionRoutes);
 
 apiRouter.post(

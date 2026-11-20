@@ -47,11 +47,18 @@ export class MediaProcessor {
     'video/x-matroska',
     'video/mkv',
     'video/webm',
+    // Image
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/webp',
+    'image/gif',
   ]);
 
   public static readonly ALLOWED_EXTENSIONS = new Set([
     '.wav', '.mp3', '.aac', '.flac', '.ogg', '.m4a',
-    '.mp4', '.avi', '.mov', '.mkv', '.webm'
+    '.mp4', '.avi', '.mov', '.mkv', '.webm',
+    '.jpg', '.jpeg', '.png', '.webp', '.gif'
   ]);
 
   /**
@@ -61,7 +68,7 @@ export class MediaProcessor {
     const ext = path.extname(filename).toLowerCase();
     if (this.ALLOWED_EXTENSIONS.has(ext)) return true;
     if (this.ALLOWED_MIME_TYPES.has(mimeType.toLowerCase())) return true;
-    if (mimeType.startsWith('audio/') || mimeType.startsWith('video/')) return true;
+    if (mimeType.startsWith('audio/') || mimeType.startsWith('video/') || mimeType.startsWith('image/')) return true;
     return false;
   }
 

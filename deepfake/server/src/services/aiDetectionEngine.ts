@@ -36,7 +36,11 @@ export interface AudioAnalysisResult {
 }
 
 export class AIDetectionEngine {
-  private static AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://localhost:8000/predict';
+  private static getAiPredictUrl(): string {
+    const raw = process.env.AI_SERVICE_URL || 'http://localhost:8000/predict';
+    const base = raw.replace(/\/predict\/?$/, '').replace(/\/+$/, '');
+    return `${base}/predict`;
+  }
 
   /**
    * Sends audio specimen buffer to local Python FastAPI PyTorch AI model service,
@@ -52,13 +56,14 @@ export class AIDetectionEngine {
     let aiResponse: any = null;
 
     try {
-      console.log(`[AIDetectionEngine]: Sending audio specimen to FastAPI AI Service (${this.AI_SERVICE_URL})...`);
+      const predictUrl = this.getAiPredictUrl();
+      console.log(`[AIDetectionEngine]: Sending audio specimen to FastAPI AI Service (${predictUrl})...`);
       
       const formData = new FormData();
       const blob = new Blob([buffer], { type: 'audio/wav' });
       formData.append('file', blob, originalName || 'extracted_specimen.wav');
 
-      const response = await fetch(this.AI_SERVICE_URL, {
+      const response = await fetch(predictUrl, {
         method: 'POST',
         body: formData,
       });
@@ -79,7 +84,7 @@ export class AIDetectionEngine {
     } catch (err: any) {
       if (err instanceof AppError) throw err;
       console.error(`[AIDetectionEngine ERROR]: Failed to connect to Python AI Service: ${err.message}`);
-      throw new AppError(`Local AI Deepfake Service unavailable: ${err.message}. Ensure ai-service is running at ${this.AI_SERVICE_URL}`, 503);
+      throw new AppError(`Local AI Deepfake Service unavailable: ${err.message}. Ensure ai-service is running at ${this.getAiPredictUrl()}`, 503);
     }
 
     // Extract Real AI Model Predictions

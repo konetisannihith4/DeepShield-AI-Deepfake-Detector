@@ -6,7 +6,10 @@ import FormData from 'form-data';
 import { prisma } from '../db/prisma';
 import { generateForensicPdfCertificate } from '../services/pdfReportService';
 
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL || 'http://127.0.0.1:8000';
+const getAiBaseUrl = (): string => {
+  const raw = process.env.AI_SERVICE_URL || 'http://127.0.0.1:8000';
+  return raw.replace(/\/predict\/?$/, '').replace(/\/+$/, '');
+};
 
 export const analyzeVideo = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
@@ -32,7 +35,7 @@ export const analyzeVideo = async (req: AuthRequest, res: Response): Promise<voi
 
     let aiResponse;
     try {
-      aiResponse = await axios.post(`${AI_SERVICE_URL}/predict-video`, formData, {
+      aiResponse = await axios.post(`${getAiBaseUrl()}/predict-video`, formData, {
         headers: formData.getHeaders(),
         timeout: 300000, // 5 min timeout for video frame extraction & EfficientNet/XceptionNet inference
       });

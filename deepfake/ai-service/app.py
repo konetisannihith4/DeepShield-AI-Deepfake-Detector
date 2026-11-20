@@ -29,39 +29,11 @@ image_engine = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global efficientnet_engine
-
     print(
         "[FastAPI Server Startup]: "
-        "Initializing PyTorch AI Deepfake Model Engines..."
+        "DeepShield AI Detection Service initialized. Models will load on-demand."
     )
-
-    # Initialize audio detector safely
-    try:
-        detector = LocalAudioDeepfakeDetector.get_instance()
-    except Exception as e:
-        print(f"[FastAPI Server Startup Audio Warning]: {e}")
-
-    # Initialize video detector safely
-    try:
-        video_detector = LocalVideoDeepfakeDetector.get_instance()
-    except Exception as e:
-        print(f"[FastAPI Server Startup Video Warning]: {e}")
-
-    # Initialize EfficientNet video engine safely
-    try:
-        from efficientnet_video_inference import EfficientNetVideoInferenceEngine
-        efficientnet_engine = EfficientNetVideoInferenceEngine()
-    except Exception as e:
-        print(f"[FastAPI Server Startup EfficientNet Warning]: {e}")
-
-    print(
-        "[FastAPI Server Startup]: "
-        "AI Services initialized and ready to accept inference requests."
-    )
-
     yield
-
     print(
         "[FastAPI Server Shutdown]: "
         "Cleaning up AI Service resources."

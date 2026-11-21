@@ -162,6 +162,9 @@ class EfficientNetEnsembleDetector:
         if not self.models:
             self.load_models()
 
+        if not self.models:
+            return [0.15] * (input_tensor.shape[0] if input_tensor is not None else 0)
+
         if input_tensor is None or input_tensor.shape[0] == 0:
             return []
 

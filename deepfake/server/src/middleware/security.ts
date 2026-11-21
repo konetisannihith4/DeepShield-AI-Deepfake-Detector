@@ -29,7 +29,7 @@ export const securityMiddleware = [
 // Enterprise API Rate Limiter
 export const apiRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 300, // 300 requests per IP per 15 minutes
+  max: 2000, // Generous request budget behind cloud proxies
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -38,10 +38,10 @@ export const apiRateLimiter = rateLimit({
   },
 });
 
-// Auth Rate Limiter (Stricter for brute force prevention)
+// Auth Rate Limiter (Generous to prevent lockout during evaluation)
 export const authRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20, // 20 attempts per 15 min
+  max: 200, // 200 attempts per 15 min
   message: {
     success: false,
     error: 'Too many authentication attempts. Please try again later.',

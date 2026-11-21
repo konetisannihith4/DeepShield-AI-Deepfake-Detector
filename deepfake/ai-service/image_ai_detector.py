@@ -199,6 +199,8 @@ class ImageAIDetectorEngine:
         bboxes = self.face_detector._detect_retinaface(image)
         if not bboxes:
             bboxes = self.face_detector._detect_mtcnn(image)
+        if not bboxes:
+            bboxes = self.face_detector._detect_opencv_fallback(image)
 
         face_crops = []
         for bbox in bboxes:

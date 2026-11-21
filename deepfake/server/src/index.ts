@@ -7,6 +7,7 @@ import { apiRouter } from './routes/api';
 import { SocketService } from './services/socketService';
 
 const app = express();
+app.set('trust proxy', 1);
 const server = http.createServer(app);
 
 // Initialize Socket.IO Real-time Audio Detection Stream Server

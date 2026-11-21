@@ -132,6 +132,9 @@ class FaceDetector:
 
         return bboxes
 
+    # Alias for compatibility with external caller modules
+    _detect_opencv = _detect_opencv_fallback
+
     def detect_and_crop(self, frames: List[np.ndarray]) -> Dict[str, Any]:
         """
         Runs face detection pipeline on extracted frames.

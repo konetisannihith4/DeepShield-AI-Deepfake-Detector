@@ -364,10 +364,10 @@ export const VideoDetectionPage: React.FC = () => {
   const noFaceDetected = (result?.verdict || result?.prediction || '').includes('No detectable face');
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-8 max-w-6xl mx-auto font-sans text-[#282B4A]">
+    <div className="p-3 xs:p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 max-w-6xl mx-auto font-sans text-[#282B4A] w-full">
       {/* Title & Engine Header */}
-      <div className="rounded-3xl bg-white border border-[#E6F0FF] p-6 sm:p-8 shadow-card flex flex-col sm:flex-row items-center justify-between gap-6">
-        <div>
+      <div className="rounded-3xl bg-white border border-[#E6F0FF] p-5 sm:p-7 lg:p-8 shadow-card flex flex-col md:flex-row items-start md:items-center justify-between gap-5 sm:gap-6">
+        <div className="min-w-0">
           <div className="flex items-center gap-2 mb-2">
             <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#E6F0FF] text-[#014BAA] border border-[#BFDAFE] inline-flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-[#014BAA]" />
@@ -375,21 +375,22 @@ export const VideoDetectionPage: React.FC = () => {
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-[#014BAA] tracking-tight flex items-center gap-3">
-            <Film className="w-8 h-8 text-[#014BAA]" /> Video Deepfake Detection
+          <h1 className="text-xl xs:text-2xl sm:text-3xl font-extrabold font-display text-[#014BAA] tracking-tight flex items-center gap-2.5 sm:gap-3">
+            <Film className="w-7 h-7 sm:w-8 sm:h-8 text-[#014BAA] shrink-0" />
+            <span className="truncate">Video Deepfake Detection</span>
           </h1>
           <p className="text-xs sm:text-sm text-[#5A5E7A] mt-1.5 max-w-2xl leading-relaxed">
             Extracts dynamic frame sequences, detects face tracks via RetinaFace/MTCNN, and runs XceptionNet deepfake neural classification.
           </p>
         </div>
 
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-3 shrink-0 w-full sm:w-auto">
           <button
             onClick={() => {
               if (result) setResult(null);
               fileInputRef.current?.click();
             }}
-            className="px-5 py-2.5 rounded-xl text-xs font-extrabold bg-[#014BAA] text-white hover:bg-[#013D8B] transition-all flex items-center gap-2 shadow-royal cursor-pointer"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-extrabold bg-[#014BAA] text-white hover:bg-[#013D8B] transition-all flex items-center justify-center gap-2 shadow-royal cursor-pointer min-h-[44px] touch-manipulation"
           >
             <Upload className="w-4 h-4" /> Select Video
           </button>
@@ -435,18 +436,18 @@ export const VideoDetectionPage: React.FC = () => {
             {/* Video Player Preview if file selected */}
             {videoPreviewUrl ? (
               <div className="space-y-4 mb-6">
-                <div className="relative rounded-2xl overflow-hidden border border-[#BFDAFE] bg-[#F8F3F0] max-h-[340px] flex items-center justify-center p-2">
+                <div className="relative rounded-2xl overflow-hidden border border-[#BFDAFE] bg-[#F8F3F0] max-h-[260px] sm:max-h-[340px] flex items-center justify-center p-2">
                   <video
                     ref={videoRef}
                     src={videoPreviewUrl}
                     controls
-                    className="w-full h-auto max-h-[320px] object-contain rounded-xl"
+                    className="w-full h-auto max-h-[240px] sm:max-h-[320px] object-contain rounded-xl"
                   />
                 </div>
-                <div className="flex items-center justify-between text-xs text-[#282B4A] bg-[#E6F0FF]/60 p-3.5 rounded-2xl border border-[#BFDAFE]">
-                  <div className="flex items-center gap-2.5 truncate">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-[#282B4A] bg-[#E6F0FF]/60 p-3 sm:p-3.5 rounded-2xl border border-[#BFDAFE] gap-2">
+                  <div className="flex items-center gap-2.5 truncate min-w-0">
                     <Film className="w-4 h-4 text-[#014BAA] shrink-0" />
-                    <span className="font-bold text-[#014BAA] truncate max-w-xs">{file?.name}</span>
+                    <span className="font-bold text-[#014BAA] truncate">{file?.name}</span>
                   </div>
                   <span className="text-[11px] text-[#5A5E7A] font-mono shrink-0">
                     {file ? (file.size / 1024 / 1024).toFixed(2) : 0} MB
@@ -731,32 +732,32 @@ export const VideoDetectionPage: React.FC = () => {
               </span>
             </div>
 
-            <div className="p-4 rounded-2xl bg-[#E6F0FF] border border-[#BFDAFE] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-              <div className="truncate">
+            <div className="p-3.5 sm:p-4 rounded-2xl bg-[#E6F0FF] border border-[#BFDAFE] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="min-w-0 flex-1">
                 <span className="text-[#014BAA] text-[11px] block font-bold">SHA-256 Cryptographic Hash:</span>
-                <span className="font-mono text-[#282B4A] text-[11px] truncate block mt-0.5 font-semibold">
+                <span className="font-mono text-[#282B4A] text-[10px] sm:text-xs break-all block mt-0.5 font-semibold">
                   {result.sha256Hash}
                 </span>
               </div>
               <button
                 onClick={() => copyToClipboard(result.sha256Hash)}
-                className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#D4E6FF] text-[#014BAA] text-[11px] font-bold flex items-center gap-1.5 shrink-0 self-start sm:self-auto border border-[#BFDAFE] transition-colors"
+                className="px-3.5 py-2 rounded-xl bg-white hover:bg-[#D4E6FF] text-[#014BAA] text-[11px] font-bold flex items-center justify-center gap-1.5 shrink-0 self-start sm:self-auto border border-[#BFDAFE] transition-colors min-h-[36px] touch-manipulation cursor-pointer"
               >
                 <Copy className="w-3.5 h-3.5" /> {copiedHash ? 'Copied!' : 'Copy Hash'}
               </button>
             </div>
 
             {/* DOWNLOAD BUTTONS */}
-            <div className="flex flex-wrap items-center justify-end gap-3 pt-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3 pt-2">
               <button
                 onClick={() => handleDownloadFile(result.pdfDownloadUrl || `/api/reports/download/${result.pdfFileName || 'video_report.pdf'}`)}
-                className="px-5 py-3 rounded-xl text-xs font-extrabold bg-[#014BAA] text-white hover:bg-[#013D8B] transition-all flex items-center gap-2 shadow-royal uppercase tracking-wider"
+                className="w-full sm:w-auto px-5 py-3 rounded-xl text-xs font-extrabold bg-[#014BAA] text-white hover:bg-[#013D8B] transition-all flex items-center justify-center gap-2 shadow-royal uppercase tracking-wider min-h-[44px] touch-manipulation"
               >
                 <Download className="w-4 h-4" /> Download PDF Report
               </button>
               <button
                 onClick={() => navigate('/history')}
-                className="px-5 py-3 rounded-xl text-xs font-bold bg-[#E6F0FF] text-[#014BAA] border border-[#BFDAFE] hover:bg-[#D4E6FF] transition-all flex items-center gap-2"
+                className="w-full sm:w-auto px-5 py-3 rounded-xl text-xs font-bold bg-[#E6F0FF] text-[#014BAA] border border-[#BFDAFE] hover:bg-[#D4E6FF] transition-all flex items-center justify-center gap-2 min-h-[44px] touch-manipulation"
               >
                 <History className="w-4 h-4" /> View in History
               </button>

@@ -14,57 +14,66 @@ export const SpectrogramCanvas: React.FC<SpectrogramCanvasProps> = ({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
 
-    const width = canvas.clientWidth;
-    canvas.width = width * window.devicePixelRatio;
-    canvas.height = height * window.devicePixelRatio;
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    const render = () => {
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
 
-    ctx.clearRect(0, 0, width, height);
+      const width = canvas.clientWidth || 300;
+      canvas.width = width * window.devicePixelRatio;
+      canvas.height = height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
 
-    const data = spectrogram.length > 0 
-      ? spectrogram 
-      : Array.from({ length: 32 }, () => Array.from({ length: 16 }, () => Math.random()));
+      ctx.clearRect(0, 0, width, height);
 
-    const numFrames = data.length;
-    const numBands = data[0]?.length || 16;
-    const cellWidth = width / numFrames;
-    const cellHeight = height / numBands;
+      const data = spectrogram.length > 0 
+        ? spectrogram 
+        : Array.from({ length: 32 }, () => Array.from({ length: 16 }, () => Math.random()));
 
-    data.forEach((frameBands, f) => {
-      frameBands.forEach((intensity, b) => {
-        const x = f * cellWidth;
-        const y = height - (b + 1) * cellHeight; // High freq at top
+      const numFrames = data.length;
+      const numBands = data[0]?.length || 16;
+      const cellWidth = width / numFrames;
+      const cellHeight = height / numBands;
 
-        // Color Heatmap: Blue (low energy) -> Cyan -> Green -> Yellow -> Red/Mag (high spectral energy)
-        let r = 0, g = 0, initialB = 0;
-        if (intensity < 0.25) {
-          initialB = Math.floor(intensity * 4 * 255);
-        } else if (intensity < 0.5) {
-          g = Math.floor((intensity - 0.25) * 4 * 255);
-          initialB = 255;
-        } else if (intensity < 0.75) {
-          r = Math.floor((intensity - 0.5) * 4 * 255);
-          g = 255;
-        } else {
-          r = 255;
-          g = Math.floor((1 - (intensity - 0.75) * 4) * 255);
-        }
+      data.forEach((frameBands, f) => {
+        frameBands.forEach((intensity, b) => {
+          const x = f * cellWidth;
+          const y = height - (b + 1) * cellHeight; // High freq at top
 
-        ctx.fillStyle = `rgb(${r}, ${g}, ${initialB})`;
-        ctx.fillRect(x, y, cellWidth + 0.5, cellHeight + 0.5);
+          // Color Heatmap: Blue (low energy) -> Cyan -> Green -> Yellow -> Red/Mag (high spectral energy)
+          let r = 0, g = 0, initialB = 0;
+          if (intensity < 0.25) {
+            initialB = Math.floor(intensity * 4 * 255);
+          } else if (intensity < 0.5) {
+            g = Math.floor((intensity - 0.25) * 4 * 255);
+            initialB = 255;
+          } else if (intensity < 0.75) {
+            r = Math.floor((intensity - 0.5) * 4 * 255);
+            g = 255;
+          } else {
+            r = 255;
+            g = Math.floor((1 - (intensity - 0.75) * 4) * 255);
+          }
+
+          ctx.fillStyle = `rgb(${r}, ${g}, ${initialB})`;
+          ctx.fillRect(x, y, cellWidth + 0.5, cellHeight + 0.5);
+        });
       });
-    });
 
-    // Draw Frequency Y-Axis Markers
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-    ctx.font = '10px Inter, sans-serif';
-    ctx.fillText('8000 Hz', 6, 14);
-    ctx.fillText('4000 Hz', 6, height / 2 + 4);
-    ctx.fillText('0 Hz', 6, height - 6);
+      // Draw Frequency Y-Axis Markers
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
+      ctx.font = '10px Inter, sans-serif';
+      ctx.fillText('8000 Hz', 6, 14);
+      ctx.fillText('4000 Hz', 6, height / 2 + 4);
+      ctx.fillText('0 Hz', 6, height - 6);
+    };
 
+    render();
+
+    window.addEventListener('resize', render);
+    return () => {
+      window.removeEventListener('resize', render);
+    };
   }, [spectrogram, height]);
 
   return (

@@ -554,10 +554,10 @@ export const UploadPage: React.FC = () => {
   const isImgUncertain = imgPred === 'Uncertain' || imgPred === 'UNCERTAIN';
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-8 max-w-6xl mx-auto font-sans text-[#282B4A]">
+    <div className="p-3 xs:p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 max-w-6xl mx-auto font-sans text-[#282B4A] w-full">
       {/* Title & Mode Header */}
-      <div className="rounded-3xl bg-white border border-[#E6F0FF] p-6 sm:p-8 shadow-card flex flex-col sm:flex-row items-center justify-between gap-6">
-        <div>
+      <div className="rounded-3xl bg-white border border-[#E6F0FF] p-5 sm:p-7 lg:p-8 shadow-card flex flex-col md:flex-row items-start md:items-center justify-between gap-5 sm:gap-6">
+        <div className="min-w-0">
           <div className="flex items-center gap-2 mb-2">
             <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#E6F0FF] text-[#014BAA] border border-[#BFDAFE] inline-flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-[#014BAA]" />
@@ -565,18 +565,20 @@ export const UploadPage: React.FC = () => {
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-[#014BAA] tracking-tight flex items-center gap-3">
+          <h1 className="text-xl xs:text-2xl sm:text-3xl font-extrabold font-display text-[#014BAA] tracking-tight flex items-center gap-2.5 sm:gap-3">
             {isImageRoute ? (
               <>
-                <ScanFace className="w-8 h-8 text-[#014BAA]" /> Image Deepfake Detection
+                <ScanFace className="w-7 h-7 sm:w-8 sm:h-8 text-[#014BAA] shrink-0" />
+                <span className="truncate">Image Deepfake Detection</span>
               </>
             ) : (
               <>
-                <FileAudio className="w-8 h-8 text-[#014BAA]" /> Voice & Media Deepfake Detection
+                <FileAudio className="w-7 h-7 sm:w-8 sm:h-8 text-[#014BAA] shrink-0" />
+                <span className="truncate">Voice & Media Deepfake Detection</span>
               </>
             )}
           </h1>
-          <p className="text-xs sm:text-sm text-[#5A5E7A] mt-1.5 max-w-2xl">
+          <p className="text-xs sm:text-sm text-[#5A5E7A] mt-1.5 max-w-2xl leading-relaxed">
             {isImageRoute
               ? 'Upload facial portraits or photographic specimens to identify synthetic generation, face swaps, and AI diffusion anomalies.'
               : 'Upload speech recordings or media specimens to detect synthetic voice clones, speech tampering, and audio deepfakes.'}
@@ -584,10 +586,10 @@ export const UploadPage: React.FC = () => {
         </div>
 
         {/* Quick Route Switcher & Header Action */}
-        <div className="flex flex-wrap items-center gap-3 shrink-0">
+        <div className="flex flex-col xs:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full md:w-auto shrink-0">
           <Link
             to={isImageRoute ? '/upload' : '/image-detection'}
-            className="px-4 py-2.5 rounded-xl text-xs font-bold bg-[#E6F0FF] text-[#014BAA] border border-[#BFDAFE] hover:bg-[#D4E6FF] transition-all flex items-center gap-1.5"
+            className="px-4 py-2.5 rounded-xl text-xs font-bold bg-[#E6F0FF] text-[#014BAA] border border-[#BFDAFE] hover:bg-[#D4E6FF] transition-all flex items-center justify-center gap-1.5 min-h-[44px] touch-manipulation"
           >
             {isImageRoute ? <FileAudio className="w-4 h-4" /> : <ImageIcon className="w-4 h-4" />}
             <span>Switch to {isImageRoute ? 'Voice Detection' : 'Image Detection'}</span>
@@ -597,7 +599,7 @@ export const UploadPage: React.FC = () => {
               if (result) setResult(null);
               fileInputRef.current?.click();
             }}
-            className="px-5 py-2.5 rounded-xl text-xs font-extrabold bg-[#014BAA] text-white hover:bg-[#013D8B] transition-all flex items-center gap-2 shadow-royal cursor-pointer"
+            className="px-5 py-2.5 rounded-xl text-xs font-extrabold bg-[#014BAA] text-white hover:bg-[#013D8B] transition-all flex items-center justify-center gap-2 shadow-royal cursor-pointer min-h-[44px] touch-manipulation"
           >
             <Upload className="w-4 h-4" /> Browse File
           </button>
@@ -615,20 +617,20 @@ export const UploadPage: React.FC = () => {
       />
 
       {!result ? (
-        <div className="space-y-8">
+        <div className="space-y-6 sm:space-y-8">
           {/* Main Upload Box */}
           <div
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className={`max-w-3xl mx-auto p-6 sm:p-8 rounded-3xl bg-white border transition-all text-center shadow-card ${
+            className={`w-full max-w-3xl mx-auto p-4 xs:p-6 sm:p-8 rounded-3xl bg-white border transition-all text-center shadow-card ${
               isDragging ? 'border-[#014BAA] bg-[#E6F0FF]/30 scale-[1.01]' : 'border-[#E6F0FF]'
             }`}
           >
             {/* Dotted Drop Zone */}
             <div
               onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-2xl p-8 sm:p-12 transition-all cursor-pointer group flex flex-col items-center justify-center gap-3.5 ${
+              className={`border-2 border-dashed rounded-2xl p-6 xs:p-8 sm:p-12 transition-all cursor-pointer group flex flex-col items-center justify-center gap-3.5 ${
                 isDragging
                   ? 'border-[#014BAA] bg-[#E6F0FF]/40'
                   : 'border-[#BFDAFE] bg-[#F8F3F0]/60 hover:border-[#014BAA] hover:bg-[#E6F0FF]/20'
@@ -652,20 +654,20 @@ export const UploadPage: React.FC = () => {
                 </span>
               </div>
 
-              <span className="px-6 py-2.5 rounded-xl text-xs font-extrabold bg-[#014BAA] text-white hover:bg-[#013D8B] transition-all shadow-royal">
+              <span className="px-6 py-2.5 rounded-xl text-xs font-extrabold bg-[#014BAA] text-white hover:bg-[#013D8B] transition-all shadow-royal min-h-[44px] flex items-center justify-center">
                 Choose Local File
               </span>
 
               {/* SPECIMEN PREVIEW (Image / Audio) */}
               {file && (
-                <div className="mt-4 w-full max-w-md mx-auto p-4 rounded-2xl bg-white border border-[#E6F0FF] shadow-sm space-y-3">
+                <div className="mt-4 w-full max-w-md mx-auto p-3.5 sm:p-4 rounded-2xl bg-white border border-[#E6F0FF] shadow-sm space-y-3 text-left">
                   {/* Image Preview */}
                   {previewUrl && (
-                    <div className="relative rounded-xl overflow-hidden border border-[#BFDAFE] max-h-56 flex items-center justify-center bg-[#F8F3F0]">
+                    <div className="relative rounded-xl overflow-hidden border border-[#BFDAFE] max-h-48 sm:max-h-60 flex items-center justify-center bg-[#F8F3F0] w-full">
                       <img
                         src={previewUrl}
                         alt="Specimen preview"
-                        className="max-h-52 w-auto object-contain rounded-lg"
+                        className="max-h-44 sm:max-h-56 w-auto max-w-full object-contain rounded-lg"
                       />
                     </div>
                   )}
@@ -683,15 +685,15 @@ export const UploadPage: React.FC = () => {
 
                   {/* File Metadata Info */}
                   <div className="flex items-center justify-between text-xs text-[#282B4A] pt-1">
-                    <div className="flex items-center gap-2 truncate text-left">
+                    <div className="flex items-center gap-2 truncate text-left min-w-0">
                       {isImageFile(file) ? (
                         <ImageIcon className="w-4 h-4 text-[#014BAA] shrink-0" />
                       ) : (
                         <FileAudio className="w-4 h-4 text-[#014BAA] shrink-0" />
                       )}
-                      <span className="font-bold truncate max-w-[200px]">{file.name}</span>
+                      <span className="font-bold truncate max-w-[160px] xs:max-w-[200px]">{file.name}</span>
                     </div>
-                    <span className="text-[#5A5E7A] font-mono shrink-0">
+                    <span className="text-[#5A5E7A] font-mono shrink-0 ml-2">
                       {(file.size / 1024 / 1024).toFixed(2)} MB
                     </span>
                   </div>
@@ -708,7 +710,7 @@ export const UploadPage: React.FC = () => {
                 </div>
                 <button
                   onClick={() => setError(null)}
-                  className="text-[10px] font-bold uppercase px-2 py-1 bg-red-100 rounded text-red-800"
+                  className="text-[10px] font-bold uppercase px-2.5 py-1 bg-red-100 rounded-lg text-red-800 shrink-0 min-h-[32px] flex items-center"
                 >
                   Dismiss
                 </button>
@@ -736,7 +738,7 @@ export const UploadPage: React.FC = () => {
                 <button
                   onClick={runAnalysis}
                   disabled={!file}
-                  className="w-full sm:w-auto px-10 py-3.5 rounded-xl text-xs font-extrabold bg-[#014BAA] text-white hover:bg-[#013D8B] transition-all shadow-royal disabled:opacity-50 tracking-wider uppercase cursor-pointer"
+                  className="w-full sm:w-auto px-8 sm:px-10 py-3.5 rounded-xl text-xs sm:text-sm font-extrabold bg-[#014BAA] text-white hover:bg-[#013D8B] transition-all shadow-royal disabled:opacity-50 tracking-wider uppercase cursor-pointer min-h-[44px] flex items-center justify-center touch-manipulation"
                 >
                   Analyze Specimen Now
                 </button>
@@ -752,11 +754,11 @@ export const UploadPage: React.FC = () => {
         /* =========================================================
            DETECTION RESULTS VIEW (Requirement B, D, E)
            ========================================================= */
-        <div className="space-y-8 animate-in fade-in duration-200">
+        <div className="space-y-6 sm:space-y-8 animate-in fade-in duration-200">
           {/* Result Header Bar */}
-          <div className="p-6 rounded-3xl bg-white border border-[#E6F0FF] shadow-card flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-2xl bg-[#E6F0FF] text-[#014BAA] flex items-center justify-center shadow-sm">
+          <div className="p-5 sm:p-7 rounded-3xl bg-white border border-[#E6F0FF] shadow-card flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3 sm:gap-3.5 min-w-0">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-[#E6F0FF] text-[#014BAA] flex items-center justify-center shadow-sm shrink-0">
                 {isImageResult ? (
                   <ScanFace className="w-6 h-6" />
                 ) : isVideoResult ? (
@@ -765,14 +767,14 @@ export const UploadPage: React.FC = () => {
                   <FileAudio className="w-6 h-6" />
                 )}
               </div>
-              <div>
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#014BAA] block">
+              <div className="min-w-0">
+                <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest text-[#014BAA] block truncate">
                   {isImageResult ? 'IMAGE FORENSIC RESULT' : isVideoResult ? 'VIDEO FORENSIC RESULT' : 'VOICE FORENSIC RESULT'}
                 </span>
-                <h2 className="text-xl font-extrabold text-[#282B4A]">
+                <h2 className="text-lg sm:text-xl font-extrabold text-[#282B4A] truncate">
                   Specimen Forensic Assessment Complete
                 </h2>
-                <span className="text-xs text-[#5A5E7A]">
+                <span className="text-xs text-[#5A5E7A] block truncate">
                   Model: {result?.modelVersion || (isImageResult ? 'xRayon-ConvNeXtV2-Phase2' : 'DavidCombei/wavLM-base-Deepfake_V2')}
                 </span>
               </div>
@@ -780,16 +782,16 @@ export const UploadPage: React.FC = () => {
 
             <button
               onClick={resetUpload}
-              className="px-5 py-2.5 rounded-xl text-xs font-bold bg-[#E6F0FF] text-[#014BAA] border border-[#BFDAFE] hover:bg-[#D4E6FF] transition-all flex items-center gap-2 self-start sm:self-auto"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl text-xs font-bold bg-[#E6F0FF] text-[#014BAA] border border-[#BFDAFE] hover:bg-[#D4E6FF] transition-all flex items-center justify-center gap-2 min-h-[44px] touch-manipulation cursor-pointer shrink-0"
             >
               <RefreshCw className="w-3.5 h-3.5" /> Analyze Another Specimen
             </button>
           </div>
 
           {/* MAIN VERDICT & CONFIDENCE SCORE ROW */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             {/* Left Box: Clear Real / Fake Classification */}
-            <div className={`p-8 rounded-3xl border text-center flex flex-col justify-center items-center min-h-[260px] space-y-3.5 shadow-card ${
+            <div className={`p-6 sm:p-8 rounded-3xl border text-center flex flex-col justify-center items-center min-h-[240px] sm:min-h-[260px] space-y-3.5 shadow-card ${
               isImageResult
                 ? isImgAi
                   ? 'bg-red-50/80 border-red-200'
@@ -800,24 +802,24 @@ export const UploadPage: React.FC = () => {
                 ? 'bg-red-50/80 border-red-200'
                 : 'bg-emerald-50/80 border-emerald-200'
             }`}>
-              <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#5A5E7A]">
+              <span className="text-[10px] sm:text-[11px] font-extrabold uppercase tracking-widest text-[#5A5E7A]">
                 AI CLASSIFICATION VERDICT
               </span>
 
               <div className="flex items-center gap-2.5">
                 {isImageResult ? (
                   isImgAi ? (
-                    <AlertTriangle className="w-8 h-8 text-red-600" />
+                    <AlertTriangle className="w-7 h-7 sm:w-8 sm:h-8 text-red-600 shrink-0" />
                   ) : (
-                    <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+                    <CheckCircle2 className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-600 shrink-0" />
                   )
                 ) : (result?.verdict || result?.status || '').toUpperCase().includes('DEEPFAKE') || (result?.verdict || result?.status || '').toUpperCase().includes('AI') ? (
-                  <AlertTriangle className="w-8 h-8 text-red-600" />
+                  <AlertTriangle className="w-7 h-7 sm:w-8 sm:h-8 text-red-600 shrink-0" />
                 ) : (
-                  <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+                  <CheckCircle2 className="w-7 h-7 sm:w-8 sm:h-8 text-emerald-600 shrink-0" />
                 )}
 
-                <h3 className={`text-2xl sm:text-3xl font-black font-display tracking-tight ${
+                <h3 className={`text-xl xs:text-2xl sm:text-3xl font-black font-display tracking-tight break-words ${
                   isImageResult
                     ? isImgAi
                       ? 'text-red-700'
@@ -864,12 +866,12 @@ export const UploadPage: React.FC = () => {
             </div>
 
             {/* Right Box: Donut Chart Distribution & Specimen Card */}
-            <div className="p-8 rounded-3xl bg-white border border-[#E6F0FF] shadow-card flex flex-col items-center justify-center min-h-[260px] space-y-4">
+            <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#E6F0FF] shadow-card flex flex-col items-center justify-center min-h-[240px] sm:min-h-[260px] space-y-4">
               <span className="text-xs font-bold text-[#5A5E7A] uppercase tracking-wider">
                 Model Probability Distribution
               </span>
 
-              <div className="relative w-40 h-40 flex items-center justify-center">
+              <div className="relative w-36 h-36 sm:w-40 sm:h-40 flex items-center justify-center">
                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                   <path
                     className="text-[#E6F0FF]"
@@ -899,10 +901,10 @@ export const UploadPage: React.FC = () => {
                   />
                 </svg>
                 <div className="absolute flex flex-col items-center">
-                  <span className="text-2xl font-mono font-black text-[#014BAA]">
+                  <span className="text-xl sm:text-2xl font-mono font-black text-[#014BAA]">
                     {formatConfidence(isImageResult ? imgAiProb : (result?.confidence || 0))}%
                   </span>
-                  <span className="text-[10px] uppercase font-bold text-[#5A5E7A]">
+                  <span className="text-[9px] sm:text-[10px] uppercase font-bold text-[#5A5E7A]">
                     {isImageResult
                       ? 'AI PROBABILITY'
                       : ((result?.verdict || result?.status || '').toUpperCase().includes('DEEPFAKE') || (result?.verdict || result?.status || '').toUpperCase().includes('AI') ? 'FAKE' : 'AUTHENTIC')}
@@ -911,9 +913,9 @@ export const UploadPage: React.FC = () => {
               </div>
 
               {previewUrl && (
-                <div className="flex items-center gap-2 text-xs text-[#5A5E7A]">
-                  <ImageIcon className="w-4 h-4 text-[#014BAA]" />
-                  <span>Specimen: <strong>{file?.name}</strong></span>
+                <div className="flex items-center gap-2 text-xs text-[#5A5E7A] truncate max-w-full">
+                  <ImageIcon className="w-4 h-4 text-[#014BAA] shrink-0" />
+                  <span className="truncate">Specimen: <strong className="text-[#282B4A]">{file?.name}</strong></span>
                 </div>
               )}
             </div>
@@ -997,7 +999,7 @@ export const UploadPage: React.FC = () => {
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-2">
+              <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4 pt-2">
                 {(result.analyzedPatches && result.analyzedPatches.length > 0
                   ? result.analyzedPatches
                   : (result.faceResults || []).map((f: any, idx: number) => ({
@@ -1017,14 +1019,14 @@ export const UploadPage: React.FC = () => {
                         isAi ? 'border-red-300' : 'border-emerald-300'
                       }`}
                     >
-                      <div className="w-full h-32 bg-slate-100 flex items-center justify-center overflow-hidden">
+                      <div className="w-full h-28 sm:h-32 bg-slate-100 flex items-center justify-center overflow-hidden">
                         <img
                           src={patch.imageBase64 || previewUrl}
                           alt={patch.label}
                           className="w-full h-full object-cover"
                         />
                       </div>
-                      <div className="p-2.5 text-center space-y-1 bg-white">
+                      <div className="p-2 sm:p-2.5 text-center space-y-1 bg-white">
                         <span className="text-[10px] font-bold text-[#282B4A] block truncate">
                           {patch.patchId || patch.label || `Region ${idx + 1}`}
                         </span>
@@ -1042,31 +1044,31 @@ export const UploadPage: React.FC = () => {
           )}
 
           {/* SHA-256 DIGITAL REPORT VERIFICATION CARD */}
-          <div className="p-6 sm:p-8 rounded-3xl bg-white border border-[#E6F0FF] shadow-card space-y-6">
+          <div className="p-5 sm:p-8 rounded-3xl bg-white border border-[#E6F0FF] shadow-card space-y-5 sm:space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E6F0FF] pb-4">
               <div>
-                <h3 className="text-base font-extrabold text-[#014BAA] flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-[#014BAA]" /> Verified Forensic Signature & Metadata
+                <h3 className="text-sm sm:text-base font-extrabold text-[#014BAA] flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-[#014BAA] shrink-0" /> Verified Forensic Signature & Metadata
                 </h3>
                 <p className="text-xs text-[#5A5E7A] mt-0.5">
                   Cryptographic SHA-256 digital fingerprint and report identification
                 </p>
               </div>
-              <span className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full font-bold flex items-center gap-1.5 self-start sm:self-auto">
+              <span className="text-xs text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full font-bold flex items-center gap-1.5 self-start sm:self-auto shrink-0">
                 <CheckCircle className="w-3.5 h-3.5 text-emerald-600" /> Tamper-Proof Verified
               </span>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 text-xs">
               <div className="p-3.5 rounded-2xl bg-[#F8F3F0] border border-[#E5D8D0]">
                 <span className="text-[10px] text-[#5A5E7A] block uppercase font-mono">Case ID</span>
-                <span className="font-mono font-bold text-[#014BAA]">
+                <span className="font-mono font-bold text-[#014BAA] break-all block">
                   {result.caseId || (result.id ? `CASE-${result.id.slice(0, 8)}` : 'DS-VERIFIED')}
                 </span>
               </div>
               <div className="p-3.5 rounded-2xl bg-[#F8F3F0] border border-[#E5D8D0]">
                 <span className="text-[10px] text-[#5A5E7A] block uppercase font-mono">Report ID</span>
-                <span className="font-mono font-bold text-[#282B4A]">
+                <span className="font-mono font-bold text-[#282B4A] break-all block">
                   {result.reportId || result.id || 'REP-DS888'}
                 </span>
               </div>
@@ -1086,16 +1088,16 @@ export const UploadPage: React.FC = () => {
 
             {/* SHA-256 Hash Box */}
             {result.sha256Hash && (
-              <div className="p-4 rounded-2xl bg-[#E6F0FF] border border-[#BFDAFE] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-                <div className="truncate">
+              <div className="p-3.5 sm:p-4 rounded-2xl bg-[#E6F0FF] border border-[#BFDAFE] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                <div className="min-w-0 flex-1">
                   <span className="text-[#014BAA] text-[11px] block font-bold">SHA-256 Digital Fingerprint:</span>
-                  <span className="font-mono text-[#282B4A] text-[11px] truncate block mt-0.5 font-semibold">
+                  <span className="font-mono text-[#282B4A] text-[10px] sm:text-xs break-all block mt-0.5 font-semibold">
                     {result.sha256Hash}
                   </span>
                 </div>
                 <button
                   onClick={() => copyToClipboard(result.sha256Hash)}
-                  className="px-3.5 py-1.5 rounded-xl bg-white hover:bg-[#D4E6FF] text-[#014BAA] text-[11px] font-bold flex items-center gap-1.5 shrink-0 self-start sm:self-auto border border-[#BFDAFE] transition-colors"
+                  className="px-3.5 py-2 rounded-xl bg-white hover:bg-[#D4E6FF] text-[#014BAA] text-[11px] font-bold flex items-center justify-center gap-1.5 shrink-0 self-start sm:self-auto border border-[#BFDAFE] transition-colors min-h-[36px] touch-manipulation cursor-pointer"
                 >
                   <Copy className="w-3.5 h-3.5" /> {copiedHash ? 'Copied!' : 'Copy Hash'}
                 </button>
@@ -1103,31 +1105,31 @@ export const UploadPage: React.FC = () => {
             )}
 
             {/* Download Buttons */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 pt-2">
               <button
                 onClick={() => handleViewPdfReport(result.pdfDownloadUrl || `/api/reports/download/${result.pdfReportName || 'report.pdf'}`)}
-                className="p-3.5 rounded-xl bg-white hover:bg-[#E6F0FF] text-[#014BAA] border border-[#014BAA] font-bold text-xs flex items-center justify-center gap-2 transition-all"
+                className="p-3.5 rounded-xl bg-white hover:bg-[#E6F0FF] text-[#014BAA] border border-[#014BAA] font-bold text-xs flex items-center justify-center gap-2 transition-all min-h-[44px] touch-manipulation"
               >
                 <Eye className="w-4 h-4 text-[#014BAA]" /> View PDF Report
               </button>
 
               <button
                 onClick={() => handleDownloadFile(result.pdfDownloadUrl || '#', result.pdfReportName || `DS_${result.caseId || 'report'}.pdf`)}
-                className="p-3.5 rounded-xl bg-[#014BAA] text-white hover:bg-[#013D8B] font-extrabold text-xs flex items-center justify-center gap-2 transition-all shadow-royal uppercase tracking-wider"
+                className="p-3.5 rounded-xl bg-[#014BAA] text-white hover:bg-[#013D8B] font-extrabold text-xs flex items-center justify-center gap-2 transition-all shadow-royal uppercase tracking-wider min-h-[44px] touch-manipulation"
               >
                 <Download className="w-4 h-4" /> Download PDF Certificate
               </button>
 
               <button
                 onClick={() => handleDownloadFile(result.jsonDownloadUrl || '#', `${result.caseId || 'DS'}_report.json`)}
-                className="p-3.5 rounded-xl bg-white hover:bg-[#F8F3F0] text-[#282B4A] font-bold text-xs flex items-center justify-center gap-2 transition-all border border-[#E5D8D0]"
+                className="p-3.5 rounded-xl bg-white hover:bg-[#F8F3F0] text-[#282B4A] font-bold text-xs flex items-center justify-center gap-2 transition-all border border-[#E5D8D0] min-h-[44px] touch-manipulation"
               >
                 <FileCode className="w-4 h-4 text-[#014BAA]" /> Download JSON Report
               </button>
 
               <button
                 onClick={() => navigate('/history')}
-                className="p-3.5 rounded-xl bg-[#E6F0FF] hover:bg-[#D4E6FF] text-[#014BAA] border border-[#BFDAFE] font-bold text-xs flex items-center justify-center gap-2 transition-all"
+                className="p-3.5 rounded-xl bg-[#E6F0FF] hover:bg-[#D4E6FF] text-[#014BAA] border border-[#BFDAFE] font-bold text-xs flex items-center justify-center gap-2 transition-all min-h-[44px] touch-manipulation"
               >
                 <Layers className="w-4 h-4 text-[#014BAA]" /> View Scan Archive
               </button>

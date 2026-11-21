@@ -46,13 +46,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, isMobileMenu
   };
 
   return (
-    <header className="h-16 bg-[#014BAA] text-white border-b border-[#013D8B] sticky top-0 z-40 px-4 sm:px-6 flex items-center justify-between shadow-md select-none transition-all">
+    <header className="h-16 bg-[#014BAA] text-white border-b border-[#013D8B] sticky top-0 z-40 px-3 sm:px-6 flex items-center justify-between shadow-md select-none transition-all w-full max-w-full">
       {/* Left: Mobile Hamburger + Brand Logo */}
-      <div className="flex items-center gap-3 sm:gap-4">
+      <div className="flex items-center gap-2 sm:gap-4 min-w-0">
         {/* Mobile Hamburger Menu Toggle */}
         <button
           onClick={onToggleMobileMenu}
-          className="md:hidden p-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white transition-all focus:outline-none focus:ring-2 focus:ring-[#F4B6CC]"
+          className="md:hidden p-2.5 min-w-[44px] min-h-[44px] rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white transition-all flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-[#F4B6CC] touch-manipulation cursor-pointer"
           aria-label="Toggle navigation menu"
           title="Toggle Navigation Menu"
         >
@@ -60,25 +60,25 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, isMobileMenu
         </button>
 
         {/* Brand Logo & Name */}
-        <Link to="/dashboard" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-white text-[#014BAA] flex items-center justify-center font-black shadow-sm group-hover:scale-105 transition-transform">
-            <Shield className="w-5 h-5 fill-[#014BAA]" />
+        <Link to="/dashboard" className="flex items-center gap-2 sm:gap-2.5 group min-w-0">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white text-[#014BAA] flex items-center justify-center font-black shadow-sm group-hover:scale-105 transition-transform shrink-0">
+            <Shield className="w-4 h-4 sm:w-5 sm:h-5 fill-[#014BAA]" />
           </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-display font-extrabold text-base sm:text-lg tracking-tight text-white leading-tight">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1 sm:gap-1.5">
+              <span className="font-display font-extrabold text-sm sm:text-base md:text-lg tracking-tight text-white leading-tight truncate">
                 TRUEVISION
               </span>
-              <span className="w-1.5 h-1.5 rounded-full bg-[#F4B6CC]" title="Deepfake Defense Active" />
+              <span className="w-1.5 h-1.5 rounded-full bg-[#F4B6CC] shrink-0" title="Deepfake Defense Active" />
             </div>
-            <span className="text-[9px] sm:text-[10px] uppercase tracking-widest font-extrabold block -mt-0.5 text-[#E6F0FF]/90">
+            <span className="text-[8px] sm:text-[9px] md:text-[10px] uppercase tracking-widest font-extrabold block -mt-0.5 text-[#E6F0FF]/90 truncate">
               DEEPSHIELD AI DEFENSE
             </span>
           </div>
         </Link>
 
         {/* Engine Status Badge (Desktop & Tablet) */}
-        <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-[#013D8B]/80 border border-white/15 text-[#E6F0FF] font-medium ml-2">
+        <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full text-xs bg-[#013D8B]/80 border border-white/15 text-[#E6F0FF] font-medium ml-2 shrink-0">
           <span className="w-2 h-2 rounded-full bg-[#F4B6CC] animate-ping" />
           <span>
             Engine: <strong className="text-white font-bold">Image • Video • Voice Multi-Modal AI</strong>
@@ -87,9 +87,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, isMobileMenu
       </div>
 
       {/* Center/Right: Search Bar & User Actions */}
-      <div className="flex items-center gap-2 sm:gap-4">
+      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
         {/* Search Bar (Visible on lg screens) */}
-        <div className="relative hidden xl:block w-64">
+        <div className="relative hidden xl:block w-48 2xl:w-64">
           <Search className="w-4 h-4 absolute left-3 top-2.5 text-[#E6F0FF]/70" />
           <input
             type="text"
@@ -99,22 +99,22 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, isMobileMenu
         </div>
 
         {/* Quick Detection Mode Link (Pill Badge) */}
-        <div className="hidden sm:flex items-center gap-1.5 bg-white/10 p-1 rounded-xl border border-white/15 text-[11px] font-bold">
+        <div className="hidden sm:flex items-center gap-1 bg-white/10 p-1 rounded-xl border border-white/15 text-[11px] font-bold">
           <Link
             to="/image-detection"
-            className="px-2.5 py-1 rounded-lg text-white hover:bg-white hover:text-[#014BAA] transition-all"
+            className="px-2 py-1 rounded-lg text-white hover:bg-white hover:text-[#014BAA] transition-all"
           >
             Image
           </Link>
           <Link
             to="/video-detection"
-            className="px-2.5 py-1 rounded-lg text-white hover:bg-white hover:text-[#014BAA] transition-all"
+            className="px-2 py-1 rounded-lg text-white hover:bg-white hover:text-[#014BAA] transition-all"
           >
             Video
           </Link>
           <Link
             to="/upload"
-            className="px-2.5 py-1 rounded-lg text-white hover:bg-white hover:text-[#014BAA] transition-all"
+            className="px-2 py-1 rounded-lg text-white hover:bg-white hover:text-[#014BAA] transition-all"
           >
             Voice
           </Link>
@@ -123,7 +123,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, isMobileMenu
         {/* Theme Toggle Button (Royal Blue Light Cream vs Dark Cyber Mode) */}
         <button
           onClick={toggleTheme}
-          className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all active:scale-95 focus:outline-none flex items-center justify-center cursor-pointer"
+          className="p-2 sm:p-2.5 min-w-[38px] min-h-[38px] sm:min-w-[44px] sm:min-h-[44px] rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all active:scale-95 focus:outline-none flex items-center justify-center cursor-pointer touch-manipulation"
           title={theme === 'dark' ? 'Switch to Royal Blue + Light Cream Theme' : 'Switch to Dark Cyber Mode'}
           aria-label="Toggle Platform Theme"
         >
@@ -138,7 +138,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, isMobileMenu
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white relative transition-all active:scale-95 focus:outline-none"
+            className="p-2 sm:p-2.5 min-w-[38px] min-h-[38px] sm:min-w-[44px] sm:min-h-[44px] rounded-xl bg-white/10 hover:bg-white/20 text-white relative transition-all active:scale-95 focus:outline-none flex items-center justify-center touch-manipulation cursor-pointer"
             title="System Security Alerts"
             aria-label="Notifications"
           >
@@ -147,7 +147,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, isMobileMenu
           </button>
 
           {showNotifications && (
-            <div className="absolute right-0 mt-3 w-80 rounded-2xl bg-white border border-[#E6F0FF] shadow-xl p-4 z-50 text-xs animate-in fade-in slide-in-from-top-2 duration-150 text-[#282B4A]">
+            <div className="absolute right-[-40px] sm:right-0 mt-3 w-[calc(100vw-1.5rem)] sm:w-80 max-w-[340px] rounded-2xl bg-white border border-[#E6F0FF] shadow-2xl p-4 z-50 text-xs animate-in fade-in slide-in-from-top-2 duration-150 text-[#282B4A]">
               <div className="flex items-center justify-between pb-2 border-b border-[#E6F0FF] mb-3">
                 <span className="font-bold text-[#014BAA] text-sm flex items-center gap-1.5">
                   <ShieldCheck className="w-4 h-4 text-[#014BAA]" /> Security Telemetry Alerts
@@ -205,7 +205,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onToggleMobileMenu, isMobileMenu
           </button>
 
           {showUserMenu && (
-            <div className="absolute right-0 mt-3 w-64 rounded-2xl bg-white border border-[#E6F0FF] shadow-2xl p-2 z-50 text-xs animate-in fade-in slide-in-from-top-2 duration-150 text-[#282B4A]">
+            <div className="absolute right-0 mt-3 w-[calc(100vw-2rem)] sm:w-64 max-w-[280px] rounded-2xl bg-white border border-[#E6F0FF] shadow-2xl p-2 z-50 text-xs animate-in fade-in slide-in-from-top-2 duration-150 text-[#282B4A]">
               <div className="p-3 border-b border-[#E6F0FF] mb-1 space-y-1 rounded-xl bg-[#F8F3F0]">
                 <div className="font-bold text-[#014BAA] text-sm">{user?.fullName || 'Security Analyst'}</div>
                 <div className="text-[11px] truncate font-medium text-[#5A5E7A]">{user?.email || 'analyst@deepshield.ai'}</div>

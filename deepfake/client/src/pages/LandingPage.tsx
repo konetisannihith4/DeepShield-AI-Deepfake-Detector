@@ -24,35 +24,49 @@ import {
   ScanFace,
   CheckCircle2,
   FileAudio,
+  Menu,
+  X,
 } from 'lucide-react';
 import { WaveformCanvas } from '../components/ai/WaveformCanvas';
 import { SpectrogramCanvas } from '../components/ai/SpectrogramCanvas';
 
 export const LandingPage: React.FC = () => {
   const [isPlayingDemo, setIsPlayingDemo] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#F8F3F0] text-[#282B4A] flex flex-col font-sans selection:bg-[#014BAA] selection:text-white">
+    <div className="min-h-screen bg-[#F8F3F0] text-[#282B4A] flex flex-col font-sans selection:bg-[#014BAA] selection:text-white w-full max-w-full overflow-x-hidden">
       {/* Top Banner Navigation */}
-      <header className="h-20 bg-[#014BAA] text-white border-b border-[#013D8B] px-6 sm:px-10 flex items-center justify-between sticky top-0 z-50 shadow-md">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-white text-[#014BAA] flex items-center justify-center font-bold shadow-sm">
-            <Shield className="w-6 h-6 fill-[#014BAA]" />
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="font-display font-extrabold text-xl tracking-tight text-white leading-tight">
-                TRUEVISION
-              </span>
-              <span className="w-1.5 h-1.5 rounded-full bg-[#F4B6CC]" />
+      <header className="h-16 sm:h-20 bg-[#014BAA] text-white border-b border-[#013D8B] px-4 sm:px-8 md:px-10 flex items-center justify-between sticky top-0 z-50 shadow-md w-full">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* Mobile Menu Hamburger */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded-xl bg-white/10 hover:bg-white/20 active:scale-95 text-white transition-all flex items-center justify-center min-w-[40px] min-h-[40px] touch-manipulation"
+            aria-label="Toggle navigation menu"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5 text-[#F4B6CC]" /> : <Menu className="w-5 h-5 text-white" />}
+          </button>
+
+          <Link to="/" className="flex items-center gap-2 sm:gap-2.5 group">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-white text-[#014BAA] flex items-center justify-center font-bold shadow-sm group-hover:scale-105 transition-transform shrink-0">
+              <Shield className="w-5 h-5 sm:w-6 sm:h-6 fill-[#014BAA]" />
             </div>
-            <span className="text-[10px] uppercase tracking-widest text-[#E6F0FF]/90 font-bold block -mt-0.5">
-              DeepShield AI Defense
-            </span>
-          </div>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <span className="font-display font-extrabold text-base sm:text-xl tracking-tight text-white leading-tight">
+                  TRUEVISION
+                </span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#F4B6CC]" />
+              </div>
+              <span className="text-[8px] sm:text-[10px] uppercase tracking-widest text-[#E6F0FF]/90 font-bold block -mt-0.5">
+                DeepShield AI Defense
+              </span>
+            </div>
+          </Link>
         </div>
 
-        <nav className="hidden md:flex items-center gap-8 text-xs font-bold text-[#E6F0FF]">
+        <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-xs font-bold text-[#E6F0FF]">
           <a href="#modules" className="hover:text-white transition-colors">Detection Modules</a>
           <Link to="/image-detection" className="hover:text-white transition-colors">Image Detection</Link>
           <Link to="/video-detection" className="hover:text-white transition-colors">Video Detection</Link>
@@ -60,21 +74,101 @@ export const LandingPage: React.FC = () => {
           <Link to="/history" className="hover:text-white transition-colors">Scan Archive</Link>
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <Link
             to="/login"
-            className="px-4 py-2 rounded-xl text-xs font-bold text-white hover:bg-white/10 transition-colors"
+            className="px-3 sm:px-4 py-2 rounded-xl text-xs font-bold text-white hover:bg-white/10 transition-colors"
           >
             Sign In
           </Link>
           <Link
             to="/upload"
-            className="px-5 py-2.5 rounded-xl text-xs font-extrabold bg-white text-[#014BAA] hover:bg-[#E6F0FF] transition-all flex items-center gap-2 shadow-sm"
+            className="px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs font-extrabold bg-white text-[#014BAA] hover:bg-[#E6F0FF] transition-all flex items-center gap-1.5 sm:gap-2 shadow-sm shrink-0"
           >
-            Start Detection
+            <span>Start Detection</span>
           </Link>
         </div>
       </header>
+
+      {/* Mobile Drawer Menu */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          <div
+            className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-200"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <div className="relative w-72 max-w-[85vw] bg-white h-full p-6 shadow-2xl z-10 flex flex-col justify-between overflow-y-auto animate-in slide-in-from-left duration-200 text-[#282B4A]">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between pb-4 border-b border-[#E6F0FF]">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-[#014BAA] text-white flex items-center justify-center font-bold">
+                    <Shield className="w-4 h-4 fill-white" />
+                  </div>
+                  <div>
+                    <span className="font-extrabold text-base text-[#014BAA] block">TRUEVISION</span>
+                    <span className="text-[9px] uppercase tracking-wider text-[#5A5E7A] font-bold block -mt-1">DeepShield</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-2 rounded-xl bg-[#E6F0FF] text-[#014BAA] min-w-[40px] min-h-[40px] flex items-center justify-center"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-[#5A5E7A] px-2 mb-1">Navigation</span>
+                <Link
+                  to="/image-detection"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 p-3 rounded-xl font-semibold text-xs text-[#282B4A] hover:bg-[#E6F0FF] hover:text-[#014BAA] min-h-[44px]"
+                >
+                  <ImageIcon className="w-4 h-4 text-[#014BAA]" /> Image Detection
+                </Link>
+                <Link
+                  to="/video-detection"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 p-3 rounded-xl font-semibold text-xs text-[#282B4A] hover:bg-[#E6F0FF] hover:text-[#014BAA] min-h-[44px]"
+                >
+                  <Film className="w-4 h-4 text-[#014BAA]" /> Video Detection
+                </Link>
+                <Link
+                  to="/upload"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 p-3 rounded-xl font-semibold text-xs text-[#282B4A] hover:bg-[#E6F0FF] hover:text-[#014BAA] min-h-[44px]"
+                >
+                  <FileAudio className="w-4 h-4 text-[#014BAA]" /> Voice Detection
+                </Link>
+                <Link
+                  to="/history"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 p-3 rounded-xl font-semibold text-xs text-[#282B4A] hover:bg-[#E6F0FF] hover:text-[#014BAA] min-h-[44px]"
+                >
+                  <Search className="w-4 h-4 text-[#014BAA]" /> Scan Archive
+                </Link>
+              </div>
+            </div>
+
+            <div className="pt-6 border-t border-[#E6F0FF] space-y-2">
+              <Link
+                to="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full py-3 rounded-xl bg-[#E6F0FF] text-[#014BAA] font-bold text-xs flex items-center justify-center min-h-[44px]"
+              >
+                Sign In
+              </Link>
+              <Link
+                to="/upload"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full py-3 rounded-xl bg-[#014BAA] text-white font-extrabold text-xs flex items-center justify-center min-h-[44px] shadow-royal"
+              >
+                Start Detection
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Hero Section */}
       <section className="px-6 sm:px-10 py-20 max-w-6xl mx-auto text-center flex flex-col items-center relative">

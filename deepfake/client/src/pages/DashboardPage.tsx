@@ -166,12 +166,12 @@ export const DashboardPage: React.FC = () => {
   };
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-8 max-w-7xl mx-auto font-sans text-[#282B4A]">
+    <div className="p-3 xs:p-4 sm:p-6 lg:p-8 space-y-6 sm:space-y-8 max-w-7xl 2xl:max-w-[1600px] mx-auto font-sans text-[#282B4A] w-full">
       {/* 1. FORENSIC TELEMETRY & METRICS (TOP SECTION) */}
       <div className="space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-1.5">
               <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#E6F0FF] text-[#014BAA] border border-[#BFDAFE] inline-flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#014BAA] animate-pulse" />
                 Cybersecurity Threat Radar Active
@@ -181,19 +181,19 @@ export const DashboardPage: React.FC = () => {
                 Multi-Modal AI v2.4
               </span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold font-display text-[#014BAA] flex items-center gap-2.5">
-              <Activity className="w-7 h-7 text-[#014BAA]" />
-              Forensic Telemetry & Metrics
+            <h1 className="text-xl xs:text-2xl sm:text-3xl font-extrabold font-display text-[#014BAA] flex items-center gap-2.5">
+              <Activity className="w-6 h-6 sm:w-7 sm:h-7 text-[#014BAA] shrink-0" />
+              <span>Forensic Telemetry & Metrics</span>
             </h1>
             <p className="text-xs sm:text-sm text-[#5A5E7A] mt-0.5">
               Real-time aggregate detection metrics across all verified media scans
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
             <button
               onClick={fetchDashboardData}
-              className="p-3 rounded-xl border border-[#BFDAFE] bg-[#E6F0FF] text-[#014BAA] hover:bg-[#D4E6FF] transition-all flex items-center justify-center shadow-sm"
+              className="p-2.5 sm:p-3 rounded-xl border border-[#BFDAFE] bg-[#E6F0FF] text-[#014BAA] hover:bg-[#D4E6FF] transition-all flex items-center justify-center shadow-sm min-h-[44px] min-w-[44px] touch-manipulation cursor-pointer"
               title="Refresh telemetry"
               aria-label="Refresh telemetry"
             >
@@ -201,13 +201,13 @@ export const DashboardPage: React.FC = () => {
             </button>
             <Link
               to="/history"
-              className="px-5 py-3 rounded-xl text-xs sm:text-sm font-bold bg-white text-[#014BAA] border-1.5 border-[#014BAA] hover:bg-[#E6F0FF] transition-all flex items-center gap-2 shadow-sm"
+              className="px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-bold bg-white text-[#014BAA] border-1.5 border-[#014BAA] hover:bg-[#E6F0FF] transition-all flex items-center gap-1.5 sm:gap-2 shadow-sm min-h-[44px] touch-manipulation"
             >
               <Clock className="w-4 h-4" /> View History
             </Link>
             <Link
               to="/upload"
-              className="px-6 py-3 rounded-xl text-xs sm:text-sm font-extrabold bg-[#014BAA] text-white hover:bg-[#013D8B] transition-all flex items-center gap-2 shadow-royal"
+              className="px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl text-xs sm:text-sm font-extrabold bg-[#014BAA] text-white hover:bg-[#013D8B] transition-all flex items-center gap-1.5 sm:gap-2 shadow-royal min-h-[44px] touch-manipulation"
             >
               <Upload className="w-4 h-4" /> Start Scan
             </Link>
@@ -215,7 +215,7 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         {/* 5 Metrics Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-5">
           {/* Card 1: Total Scans */}
           <div className="p-5 rounded-2xl bg-white border border-[#E6F0FF] shadow-card space-y-2 transition-all">
             <div className="flex items-center justify-between">
@@ -523,7 +523,60 @@ export const DashboardPage: React.FC = () => {
         </div>
 
         <div className="rounded-2xl bg-white border border-[#E6F0FF] shadow-card overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Mobile Stacked Cards (Visible on screens < 768px) */}
+          <div className="block md:hidden divide-y divide-[#E6F0FF] p-2">
+            {loading ? (
+              <div className="py-8 text-center text-[#5A5E7A] text-xs flex items-center justify-center gap-2">
+                <RefreshCw className="w-4 h-4 animate-spin text-[#014BAA]" />
+                <span>Loading recent specimens...</span>
+              </div>
+            ) : recentHistory.length === 0 ? (
+              <div className="py-8 text-center text-[#5A5E7A] text-xs px-4">
+                <Shield className="w-8 h-8 text-[#014BAA]/40 mx-auto mb-2" />
+                <span className="font-bold text-[#282B4A] block">No recent scans found</span>
+                <p className="text-[11px] text-[#5A5E7A] mt-1">Upload a specimen to start generating telemetry.</p>
+              </div>
+            ) : (
+              recentHistory.map((item) => {
+                const isAi = isAiVerdict(item.verdict);
+                return (
+                  <div key={item.id} className="p-3.5 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono font-bold text-xs text-[#014BAA]">{item.caseId}</span>
+                      {getMediaBadge(item.mediaType)}
+                    </div>
+                    <div className="text-xs font-semibold text-[#282B4A] truncate" title={item.fileName}>
+                      {item.fileName}
+                    </div>
+                    <div className="flex items-center justify-between pt-1">
+                      <div>
+                        {isAi ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-red-50 text-red-600 border border-red-200">
+                            <ShieldAlert className="w-3 h-3 text-red-500" /> AI Generated
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <ShieldCheck className="w-3 h-3 text-emerald-600" /> Authentic Natural
+                          </span>
+                        )}
+                        <span className="ml-2 font-mono font-bold text-xs text-[#282B4A]">{item.confidence}%</span>
+                      </div>
+                      <Link
+                        to="/history"
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-[#E6F0FF] text-[#014BAA] min-h-[36px]"
+                      >
+                        <span>Inspect</span>
+                        <ArrowUpRight className="w-3 h-3" />
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Tablet & Desktop Full Table (Visible on screens >= 768px) */}
+          <div className="hidden md:block overflow-x-auto responsive-table-scroll">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="bg-[#E6F0FF] text-[#014BAA] font-extrabold uppercase tracking-wider text-[11px] border-b border-[#BFDAFE]">

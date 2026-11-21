@@ -27,19 +27,26 @@ import { VerifyReportPage } from './pages/VerifyReportPage';
 
 const MainLayout: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
+  const location = useLocation();
+
+  // Close mobile drawer and scroll to top upon route transition
+  React.useEffect(() => {
+    setMobileMenuOpen(false);
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex flex-col font-sans bg-[#F8F3F0] text-[#282B4A] transition-colors duration-200">
+    <div className="min-h-screen min-h-[100dvh] flex flex-col font-sans bg-[#F8F3F0] text-[#282B4A] transition-colors duration-200 w-full max-w-full overflow-x-hidden">
       <Navbar
         onToggleMobileMenu={() => setMobileMenuOpen((prev) => !prev)}
         isMobileMenuOpen={mobileMenuOpen}
       />
-      <div className="flex flex-1">
+      <div className="flex flex-1 w-full max-w-full overflow-x-hidden">
         <Sidebar
           isMobileMenuOpen={mobileMenuOpen}
           onCloseMobileMenu={() => setMobileMenuOpen(false)}
         />
-        <main className="flex-1 overflow-y-auto bg-[#F8F3F0] text-[#282B4A] transition-colors duration-200">
+        <main className="flex-1 w-full max-w-full overflow-y-auto overflow-x-hidden bg-[#F8F3F0] text-[#282B4A] transition-colors duration-200">
           <Routes>
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/upload" element={<UploadPage />} />

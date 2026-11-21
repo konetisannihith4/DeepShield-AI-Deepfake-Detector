@@ -127,7 +127,7 @@ export const LoginPage: React.FC = () => {
       setResendCooldown(60);
       setCanResend(false);
     } catch (err: any) {
-      setError(err.message || 'Failed to send login OTP. Check email or register first.');
+      setError(err.message || 'Failed to send login OTP. If email OTP is not configured on your server, switch to "Password Sign In" above.');
     } finally {
       setLoading(false);
     }
@@ -376,6 +376,20 @@ export const LoginPage: React.FC = () => {
                     </>
                   )}
                 </button>
+
+                <p className="text-[11px] text-[#5A5E7A] text-center pt-1">
+                  Prefer password?{' '}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setLoginMode('PASSWORD');
+                      setError(null);
+                    }}
+                    className="font-bold text-[#014BAA] underline hover:text-[#013D8B]"
+                  >
+                    Switch to Password Sign In
+                  </button>
+                </p>
               </form>
             ) : (
               <form onSubmit={handleVerifyOtp} className="space-y-4">

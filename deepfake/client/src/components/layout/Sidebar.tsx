@@ -73,7 +73,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileMenuOpen, onCloseMobil
           </div>
           <button
             onClick={onCloseMobileMenu}
-            className="p-2 rounded-xl bg-[#E6F0FF] text-[#014BAA] hover:bg-[#D4E6FF] transition-all"
+            className="p-2.5 min-w-[44px] min-h-[44px] rounded-xl bg-[#E6F0FF] text-[#014BAA] hover:bg-[#D4E6FF] transition-all flex items-center justify-center touch-manipulation cursor-pointer"
             aria-label="Close navigation menu"
           >
             <X className="w-5 h-5" />

@@ -291,9 +291,111 @@ export const HistoryPage: React.FC = () => {
 
       {/* Main Grid: Left Table + Right Details Panel */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Left Side Table */}
-        <div className="lg:col-span-2 rounded-3xl bg-white border border-[#E6F0FF] p-6 shadow-card space-y-4">
-          <div className="overflow-x-auto">
+        {/* Left Side Table & Mobile Cards */}
+        <div className="lg:col-span-2 rounded-3xl bg-white border border-[#E6F0FF] p-4 sm:p-6 shadow-card space-y-4">
+          {/* Mobile Cards View (< md) */}
+          <div className="block md:hidden space-y-3">
+            {loading ? (
+              <div className="py-10 text-center text-[#5A5E7A] text-xs flex flex-col items-center gap-2">
+                <RefreshCw className="w-6 h-6 animate-spin text-[#014BAA]" />
+                <span>Loading scan database records...</span>
+              </div>
+            ) : filteredItems.length === 0 ? (
+              <div className="py-10 text-center text-[#5A5E7A] text-xs">
+                No scan archive records found matching filter criteria.
+              </div>
+            ) : (
+              filteredItems.map((item) => {
+                const isAi = item.verdict.toUpperCase().includes('AI') || item.verdict.toUpperCase().includes('DEEPFAKE');
+                const isSelected = selectedItem?.caseId === item.caseId;
+                return (
+                  <div
+                    key={item.reportId + item.caseId}
+                    onClick={() => setSelectedItem(item)}
+                    className={`p-4 rounded-2xl border transition-all cursor-pointer space-y-3 ${
+                      isSelected
+                        ? 'bg-[#E6F0FF]/60 border-[#014BAA] shadow-sm'
+                        : 'bg-[#F8F3F0]/50 border-[#E6F0FF] hover:border-[#BFDAFE]'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 truncate">
+                        <span className="px-2 py-0.5 rounded-full bg-[#E6F0FF] text-[#014BAA] border border-[#BFDAFE] text-[10px] font-bold flex items-center gap-1 shrink-0">
+                          {getMediaIcon(item.mediaType)}
+                          {item.mediaType || 'audio'}
+                        </span>
+                        <span className="font-mono text-xs font-bold text-[#014BAA] truncate">{item.caseId}</span>
+                      </div>
+                      <span className="text-[10px] font-mono text-[#5A5E7A] shrink-0">
+                        {new Date(item.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-xs font-semibold text-[#282B4A] truncate max-w-[200px]" title={item.fileName}>
+                        {item.fileName}
+                      </span>
+                      <span className="font-mono text-xs font-black text-[#014BAA] shrink-0">{item.confidence}%</span>
+                    </div>
+
+                    <div className="flex items-center justify-between gap-2 pt-1 border-t border-[#E6F0FF]/60">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase border ${
+                            isAi
+                              ? 'bg-red-50 text-red-600 border-red-200'
+                              : item.verdict === 'Uncertain'
+                              ? 'bg-amber-50 text-amber-700 border-amber-200'
+                              : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          }`}
+                        >
+                          {item.verdict}
+                        </span>
+                        <span
+                          className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase border ${
+                            item.threatLevel === 'CRITICAL' || item.threatLevel === 'HIGH'
+                              ? 'bg-red-50 text-red-700 border-red-200'
+                              : item.threatLevel === 'MEDIUM' || item.threatLevel === 'MODERATE'
+                              ? 'bg-amber-50 text-amber-700 border-amber-200'
+                              : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          }`}
+                        >
+                          {item.threatLevel}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          onClick={() => setSelectedItem(item)}
+                          className="p-1.5 rounded-lg bg-[#E6F0FF] text-[#014BAA] hover:bg-[#D4E6FF] transition-colors"
+                          title="Inspect Details"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleViewPdfReport(item)}
+                          className="p-1.5 rounded-lg bg-white border border-[#E6F0FF] text-[#014BAA] hover:bg-[#F8F3F0] transition-colors"
+                          title="View PDF"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDownloadFile(item, 'pdf')}
+                          className="p-1.5 rounded-lg bg-[#014BAA] text-white hover:bg-[#013D8B] transition-colors"
+                          title="Download PDF"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
+          {/* Desktop Table View (>= md) */}
+          <div className="hidden md:block overflow-x-auto responsive-table-scroll">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="bg-[#E6F0FF] text-[#014BAA] font-extrabold uppercase tracking-wider text-[11px] border-b border-[#BFDAFE]">
@@ -475,7 +577,7 @@ export const HistoryPage: React.FC = () => {
                       <Copy className="w-3 h-3" /> {copiedHash ? 'Copied' : 'Copy'}
                     </button>
                   </div>
-                  <span className="font-mono text-[10px] text-[#282B4A] truncate block font-semibold">
+                  <span className="font-mono text-[10px] text-[#282B4A] break-all block font-semibold leading-relaxed">
                     {selectedItem.sha256Hash}
                   </span>
                 </div>

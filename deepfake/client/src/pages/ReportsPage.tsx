@@ -296,9 +296,97 @@ export const ReportsPage: React.FC = () => {
         </select>
       </div>
 
-      {/* Reports Table */}
-      <div className="rounded-3xl bg-white border border-[#E6F0FF] shadow-card overflow-hidden">
-        <div className="overflow-x-auto">
+      {/* Reports Table & Mobile Cards */}
+      <div className="rounded-3xl bg-white border border-[#E6F0FF] shadow-card overflow-hidden p-4 sm:p-6">
+        {/* Mobile Cards View (< md) */}
+        <div className="block md:hidden space-y-3">
+          {loading ? (
+            <div className="py-10 text-center text-[#5A5E7A] text-xs flex flex-col items-center gap-2">
+              <RefreshCw className="w-5 h-5 animate-spin text-[#014BAA]" />
+              <span>Loading forensic reports...</span>
+            </div>
+          ) : filteredReports.length === 0 ? (
+            <div className="py-10 text-center text-[#5A5E7A] text-xs">
+              No reports match your search query.
+            </div>
+          ) : (
+            filteredReports.map((report) => {
+              const isAi = report.verdict.toUpperCase().includes('AI') || report.verdict.toUpperCase().includes('DEEPFAKE');
+              return (
+                <div
+                  key={report.reportId}
+                  className="p-4 rounded-2xl bg-[#F8F3F0]/50 border border-[#E6F0FF] hover:border-[#BFDAFE] transition-all space-y-3"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono text-xs font-bold text-[#014BAA]">{report.caseId}</span>
+                    <span className="text-[10px] font-mono text-[#5A5E7A]">
+                      {new Date(report.createdAt).toLocaleDateString()}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-semibold text-[#282B4A] truncate max-w-[200px]" title={report.fileName}>
+                      {report.fileName}
+                    </span>
+                    <span className="font-mono text-xs font-black text-[#014BAA]">{report.confidence}%</span>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 pt-1 border-t border-[#E6F0FF]/60">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase border ${
+                          isAi
+                            ? 'bg-red-50 text-red-600 border-red-200'
+                            : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        }`}
+                      >
+                        {report.verdict}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold uppercase border ${
+                          report.threatLevel === 'CRITICAL' || report.threatLevel === 'HIGH'
+                            ? 'bg-red-50 text-red-700 border-red-200'
+                            : report.threatLevel === 'MEDIUM' || report.threatLevel === 'MODERATE'
+                            ? 'bg-amber-50 text-amber-700 border-amber-200'
+                            : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        }`}
+                      >
+                        {report.threatLevel}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleViewPdfReport(report.pdfDownloadUrl, report)}
+                        className="p-1.5 rounded-lg bg-[#E6F0FF] text-[#014BAA] hover:bg-[#D4E6FF] transition-all"
+                        title="View PDF Report"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDownloadFile(report.pdfDownloadUrl, report.reportName, report)}
+                        className="p-1.5 rounded-lg bg-[#014BAA] text-white hover:bg-[#013D8B] transition-all"
+                        title="Download PDF Certificate"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeleteReport(report.reportName)}
+                        className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-all border border-red-100"
+                        title="Delete Report"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop Table View (>= md) */}
+        <div className="hidden md:block overflow-x-auto responsive-table-scroll">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
               <tr className="bg-[#E6F0FF] text-[#014BAA] font-extrabold uppercase tracking-wider text-[11px] border-b border-[#BFDAFE]">

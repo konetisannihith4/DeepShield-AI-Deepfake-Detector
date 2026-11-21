@@ -18,64 +18,74 @@ export const WaveformCanvas: React.FC<WaveformCanvasProps> = ({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
 
-    const width = canvas.clientWidth;
-    canvas.width = width * window.devicePixelRatio;
-    canvas.height = height * window.devicePixelRatio;
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    const render = () => {
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
 
-    ctx.clearRect(0, 0, width, height);
+      const width = canvas.clientWidth || 300;
+      canvas.width = width * window.devicePixelRatio;
+      canvas.height = height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
 
-    // Draw Light Cream Canvas Background
-    ctx.fillStyle = '#F8F3F0';
-    ctx.fillRect(0, 0, width, height);
+      ctx.clearRect(0, 0, width, height);
 
-    // Draw Background Grid
-    ctx.strokeStyle = 'rgba(1, 75, 170, 0.1)';
-    ctx.lineWidth = 1;
-    for (let x = 0; x < width; x += 40) {
-      ctx.beginPath();
-      ctx.moveTo(x, 0);
-      ctx.lineTo(x, height);
-      ctx.stroke();
-    }
-    ctx.beginPath();
-    ctx.moveTo(0, height / 2);
-    ctx.lineTo(width, height / 2);
-    ctx.stroke();
+      // Draw Light Cream Canvas Background
+      ctx.fillStyle = '#F8F3F0';
+      ctx.fillRect(0, 0, width, height);
 
-    // Draw Synthetic Highlight Overlay Blocks
-    syntheticSegments.forEach((seg) => {
-      const startX = (seg.startTime / durationSeconds) * width;
-      const endX = (seg.endTime / durationSeconds) * width;
-      const segWidth = Math.max(10, endX - startX);
-
-      ctx.fillStyle = 'rgba(239, 68, 68, 0.2)';
-      ctx.fillRect(startX, 0, segWidth, height);
-      ctx.strokeStyle = 'rgba(239, 68, 68, 0.8)';
+      // Draw Background Grid
+      ctx.strokeStyle = 'rgba(1, 75, 170, 0.1)';
       ctx.lineWidth = 1;
-      ctx.strokeRect(startX, 0, segWidth, height);
-    });
+      for (let x = 0; x < width; x += 40) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.moveTo(0, height / 2);
+      ctx.lineTo(width, height / 2);
+      ctx.stroke();
 
-    // Draw Waveform Bars
-    const data = waveform.length > 0 ? waveform : Array.from({ length: 80 }, (_, i) => Math.sin(i * 0.3) * 0.6);
-    const barWidth = width / data.length;
-    const centerY = height / 2;
+      // Draw Synthetic Highlight Overlay Blocks
+      syntheticSegments.forEach((seg) => {
+        const startX = (seg.startTime / durationSeconds) * width;
+        const endX = (seg.endTime / durationSeconds) * width;
+        const segWidth = Math.max(10, endX - startX);
 
-    data.forEach((val, i) => {
-      const x = i * barWidth;
-      const barHeight = Math.max(4, Math.abs(val) * (height / 2 - 10));
-
-      const isAnomaly = syntheticSegments.some((seg) => {
-        const timeAtBar = (i / data.length) * durationSeconds;
-        return timeAtBar >= seg.startTime && timeAtBar <= seg.endTime;
+        ctx.fillStyle = 'rgba(239, 68, 68, 0.2)';
+        ctx.fillRect(startX, 0, segWidth, height);
+        ctx.strokeStyle = 'rgba(239, 68, 68, 0.8)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(startX, 0, segWidth, height);
       });
 
-      ctx.fillStyle = isAnomaly ? '#ef4444' : '#014BAA';
-      ctx.fillRect(x + 1, centerY - barHeight, Math.max(2, barWidth - 2), barHeight * 2);
-    });
+      // Draw Waveform Bars
+      const data = waveform.length > 0 ? waveform : Array.from({ length: 80 }, (_, i) => Math.sin(i * 0.3) * 0.6);
+      const barWidth = width / data.length;
+      const centerY = height / 2;
+
+      data.forEach((val, i) => {
+        const x = i * barWidth;
+        const barHeight = Math.max(4, Math.abs(val) * (height / 2 - 10));
+
+        const isAnomaly = syntheticSegments.some((seg) => {
+          const timeAtBar = (i / data.length) * durationSeconds;
+          return timeAtBar >= seg.startTime && timeAtBar <= seg.endTime;
+        });
+
+        ctx.fillStyle = isAnomaly ? '#ef4444' : '#014BAA';
+        ctx.fillRect(x + 1, centerY - barHeight, Math.max(2, barWidth - 2), barHeight * 2);
+      });
+    };
+
+    render();
+
+    window.addEventListener('resize', render);
+    return () => {
+      window.removeEventListener('resize', render);
+    };
   }, [waveform, height, syntheticSegments, durationSeconds]);
 
   return (

@@ -252,9 +252,23 @@ export const LoginPage: React.FC = () => {
         )}
 
         {error && (
-          <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-start gap-2.5">
-            <AlertCircle className="w-4 h-4 shrink-0 text-red-500 mt-0.5" />
-            <div className="flex-1 font-medium">{error}</div>
+          <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex flex-col gap-2">
+            <div className="flex items-start gap-2.5">
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-500 mt-0.5" />
+              <div className="flex-1 font-medium">{error}</div>
+            </div>
+            {loginMode === 'OTP' && (
+              <button
+                type="button"
+                onClick={() => {
+                  setLoginMode('PASSWORD');
+                  setError(null);
+                }}
+                className="self-start text-[11px] font-bold text-[#014BAA] hover:underline flex items-center gap-1 mt-0.5"
+              >
+                👉 Click here to switch to Password Sign In
+              </button>
+            )}
           </div>
         )}
 
@@ -467,6 +481,14 @@ export const LoginPage: React.FC = () => {
           <Link to="/register" className="font-bold text-[#014BAA] hover:underline">
             Register for Access
           </Link>
+        </div>
+
+        {/* Demo Credentials Box */}
+        <div className="p-3 rounded-2xl bg-[#E6F0FF]/60 border border-[#BFDAFE] text-center text-xs text-[#014BAA] space-y-1">
+          <p className="font-bold">🔐 Demo Console Credentials:</p>
+          <p className="font-mono text-[11px] text-[#282B4A]">
+            Email: <span className="font-bold text-[#014BAA]">admin@deepshield.ai</span> | Password: <span className="font-bold text-[#014BAA]">AdminPass123!</span>
+          </p>
         </div>
       </div>
     </div>

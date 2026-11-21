@@ -54,7 +54,12 @@ export const analyzeVideo = async (req: AuthRequest, res: Response): Promise<voi
       ? 'No detectable face found.'
       : (aiResult.Prediction || aiResult.prediction || 'Natural');
 
-    const isDeepfake = predictionText === 'AI Generated' || predictionText === 'AI-Generated';
+    const isDeepfake =
+      predictionText === 'AI Generated' ||
+      predictionText === 'AI-Generated' ||
+      predictionText === 'Deepfake' ||
+      predictionText === 'Fake' ||
+      (typeof aiResult.deepfakeProbability === 'number' && aiResult.deepfakeProbability >= 0.50);
     const verdict = isNoFace ? 'SUSPICIOUS' : (isDeepfake ? 'DEEPFAKE' : 'AUTHENTIC');
 
     const confidence = aiResult.Confidence !== undefined ? aiResult.Confidence : (aiResult.confidence || 0.0);

@@ -36,8 +36,36 @@ class LocalAudioDeepfakeDetector:
             cls._instance = LocalAudioDeepfakeDetector()
         return cls._instance
 
+    def _get_model_path(self) -> str:
+        """Finds local snapshot or falls back to HuggingFace model identifier."""
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+        snapshot_dir = os.path.join(
+            base_dir,
+            "models",
+            "models--DavidCombei--wavLM-base-Deepfake_V2",
+            "snapshots",
+            "03396be9160ddb0dd38f1718428b595707577641"
+        )
+        if os.path.exists(snapshot_dir) and os.path.exists(os.path.join(snapshot_dir, "config.json")):
+            return snapshot_dir
+
+        # Search anywhere in models dir
+        models_dir = os.path.join(base_dir, "models")
+        if os.path.exists(models_dir):
+            for root, dirs, _ in os.walk(models_dir):
+                if "snapshots" in dirs:
+                    sn = os.path.join(root, "snapshots")
+                    for sub in os.listdir(sn):
+                        full_sub = os.path.join(sn, sub)
+                        if "wavLM" in root or "wavlm" in root:
+                            if os.path.exists(os.path.join(full_sub, "config.json")):
+                                return full_sub
+
+        return MODEL_CHECKPOINT
+
     def load_model(self):
-        print(f"[AI Service]: Initializing Neural Inference Engine with checkpoint '{MODEL_CHECKPOINT}'...")
+        ckpt = self._get_model_path()
+        print(f"[AI Service]: Initializing Neural Inference Engine with checkpoint '{ckpt}'...")
         start_t = time.time()
         
         models_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "models")
@@ -45,14 +73,14 @@ class LocalAudioDeepfakeDetector:
 
         try:
             self.feature_extractor = AutoFeatureExtractor.from_pretrained(
-                MODEL_CHECKPOINT, 
+                ckpt, 
                 cache_dir=models_dir,
-                local_files_only=False
+                local_files_only=os.path.exists(ckpt)
             )
             self.model = AutoModelForAudioClassification.from_pretrained(
-                MODEL_CHECKPOINT, 
+                ckpt, 
                 cache_dir=models_dir,
-                local_files_only=False
+                local_files_only=os.path.exists(ckpt)
             )
             self.model.to(self.device)
             self.model.eval()
@@ -98,16 +126,17 @@ class LocalAudioDeepfakeDetector:
                 jitter = float(acoustic_feats.get("jitter_percent", 0.01))
                 shimmer = float(acoustic_feats.get("shimmer_percent", 0.03))
                 hnr = float(acoustic_feats.get("harmonic_noise_ratio", 18.0))
+                pitch_var = float(acoustic_feats.get("pitch_variance", 25.0))
 
-                score = 0.50
-                if jitter < 0.003 or shimmer < 0.012:
-                    score += 0.35
-                elif hnr > 28.0:
-                    score += 0.25
-                else:
-                    score -= 0.35
+                ai_score = 0.0
+                if jitter < 0.006 or shimmer < 0.020:
+                    ai_score += 0.40
+                if hnr > 22.0:
+                    ai_score += 0.30
+                if pitch_var < 16.0:
+                    ai_score += 0.25
 
-                deepfake_prob = round(max(0.04, min(0.96, float(score))), 4)
+                deepfake_prob = round(max(0.08, min(0.94, ai_score if ai_score >= 0.35 else 0.12)), 4)
                 is_deepfake = bool(deepfake_prob >= 0.50)
                 prediction = "Deepfake" if is_deepfake else "Authentic"
                 confidence = round(max(deepfake_prob, 1.0 - deepfake_prob), 4)

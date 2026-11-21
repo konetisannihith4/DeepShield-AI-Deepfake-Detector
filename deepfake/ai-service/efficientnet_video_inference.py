@@ -94,8 +94,8 @@ class EfficientNetVideoInferenceEngine:
         # Preprocess face crops into (N, 3, 380, 380) tensor
         tensor_batch = self.preprocessor.preprocess_batch(face_crops)
 
-        # Predict batch using EfficientNet-B7 DeepFakeClassifier Ensemble
-        fake_probabilities = self.model_detector.predict_batch(tensor_batch)
+        # Predict batch using EfficientNet-B7 DeepFakeClassifier Ensemble (with face crops fallback)
+        fake_probabilities = self.model_detector.predict_batch(tensor_batch, face_crops)
 
         # Weighted Voting Aggregation
         agg_res = self.aggregator.aggregate_weighted_voting(fake_probabilities, face_crops)

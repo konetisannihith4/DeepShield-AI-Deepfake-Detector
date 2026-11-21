@@ -43,22 +43,28 @@ class DeepFakeClassifier(nn.Module):
 
 def discover_weights(weights_dir: str = None) -> List[str]:
     """
-    Discovers all EfficientNet DFDC checkpoint files inside ai-service/weights/.
-    Raises RuntimeError if no checkpoints are found inside weights/.
+    Discovers all EfficientNet DFDC checkpoint files inside ai-service/weights/, pretrained_model/, or models/.
     """
-    if weights_dir is None:
-        base_dir = os.path.dirname(os.path.abspath(__file__))
-        weights_dir = os.path.join(base_dir, "weights")
+    base_dir = os.path.dirname(os.path.abspath(__file__))
+    candidates = []
+    
+    if weights_dir is not None:
+        candidates.append(weights_dir)
+    else:
+        candidates.append(os.path.join(base_dir, "weights"))
+        candidates.append(os.path.join(base_dir, "pretrained_model"))
+        candidates.append(os.path.join(base_dir, "models"))
 
-    os.makedirs(weights_dir, exist_ok=True)
+    files = []
+    for cdir in candidates:
+        if os.path.exists(cdir):
+            for f in os.listdir(cdir):
+                full_p = os.path.join(cdir, f)
+                if os.path.isfile(full_p) and not f.startswith("."):
+                    if "DeepFakeClassifier" in f or "efficientnet" in f.lower():
+                        files.append(full_p)
 
-    files = [
-        os.path.join(weights_dir, f)
-        for f in os.listdir(weights_dir)
-        if os.path.isfile(os.path.join(weights_dir, f)) and not f.startswith(".")
-    ]
-
-    return sorted(files)
+    return sorted(list(set(files)))
 
 
 class EfficientNetEnsembleDetector:
@@ -78,15 +84,8 @@ class EfficientNetEnsembleDetector:
         Reports missing and unexpected keys for each checkpoint.
         """
         if not self.checkpoint_paths:
-            print("[EfficientNet-B7] No local weights file in weights/. Initializing standard backbone.")
-            try:
-                net = DeepFakeClassifier(encoder="tf_efficientnet_b7_ns", num_classes=1)
-                net.to(self.device)
-                net.eval()
-                self.models = [net]
-            except Exception as e:
-                print(f"[EfficientNet-B7 Init Warning]: {e}")
-                self.models = []
+            print("[EfficientNet-B7] No local weights file found. Face crops will be evaluated using Vision Transformer / ConvNeXt.")
+            self.models = []
             return self.models
 
         print(f"\n-------------------------------------------------------")
@@ -155,15 +154,38 @@ class EfficientNetEnsembleDetector:
         print(f"-------------------------------------------------------\n")
         return self.models
 
-    def predict_batch(self, input_tensor: torch.Tensor) -> List[float]:
+    def predict_batch(self, input_tensor: torch.Tensor, face_crops: List[np.ndarray] = None) -> List[float]:
         """
-        Runs batch forward pass across all loaded ensemble models and averages deepfake probabilities.
+        Runs batch forward pass across loaded ensemble models, or evaluates face crops with ViT/ConvNeXt.
         """
         if not self.models:
             self.load_models()
 
         if not self.models:
-            return [0.15] * (input_tensor.shape[0] if input_tensor is not None else 0)
+            # Fallback to ImageDeepfakeDetectorModel (ViT / ConvNeXt) to evaluate face crops
+            try:
+                from image_ai_model import ImageDeepfakeDetectorModel
+                detector = ImageDeepfakeDetectorModel()
+                if face_crops and len(face_crops) > 0:
+                    return detector.predict_batch_crops(face_crops)
+            except Exception as e:
+                print(f"[Video Face Fallback Warning]: {e}")
+
+            # Algorithmic face anomaly evaluation if crops provided
+            if face_crops and len(face_crops) > 0:
+                scores = []
+                for crop in face_crops:
+                    gray = cv2.cvtColor(crop, cv2.COLOR_BGR2GRAY) if crop is not None else None
+                    if gray is not None:
+                        var = float(cv2.Laplacian(gray, cv2.CV_64F).var())
+                        p = 0.85 if (var < 70 or var > 900) else 0.15
+                        scores.append(p)
+                    else:
+                        scores.append(0.5)
+                return scores
+
+            count = input_tensor.shape[0] if input_tensor is not None else 0
+            return [0.50] * count
 
         if input_tensor is None or input_tensor.shape[0] == 0:
             return []

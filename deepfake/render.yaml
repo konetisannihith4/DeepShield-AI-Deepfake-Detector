@@ -34,6 +34,18 @@ services:
         sync: false
       - key: AI_SERVICE_URL
         sync: false
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: 465
+      - key: SMTP_SECURE
+        value: true
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM
+        value: DeepShield Security <konetisannihith@gmail.com>
 
   # 3. React Vite Dashboard Frontend (Single Page App)
   - type: web
